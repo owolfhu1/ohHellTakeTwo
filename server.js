@@ -15,8 +15,8 @@ http.listen(port, function(){
 });
 
 let gameId = 0;
-let userMap = new Map();
-let gameMap = new Map();
+const userMap = new Map();
+const gameMap = new Map();
 let idArray = [];
 let nameArray = [];
 
@@ -77,9 +77,8 @@ io.on('connection', function(socket){
 
     socket.on('finalPair', function (users){
         console.log(userMap.get(users[0]).name + ' and ' + userMap.get(users[1]).name + ' want to play a game.');
-
-        let game = new Map();
-        game = emptyGame;
+        
+        let game = emptyGame;
         game.player1Id = users[0];
         game.player2Id = users[1];
         removeUser(users[0]);
@@ -87,8 +86,8 @@ io.on('connection', function(socket){
         updateLobby();
         gameId++;
         gameMap.set(gameId, game);
-        userMap[users[0]].gameId = gameId;
-        userMap[users[1]].gameId = gameId;
+        //userMap[users[0]].gameId = gameId;
+        //userMap[users[1]].gameId = gameId;
         io.sockets.connected[users[0]].emit('newGame');
         io.sockets.connected[users[1]].emit('newGame');
 
