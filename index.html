@@ -1,0 +1,313 @@
+<!doctype html>
+<html>
+<head>
+    <title>ohHellTestTime</title>
+    <script>let nam = prompt('name', 'your name here');</script>
+    <style>
+        html {
+            background: #b03f48;
+            color: #f0f0f0;
+            font-size: 1.2em;
+            line-height: 1;
+            font-family: "Comic Sans MS"
+        }
+
+        .chat_input {
+            color: white;
+        }
+
+        .turn_indicator {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .picker:hover {
+            transform: scale(1.05) rotate(1deg);
+        }
+
+        .picker:active {
+            transform: scale(.94) rotate(-1deg);
+        }
+
+        .cards{
+            padding: 1px;
+            width: 94px;
+            height: 130px;
+
+        }
+
+        .float_left {
+            float:left;
+            width: 180px;
+            height: 650px;
+            text-align:center;
+            border:6px dotted #2e2e2e;
+            border-radius: 40px;
+            margin: 20px;
+            padding: 10px;
+            background: #529848;
+            line-height: .7;
+        }
+
+        .float_right {
+            float:right;
+            width: 300px;
+            height: 650px;
+            text-align:center;
+            border:6px dotted #2e2e2e;
+            border-radius: 40px;
+            margin: 20px;
+            padding: 10px;
+            background: #529848;
+        }
+
+        .play_area {
+            text-align: center;
+            height: 190px;
+        }
+
+        .player_hand{
+            text-align:center;
+        }
+
+        .opponent_hand {
+            height: 135px;
+            text-align:center;
+        }
+
+        .text_class{
+            text-align:center;
+        }
+
+        .back_drop {
+            height: 720px;
+            width: 1620px;
+            margin: 30px;
+            border:6px dotted #b03f48;
+            border-radius: 70px;
+            background: #2e2e2e;
+        }
+        .card_area {
+            height: 440px;
+            padding: 115px 0;
+            text-align: center;
+        }
+
+        .aces_button {
+            background-color: #2e2e2e;
+            border: 6px dotted #529848;
+            border-radius: 20px;
+            color: white;
+            margin-top: 10px;
+            padding: 20px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            font-family: "Comic Sans MS";
+            line-height: 1px;
+        }
+
+        .log {
+            overflow-y: scroll;
+            overflow-wrap: normal;
+            height: 250px;
+            width: 280px;
+            border: 6px dotted #529848;
+            background: #2e2e2e;
+            border-radius: 20px;
+            font-size: 12px;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .chat{
+            overflow-y: scroll;
+            overflow-wrap: normal;
+            height: 300px;
+            width: 280px;
+            border: 6px dotted #529848;
+            background: #2e2e2e;
+            border-radius: 20px;
+            font-size: 12px;
+            text-align: left;
+            padding: 1px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            display: none;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            width: 12px;
+            background-color: #529848;
+            border-radius: 7px;
+        }
+
+        .chat_input{
+            background-color: #2e2e2e;
+            width: 280px;
+            border: 6px dotted #529848;
+            border-radius: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="back_drop" class="back_drop">
+    <div id="float_left" class="float_left">
+        <h2>Opponent</h2>
+        <p id="opponent_score">---</p>
+        <p id="opponent_goal">---</p>
+        <p id="opponent_tricks">---</p>
+        <h2>Player</h2>
+        <p id="player_score">---</p>
+        <p id="player_goal">---</p>
+        <p id="player_tricks">---</p>
+        <p></p>
+        <button id="aces_button" class="aces_button">Aces low</button>
+        <p></p>
+        <h2>Trump suit</h2>
+        <p></p>
+        <div id="trump_box" class="trump_box"></div>
+    </div>
+    <div id="float_right" class="float_right">
+        <div id="log" class="log"></div>
+        <p></p>
+        <div id="messages" class="chat"></div>
+        <p></p>
+        <form action="">
+            <input id="text" class="chat_input" type="text"/>
+        </form>
+    </div>
+    <div id="card_area" class="card_area">
+
+        <!-- this will replace #card_area when game starts
+        <div id="opponent_hand" class="opponent_hand"></div>
+        <div id="play_area" class="play_area"></div>
+        <div id="player_hand" class="player_hand"></div>
+        <div id="turn_indicator" class="turn_indicator"></div>
+        -->
+
+        <div id="lobby" style="margin-left: 600px; height: 500px; width: 250px; background-color: #b03f48"></div>
+
+
+    </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+
+    /*   !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&
+      !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&
+   !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&  */
+
+    let socket = io();
+    let trump;
+    let inPlay;
+    let audio = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
+    let smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
+
+    socket.emit('setName', nam);
+
+    socket.on('updateLobby', function(users){
+        let name = 0;
+        let id = 1;
+        let body = '<ul>';
+
+        for (let i = 0; i < users[1].length; i++) {
+            body += `<li><button id="${i}">${users[name][i]}</button></li>`;
+        }
+        body += '</ul>';
+        document.getElementById('lobby').innerHTML = body;
+
+        for(let i = 0; i< users[1].length; i++) {
+            document.getElementById(i.toString()).addEventListener('click', function () {
+                socket.emit('pair', users[id][i]);
+            });
+        }
+    });
+
+    socket.on('rePair', function(pair){
+        if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
+    });
+
+    $('form').submit(function () {
+        socket.emit('message', '<p>' + nam + ': ' + $('#text').val()) + '</p>';
+       $('#text').val('');
+        return false;
+    });
+
+    socket.on('receiveMessage', function (msg) {
+        let body = document.getElementById('messages');
+        body.innerHTML += msg;
+        body.scrollTo(0, body.scrollHeight);
+    });
+
+    socket.on('newGame', function (id) {
+        document.getElementById('card_area').innerHTML = `
+
+            <div id="opponent_hand" class="opponent_hand"></div>
+            <div id="play_area" class="play_area"></div>
+            <div id="player_hand" class="player_hand"></div>
+            <div id="turn_indicator" class="turn_indicator"></div>
+
+        `;
+    });
+
+    socket.on('picker', function(info) {
+        trump = info[2];
+        inPlay = info[3];
+
+        let showHand = '';
+        for (let i = 0; i < info[0].length; i++){
+            showHand += cardImg(info[0][i])
+        }
+        let showPicker = '';
+        if (info[4]) {
+            for (let i = 0; i < info[1]+1; i++) {
+                if (info[1] - i === info[6][2]) {}
+                showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
+
+            }
+        }
+        document.getElementById('player_hand').innerHTML = showHand;
+        document.getElementById('opponent_hand').innerHTML = showPicker;
+        document.getElementById('trump_box').innerHTML = otherImg(trump);
+        document.getElementById('play_area').innerHTML = '';
+
+        let turn = document.getElementById('turn_indicator');
+        if (info[4]) {
+            turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
+            audio.play();
+        } else { turn.innerHTML = ''; }
+
+        document.getElementById("opponent_score").innerHTML = `Score: ${info[6][0]}`;
+        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[6][1]}`;
+        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[6][2]}`;
+        document.getElementById("player_score").innerHTML = `Score: ${info[5][0]}`;
+        document.getElementById("player_goal").innerHTML = `Goal: ${info[5][1]}`;
+        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[5][2]}`;
+
+        if (info[4]){
+            for (let i = 0; i < info[1]+1; i++){
+                document.getElementById(`picker${i}`).addEventListener('click', () => {
+                    socket.emit('pick', i);
+                });
+            }
+        }
+    });
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
