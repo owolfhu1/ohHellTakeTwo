@@ -245,7 +245,6 @@
     socket.on('receiveMessage', function (msg) {
         let body = document.getElementById('messages');
         body.innerHTML += msg;
-        body.scrollTo(0, body.scrollHeight);
     });
 
     socket.on('newGame', function (id) {
@@ -302,7 +301,8 @@
         }
     });
 
-
+    const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+    const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
 
 
