@@ -85,7 +85,7 @@ io.on('connection', function(socket){
         removeUser(users[1]);
         updateLobby();
         gameId++;
-        gameMap.set(`${gameId}`, game);
+        gameMap.set(gameId, game);
         //userMap[users[0]].gameId = gameId;
         //userMap[users[1]].gameId = gameId;
         io.sockets.connected[users[0]].emit('newGame');
@@ -131,7 +131,7 @@ function deal(id) {
 
     //io.sockets.emit('log', `<u>Starting new round</u>`);
 
-    if (isEven(gameMap[`${id}`].round)){
+    if (isEven(gameMap.get(id).round)){
         gameMap[id].player1Turn = true;
         gameMap[id].player2Turn = false;
     } else {
