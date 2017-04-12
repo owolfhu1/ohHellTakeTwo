@@ -132,33 +132,33 @@ function deal(id) {
     //io.sockets.emit('log', `<u>Starting new round</u>`);
 
     if (isEven(gameMap.get(id).round)){
-        gameMap[id].player1Turn = true;
-        gameMap[id].player2Turn = false;
+        gameMap.get(id).player1Turn = true;
+        gameMap.get(id).player2Turn = false;
     } else {
-        gameMap[id].player2Turn = true;
-        gameMap[id].player1Turn = false;
+        gameMap.get(id).player2Turn = true;
+        gameMap.get(id).player1Turn = false;
     }
 
-    gameMap[id].inPlay = card(20,20);
-    gameMap[id].player1Picked = false;
-    gameMap[id].player2Picked = false;
-    gameMap[id].player1TricksWon = [];
-    gameMap[id].player2TricksWon = [];
-    gameMap[id].player1Goal = '--';
-    gameMap[id].player2Goal = '--';
-    gameMap[id].player1Tricks = 0;
-    gameMap[id].player2Tricks = 0;
-    gameMap[id].player1Hand = [];
-    gameMap[id].player2Hand = [];
+    gameMap.get(id).inPlay = card(20,20);
+    gameMap.get(id).player1Picked = false;
+    gameMap.get(id).player2Picked = false;
+    gameMap.get(id).player1TricksWon = [];
+    gameMap.get(id).player2TricksWon = [];
+    gameMap.get(id).player1Goal = '--';
+    gameMap.get(id).player2Goal = '--';
+    gameMap.get(id).player1Tricks = 0;
+    gameMap.get(id).player2Tricks = 0;
+    gameMap.get(id).player1Hand = [];
+    gameMap.get(id).player2Hand = [];
 
-    gameMap[id].gameDeck = deck();
+    gameMap.get(id).gameDeck = deck();
 
-    for (let i = 0; i < gameMap[id].round; i++){
-        gameMap[id].player1Hand.push(gameMap[id].gameDeck.pop());
-        gameMap[id].player2Hand.push(gameMap[id].gameDeck.pop());
+    for (let i = 0; i < gameMap.get(id).round; i++){
+        gameMap.get(id).player1Hand.push(gameMap.get(id).gameDeck.pop());
+        gameMap.get(id).player2Hand.push(gameMap.get(id).gameDeck.pop());
     }
 
-    gameMap[id].trump = gameMap[id].gameDeck.pop();
+    gameMap.get(id).trump = gameMap.get(id).gameDeck.pop();
 
     //io.sockets.emit('log', `Trump is ${trump[1]}`);
 
@@ -170,13 +170,13 @@ function isEven(n) {
 }
 
 function sendPick(id){
-    let player1Stats = [gameMap[id].player1Score, gameMap[id].player1Goal, gameMap[id].player1Tricks];
-    let player2Stats = [gameMap[id].player2Score, gameMap[id].player2Goal, gameMap[id].player2Tricks];
+    let player1Stats = [gameMap.get(id).player1Score, gameMap.get(id).player1Goal, gameMap.get(id).player1Tricks];
+    let player2Stats = [gameMap.get(id).player2Score, gameMap.get(id).player2Goal, gameMap.get(id).player2Tricks];
     // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
-    let player1info = [gameMap[id].player1Hand, gameMap[id].player2Hand.length, gameMap[id].trump, gameMap[id].inPlay, gameMap[id].player1Turn, player1Stats, player2Stats];
-    let player2info = [gameMap[id].player2Hand, gameMap[id].player1Hand.length, gameMap[id].trump, gameMap[id].inPlay, gameMap[id].player2Turn, player2Stats, player1Stats];
-    io.sockets.connected[gameMap[id].player1Id].emit('picker', player1info);
-    io.sockets.connected[gameMap[id].player2Id].emit('picker', player2info);
+    let player1info = [gameMap.get(id).player1Hand, gameMap.get(id).player2Hand.length, gameMap.get(id).trump, gameMap.get(id).inPlay, gameMap.get(id).player1Turn, player1Stats, player2Stats];
+    let player2info = [gameMap.get(id).player2Hand, gameMap.get(id).player1Hand.length, gameMap.get(id).trump, gameMap.get(id).inPlay, gameMap.get(id).player2Turn, player2Stats, player1Stats];
+    io.sockets.connected[gameMap.get(id).player1Id].emit('picker', player1info);
+    io.sockets.connected[gameMap.get(id).player2Id].emit('picker', player2info);
 }
 
 
