@@ -39,7 +39,7 @@ let emptyGame = {
     inPlay: null,
     player1Picked: null,
     player2Picked: null,
-    plusMinus: null,
+    plusMinus: 1,
     player1TricksWon: null,
     player2TricksWon: null,
     aceValue: 1
@@ -86,12 +86,116 @@ io.on('connection', function(socket){
         updateLobby();
         gameId++;
         gameMap.set(gameId, game);
-        //userMap[users[0]].gameId = gameId;
-        //userMap[users[1]].gameId = gameId;
+        userMap.get(users[0]).gameId = gameId;
+        userMap.get(users[1]).gameId = gameId;
         io.sockets.connected[users[0]].emit('newGame');
         io.sockets.connected[users[1]].emit('newGame');
 
         deal(gameId);
+    });
+
+    socket.on('pick', function(pick){
+        gameId = userMap.get(socket.id).gameId;
+
+        if (gameMap.get(gameId).player1Id === socket.id) {
+            gameMap.get(gameId).player1Goal = pick;
+            gameMap.get(gameId).player1Turn = false;
+            gameMap.get(gameId).player2Turn = true;
+            gameMap.get(gameId).player1Picked = true;
+            //io.sockets.emit('log', `${player1name} guesses ${pick} tricks`);
+        }
+        if (gameMap.get(gameId).player2Id === socket.id) {
+            gameMap.get(gameId).player2Goal = pick;
+            gameMap.get(gameId).player2Turn = false;
+            gameMap.get(gameId).player1Turn = true;
+            gameMap.get(gameId).player2Picked= true;
+            //io.sockets.emit('log', `${player2name} guesses ${pick} tricks`);
+        }
+
+        if (gameMap.get(gameId).player1Picked&&gameMap.get(gameId).player2Picked){
+            sendInfo(gameId);
+        } else sendPick(gameId);
+
+    });
+
+    socket.on('play_card', function (i) {
+        gameId = userMap.get(socket.id).gameId;
+
+        if (gameMap.get(gameId).inPlay[1] === 20) {
+            if (gameMap.get(gameId).player1Id === socket.id) {
+                if (gameMap.get(gameId).player1Hand[i][0] === 1) {
+                    let holderSuit = gameMap.get(gameId).player1Hand[i][1];
+                    gameMap.get(gameId).player1Hand[i] = card(gameMap.get(gameId).aceValue, holderSuit);
+                }
+                gameMap.get(gameId).inPlay = gameMap.get(gameId).player1Hand[i];
+                //io.sockets.emit('log', `${player1name} plays ${player1Hand[i][0]} of ${player1Hand[i][1]}`);
+                gameMap.get(gameId).player1Hand.splice(i, 1);
+                gameMap.get(gameId).player1Turn = false;
+                gameMap.get(gameId).player2Turn = true;
+            }
+            if (gameMap.get(gameId).player2Id === socket.id) {
+                if (gameMap.get(gameId).player2Hand[i][0] === 1) {
+                    let holderSuit = gameMap.get(gameId).player2Hand[i][1];
+                    gameMap.get(gameId).player2Hand[i] = card(gameMap.get(gameId).aceValue, holderSuit);
+                }
+                gameMap.get(gameId).inPlay = gameMap.get(gameId).player2Hand[i];
+                //io.sockets.emit('log', `${player2name} plays ${player2Hand[i][0]} of ${player2Hand[i][1]}`);
+                gameMap.get(gameId).player2Hand.splice(i, 1);
+                gameMap.get(gameId).player2Turn = false;
+                gameMap.get(gameId).player1Turn = true;
+            }
+            sendInfo(gameId);
+        } else {
+            if (gameMap.get(gameId).player1Id === socket.id) {
+                if (gameMap.get(gameId).player1Hand[i][0] === 1) {
+                    let holderSuit = gameMap.get(gameId).player1Hand[i][1];
+                    gameMap.get(gameId).player1Hand[i] = card(gameMap.get(gameId).aceValue, holderSuit);
+                }
+                //io.sockets.emit('log', `${player1name} plays ${player1Hand[i][0]} of ${player1Hand[i][1]}`);
+                if (isTrick([gameMap.get(gameId).player1Hand[i], gameId])){
+                    gameMap.get(gameId).player1Tricks++;
+                    //io.sockets.emit('log', `${player1name} got the trick`);
+                    gameMap.get(gameId).player2Turn = false;
+                    gameMap.get(gameId).player1Turn = true;
+                    gameMap.get(gameId).player1TricksWon.push(gameMap.get(gameId).inPlay);
+                    gameMap.get(gameId).player1TricksWon.push(gameMap.get(gameId).player1Hand[i]);
+                } else {
+                    gameMap.get(gameId).player2Tricks++;
+                    //io.sockets.emit('log', `${player2name} got the trick`);
+                    gameMap.get(gameId).player1Turn = false;
+                    gameMap.get(gameId).player2Turn = true;
+                    gameMap.get(gameId).player2TricksWon.push(gameMap.get(gameId).inPlay);
+                    gameMap.get(gameId).player2TricksWon.push(gameMap.get(gameId).player1Hand[i]);
+                }
+                gameMap.get(gameId).player1Hand.splice(i, 1);
+            }
+            if (gameMap.get(gameId).player2Id === socket.id) {
+                if (gameMap.get(gameId).player2Hand[i][0] === 1) {
+                    let holderSuit = gameMap.get(gameId).player2Hand[i][1];
+                    gameMap.get(gameId).player2Hand[i] = card(gameMap.get(gameId).aceValue, holderSuit);
+                }
+                //io.sockets.emit('log', `${player2name} plays ${player2Hand[i][0]} of ${player2Hand[i][1]}`);
+                if (isTrick([gameMap.get(gameId).player2Hand[i], gameId])){
+                    gameMap.get(gameId).player2Tricks++;
+                    //io.sockets.emit('log', `${player2name} got the trick`);
+                    gameMap.get(gameId).player1Turn = false;
+                    gameMap.get(gameId).player2Turn = true;
+                    gameMap.get(gameId).player2TricksWon.push(gameMap.get(gameId).inPlay);
+                    gameMap.get(gameId).player2TricksWon.push(gameMap.get(gameId).player2Hand[i]);
+                } else {
+                    gameMap.get(gameId).player1Tricks++;
+                    //io.sockets.emit('log', `${player1name} got the trick`);
+                    gameMap.get(gameId).player2Turn = false;
+                    gameMap.get(gameId).player1Turn = true;
+                    gameMap.get(gameId).player1TricksWon.push(gameMap.get(gameId).inPlay);
+                    gameMap.get(gameId).player1TricksWon.push(gameMap.get(gameId).player2Hand[i]);
+                }
+                gameMap.get(gameId).player2Hand.splice(i, 1);
+            }
+            gameMap.get(gameId).inPlay = card(20,20);
+            sendInfo(gameId);
+        }
+
     });
 
 });
@@ -186,8 +290,52 @@ function sendPick(id){
     io.sockets.connected[gameMap.get(id).player2Id].emit('picker', player2info);
 }
 
+function sendInfo(id){
+    if(gameMap.get(id).player1Hand.length === 0 && gameMap.get(id).player2Hand.length === 0){
+        if (gameMap.get(id).round === 10) gameMap.get(id).plusMinus = -1;
+        endRound(id);
+        deal(id);
+    } else {
+        let player1Stats = [gameMap.get(id).player1Score, gameMap.get(id).player1Goal, gameMap.get(id).player1Tricks];
+        let player2Stats = [gameMap.get(id).player2Score, gameMap.get(id).player2Goal, gameMap.get(id).player2Tricks];
+        // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
+        let player1info = [gameMap.get(id).player1Hand, gameMap.get(id).player2Hand.length, gameMap.get(id).trump, gameMap.get(id).inPlay, gameMap.get(id).player1Turn, player1Stats, player2Stats];
+        let player2info = [gameMap.get(id).player2Hand, gameMap.get(id).player1Hand.length, gameMap.get(id).trump, gameMap.get(id).inPlay, gameMap.get(id).player2Turn, player2Stats, player1Stats];
+        io.sockets.connected[gameMap.get(id).player1Id].emit('info', player1info);
+        io.sockets.connected[gameMap.get(id).player2Id].emit('info', player2info);
+    }
+}
 
+const isTrick = playCard => {
 
+    if (!playCard[0][1] === 'joker' && gameMap.get(playCard[1]).inPlay[1] === 'joker') {
+        if (playCard[0][1] === 'joker' || gameMap.get(playCard[1]).inPlay[1] === 'joker') return (playCard[0][0] > gameMap.get(playCard[1]).inPlay[0]); //one is joker, return (played>inPlay)
+    }
+    if (playCard[0][1] === gameMap.get(playCard[1]).trump[1] && gameMap.get(playCard[1]).inPlay[1] !== gameMap.get(playCard[1]).trump[1])  return true; //if trump is played on to non-trump, return true
+    if (playCard[0][1] === 'joker' && gameMap.get(playCard[1]).inPlay[1] === 'joker') return false; //both are joker, return false
+    if (playCard[0][1] === gameMap.get(playCard[1]).inPlay[1]) return (playCard[0][0] > gameMap.get(playCard[1]).inPlay[0]); // if same suits, return (played>inPlay)
+    return false;
+};
+
+function jokerCount(hand) {
+    let count = 0;
+    for (let i = 0; i < hand.length; i++){
+        if (hand[i][1] === 'joker') count++;
+    }
+    return count;
+}
+
+function endRound(id){
+    if (gameMap.get(id).player1Tricks === gameMap.get(id).player1Goal) {
+        gameMap.get(id).player1Score += gameMap.get(id).round + gameMap.get(id).player1Tricks + jokerCount(gameMap.get(id).player1TricksWon*5);
+        //io.sockets.emit('log', `${player1name} scored ${round + player1Tricks + jokerCount(player1TricksWon)*5}`);
+    }
+    if (gameMap.get(id).player2Tricks === gameMap.get(id).player2Goal) {
+        gameMap.get(id).player2Score += gameMap.get(id).round + gameMap.get(id).player2Tricks + jokerCount(gameMap.get(id).player2TricksWon)*5;
+        //io.sockets.emit('log', `${player2name} scored ${round + player2Tricks + jokerCount(player2TricksWon)*5}`);
+    }
+    gameMap.get(id).round += gameMap.get(id).plusMinus;
+}
 
 
 

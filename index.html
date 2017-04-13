@@ -212,6 +212,19 @@
     let audio = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
     let smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
 
+    const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+    const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
+    let acesButton = document.getElementById('aces_button');
+
+    acesButton.addEventListener('click', function () {
+        if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high', 0);
+        if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low', 0);
+    });
+
+    socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play()});
+    socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play()});
+
     socket.emit('setName', nam);
 
     socket.on('updateLobby', function(users){
@@ -301,12 +314,72 @@
         }
     });
 
-    const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
-    const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+    socket.on('info', function (info) {
+        trump = info[2];
+        inPlay = info[3];
 
+        let showHand = '';
+        for (let i = 0; i < info[0].length; i++){
+            showHand += cardImg(info[0][i])
+        }
 
+        let showOpponentHand = '';
+        for (let i = 0; i < info[1]; i++){
+            showOpponentHand += `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card_back.png" >`
+        }
 
+        document.getElementById('player_hand').innerHTML = showHand;
+        document.getElementById('opponent_hand').innerHTML = showOpponentHand;
+        document.getElementById('trump_box').innerHTML = otherImg(trump);
+        document.getElementById('play_area').innerHTML = otherImg(inPlay);
 
+        let turn = document.getElementById('turn_indicator');
+        if (info[4]) {
+            turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
+            audio.play();
+        } else { turn.innerHTML = ''; }
+
+       //document.getElementById("opponent").innerHTML = info[7];
+        //document.getElementById("player").innerHTML = name;
+        document.getElementById("opponent_score").innerHTML = `Score: ${info[6][0]}`;
+        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[6][1]}`;
+        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[6][2]}`;
+        document.getElementById("player_score").innerHTML = `Score: ${info[5][0]}`;
+        document.getElementById("player_goal").innerHTML = `Goal: ${info[5][1]}`;
+        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[5][2]}`;
+
+        if (info[4]){
+            for (let i = 0; i < info[0].length; i++){
+                document.getElementById(info[0][i][1] + info[0][i][0]).addEventListener('click', () => {
+                    if (isLegal(info[0], i)){
+                        socket.emit('play_card', i);
+                    }
+                });
+            }
+        }
+    });
+
+    const isLegal = (hand, i) => {
+        if (inPlay[1] === 20) return true;
+        if (inPlay[1] === hand[i][1]) return true;
+        else {
+            let haveCards = haveCard(hand);
+            if (!haveCards[0] && !haveCards[1]) return true;
+            if (!haveCards[0] && hand[i][1] === 'joker') return true;
+            if (inPlay[1] === 'joker' && !haveCards[1]) return true;
+        }
+        return false
+    };
+
+    const haveCard = hand => {
+        let jokers = false;
+        let suits = false;
+        for (let i = 0; i<hand.length; i++){
+            if (hand[i][1] === inPlay[1]) suits = true;
+            if (hand[i][1] === 'joker') jokers = true;
+        }
+        return [suits, jokers];
+    };
 
 </script>
 </body>
