@@ -3,6 +3,18 @@
 <head>
     <title>ohHellTestTime</title>
     <script>let nam = prompt('name', 'your name here');</script>
+    <script>    /* ---CONSTANTS--- */
+        const HAND = 0;
+        const OPPONENT_HAND_SIZE = 1;
+        const TRUMP = 2;
+        const IN_PLAY = 3;
+        const Q_TURN_Q = 4;
+        const PLAYER_STATS = 5;
+        const OPPONENT_STATS = 6;
+        const SCORE = 0;
+        const GOAL = 1;
+        const TRICKS = 2;
+    </script>
     <style>
         html {
             background: #b03f48;
@@ -257,7 +269,7 @@
 
     socket.on('receiveMessage', function (msg) {
         let body = document.getElementById('messages');
-        body.innerHTML += msg;
+        body.innerHTML = `<p>${msg}</p>` + body.innerHTML;
     });
 
     socket.on('newGame', function (id) {
@@ -298,12 +310,12 @@
             audio.play();
         } else { turn.innerHTML = ''; }
 
-        document.getElementById("opponent_score").innerHTML = `Score: ${info[6][0]}`;
-        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[6][1]}`;
-        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[6][2]}`;
-        document.getElementById("player_score").innerHTML = `Score: ${info[5][0]}`;
-        document.getElementById("player_goal").innerHTML = `Goal: ${info[5][1]}`;
-        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[5][2]}`;
+        document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
+        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
+        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
+        document.getElementById("player_score").innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
+        document.getElementById("player_goal").innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
+        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
 
         if (info[4]){
             for (let i = 0; i < info[1]+1; i++){
@@ -341,12 +353,12 @@
 
        //document.getElementById("opponent").innerHTML = info[7];
         //document.getElementById("player").innerHTML = name;
-        document.getElementById("opponent_score").innerHTML = `Score: ${info[6][0]}`;
-        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[6][1]}`;
-        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[6][2]}`;
-        document.getElementById("player_score").innerHTML = `Score: ${info[5][0]}`;
-        document.getElementById("player_goal").innerHTML = `Goal: ${info[5][1]}`;
-        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[5][2]}`;
+        document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
+        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
+        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
+        document.getElementById("player_score").innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
+        document.getElementById("player_goal").innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
+        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
 
         if (info[4]){
             for (let i = 0; i < info[0].length; i++){

@@ -14,9 +14,8 @@ http.listen(port, function(){
     console.log('listening on *:' + port);
 });
 
-let gameId = 0;
-const userMap = new Map();
-const gameMap = new Map();
+let userMap = new Map();
+let gameMap = new Map();
 let idArray = [];
 let nameArray = [];
 
@@ -59,10 +58,11 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function () {
-        if (idArray.indexOf(socket.id)>-1){
-            removeUser(socket.id)
+        if (idArray.indexOf(connectedUserId)>-1){
+            removeFromLobby(connectedUserId);
             updateLobby();
         }
+        io.sockets.emit('receiveMessage', userMap.get(socket.id).name + ' has left the server');
         userMap.delete(socket.id);
     });
 
@@ -79,23 +79,22 @@ io.on('connection', function(socket){
         console.log(userMap.get(users[0]).name + ' and ' + userMap.get(users[1]).name + ' want to play a game.');
 
         let game = emptyGame;
+        let gameId = Math.random().toString(36).substr(2, 5);
         game.player1Id = users[0];
         game.player2Id = users[1];
-        removeUser(users[0]);
-        removeUser(users[1]);
+        removeFromLobby(users[0]);
+        removeFromLobby(users[1]);
         updateLobby();
-        gameId++;
         gameMap.set(gameId, game);
         userMap.get(users[0]).gameId = gameId;
         userMap.get(users[1]).gameId = gameId;
         io.sockets.connected[users[0]].emit('newGame');
         io.sockets.connected[users[1]].emit('newGame');
-
         deal(gameId);
     });
 
     socket.on('pick', function(pick){
-        gameId = userMap.get(socket.id).gameId;
+        let gameId = userMap.get(socket.id).gameId;
 
         if (gameMap.get(gameId).player1Id === socket.id) {
             gameMap.get(gameId).player1Goal = pick;
@@ -206,7 +205,7 @@ function updateLobby(){
     }
 }
 
-function removeUser(id){
+function removeFromLobby(id){
     let key = idArray.indexOf(id);
     idArray.splice(key, 1);
     nameArray.splice(key, 1);
@@ -238,8 +237,8 @@ function shuffle(a) {
     }
 }
 
-function deal(id) {
-
+const deal = id => {
+    console.log(`dealing for game: ${id} Players: ${userMap.get(gameMap.get(id).player1Id).name} & ${userMap.get(gameMap.get(id).player2Id).name}`);
     //io.sockets.emit('log', `<u>Starting new round</u>`);
 
     if (isEven(gameMap.get(id).round)){
@@ -274,13 +273,11 @@ function deal(id) {
     //io.sockets.emit('log', `Trump is ${trump[1]}`);
 
     sendPick(id);
-}
+};
 
-function isEven(n) {
-    return n % 2 == 0;
-}
+const isEven = n => n % 2 == 0;
 
-function sendPick(id){
+const sendPick = id => {
     let player1Stats = [gameMap.get(id).player1Score, gameMap.get(id).player1Goal, gameMap.get(id).player1Tricks];
     let player2Stats = [gameMap.get(id).player2Score, gameMap.get(id).player2Goal, gameMap.get(id).player2Tricks];
     // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
@@ -288,9 +285,9 @@ function sendPick(id){
     let player2info = [gameMap.get(id).player2Hand, gameMap.get(id).player1Hand.length, gameMap.get(id).trump, gameMap.get(id).inPlay, gameMap.get(id).player2Turn, player2Stats, player1Stats];
     io.sockets.connected[gameMap.get(id).player1Id].emit('picker', player1info);
     io.sockets.connected[gameMap.get(id).player2Id].emit('picker', player2info);
-}
+};
 
-function sendInfo(id){
+const sendInfo = id => {
     if(gameMap.get(id).player1Hand.length === 0 && gameMap.get(id).player2Hand.length === 0){
         if (gameMap.get(id).round === 10) gameMap.get(id).plusMinus = -1;
         endRound(id);
@@ -304,28 +301,33 @@ function sendInfo(id){
         io.sockets.connected[gameMap.get(id).player1Id].emit('info', player1info);
         io.sockets.connected[gameMap.get(id).player2Id].emit('info', player2info);
     }
-}
+};
 
-const isTrick = playCard => {
+const isTrick = data => {
 
-    if (!playCard[0][1] === 'joker' && gameMap.get(playCard[1]).inPlay[1] === 'joker') {
-        if (playCard[0][1] === 'joker' || gameMap.get(playCard[1]).inPlay[1] === 'joker') return (playCard[0][0] > gameMap.get(playCard[1]).inPlay[0]); //one is joker, return (played>inPlay)
+    const CARD = 0;
+    const GAME_ID = 1;
+    const SUIT = 1;
+    const VALUE = 0;
+    
+    if (!(data[CARD][SUIT] === 'joker' && gameMap.get(data[GAME_ID]).inPlay[SUIT] === 'joker')) {
+        if (data[CARD][SUIT] === 'joker' || gameMap.get(data[GAME_ID]).inPlay[SUIT] === 'joker') return (data[CARD][0] > gameMap.get(data[GAME_ID]).inPlay[CARD]); //one is joker, return (played>inPlay)
     }
-    if (playCard[0][1] === gameMap.get(playCard[1]).trump[1] && gameMap.get(playCard[1]).inPlay[1] !== gameMap.get(playCard[1]).trump[1])  return true; //if trump is played on to non-trump, return true
-    if (playCard[0][1] === 'joker' && gameMap.get(playCard[1]).inPlay[1] === 'joker') return false; //both are joker, return false
-    if (playCard[0][1] === gameMap.get(playCard[1]).inPlay[1]) return (playCard[0][0] > gameMap.get(playCard[1]).inPlay[0]); // if same suits, return (played>inPlay)
+    if (data[CARD][SUIT] === gameMap.get(data[GAME_ID]).trump[SUIT] && gameMap.get(data[GAME_ID]).inPlay[SUIT] !== gameMap.get(data[GAME_ID]).trump[SUIT])  return true; //if trump is played on to non-trump, return true
+    if (data[CARD][SUIT] === 'joker' && gameMap.get(data[GAME_ID]).inPlay[SUIT] === 'joker') return false; //both are joker, return false
+    if (data[CARD][SUIT] === gameMap.get(data[GAME_ID]).inPlay[SUIT]) return (data[CARD][VALUE] > gameMap.get(data[GAME_ID]).inPlay[VALUE]); // if same suits, return (played>inPlay)
     return false;
 };
 
-function jokerCount(hand) {
+const jokerCount = hand => {
     let count = 0;
     for (let i = 0; i < hand.length; i++){
         if (hand[i][1] === 'joker') count++;
     }
     return count;
-}
+};
 
-function endRound(id){
+const endRound = id => {
     if (gameMap.get(id).player1Tricks === gameMap.get(id).player1Goal) {
         gameMap.get(id).player1Score += gameMap.get(id).round + gameMap.get(id).player1Tricks + jokerCount(gameMap.get(id).player1TricksWon*5);
         //io.sockets.emit('log', `${player1name} scored ${round + player1Tricks + jokerCount(player1TricksWon)*5}`);
@@ -335,7 +337,7 @@ function endRound(id){
         //io.sockets.emit('log', `${player2name} scored ${round + player2Tricks + jokerCount(player2TricksWon)*5}`);
     }
     gameMap.get(id).round += gameMap.get(id).plusMinus;
-}
+};
 
 
 
