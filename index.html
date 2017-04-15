@@ -71,18 +71,26 @@
 <body>
 <div id="back_drop" class="back_drop">
     <div id="float_left" class="float_left">
-        <h2 id="opponent_name">Opponent</h2>
-        <p id="opponent_score">---</p>
-        <p id="opponent_goal">---</p>
-        <p id="opponent_tricks">---</p>
-        <h2 id="player_name">You</h2>
-        <p id="player_score">---</p>
-        <p id="player_goal">---</p>
-        <p id="player_tricks">---</p>
+        <h2 id="opponent_name"></h2>
+        <p id="opponent_score"></p>
+        <p id="opponent_goal"></p>
+        <p id="opponent_tricks"></p>
+        <h2 id="player_name"></h2>
+        <p id="player_score"></p>
+        <p id="player_goal"></p>
+        <p id="player_tricks"></p>
         <p></p>
-        <button id="aces_button" class="aces_button">Aces low</button>
+        <div id="aces">
+            <!-- add when game starts:
+            <button id="aces_button" class="aces_button">Aces low</button>
+            -->
+        </div>
         <p></p>
-        <h2>Trump suit</h2>
+        <div id="trump_text">
+            <!-- add when game starts:
+            <h2>Trump suit</h2>
+            -->
+        </div>
         <p></p>
         <div id="trump_box" class="trump_box"></div>
     </div>
@@ -97,7 +105,7 @@
     </div>
     <div id="card_area" class="card_area">
 
-        <!-- this will replace #card_area when game starts
+        <!-- add when game starts:
         <div id="opponent_hand" class="opponent_hand"></div>
         <div id="play_area" class="play_area"></div>
         <div id="player_hand" class="player_hand"></div>
@@ -121,13 +129,6 @@
 
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
-
-    let acesButton = document.getElementById('aces_button');
-
-    acesButton.addEventListener('click', function () {
-        if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high');
-        if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low');
-    });
 
     socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play()});
     socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play()});
@@ -170,7 +171,13 @@
         body.innerHTML = `<p>${msg}</p>` + body.innerHTML;
     });
 
-    socket.on('newGame', function (id) {
+    socket.on('receive_log', function (msg) {
+        let body = document.getElementById('log');
+        body.innerHTML = `<p>${msg}</p>` + body.innerHTML;
+    });
+
+    socket.on('newGame', function(id) {
+        document.getElementById('trump_text').innerHTML = `<h2>Trump suit</h2>`;
         document.getElementById('card_area').innerHTML = `
 
             <div id="opponent_hand" class="opponent_hand"></div>
@@ -179,6 +186,13 @@
             <div id="turn_indicator" class="turn_indicator"></div>
 
         `;
+        document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
+        let acesButton = document.getElementById('aces_button');
+
+        acesButton.addEventListener('click', function () {
+            if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high');
+            if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low');
+        });
     });
 
     socket.on('picker', function(info) {
@@ -225,7 +239,7 @@
         }
     });
 
-    socket.on('info', function (info) {
+    socket.on('info', function(info) {
         trump = info[TRUMP];
         inPlay = info[IN_PLAY];
 
@@ -268,6 +282,11 @@
                 });
             }
         }
+    });
+
+    socket.on('setup_lobby', function() {
+        document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
+        document.getElementById('aces').innerHTML = '';
     });
 
     const isLegal = (hand, i) => {
