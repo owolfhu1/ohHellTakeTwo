@@ -126,12 +126,32 @@ io.on('connection', function(socket){
         let player = socket.id;
         let opponent = game[player].opponentId;
         
-        //if ace is played, change value to aceValue.
         if (game[player].hand[i][0] === 1) {
             let holderSuit = game[player].hand[i][1];
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
-        sendLog(gameId, `${game[player].name} plays ${game[player].hand[i][0]} of ${game[player].hand[i][1]}`);
+    
+        let value = game[player].hand[i][0];
+        
+        if (value === 1) value = 'low Ace';
+        else if (value === 2) value = 'Two';
+        else if (value === 3) value = 'Three';
+        else if (value === 4) value = 'Four';
+        else if (value === 5) value = 'Five';
+        else if (value === 6) value = 'Six';
+        else if (value === 7) value = 'Seven';
+        else if (value === 8) value = 'Eight';
+        else if (value === 9) value = 'Nine';
+        else if (value === 10) value = 'Ten';
+        else if (value === 13) value = 'Jack';
+        else if (value === 14) value = 'Queen';
+        else if (value === 15) value = 'King';
+        else if (value === 16) value = 'high Ace';
+        
+        if (value === 12 || value === 11){
+            sendLog(gameId, `${game[player].name} plays a Joker`);
+        } else sendLog(gameId, `${game[player].name} plays ${value} of ${game[player].hand[i][1]}`);
+        
         if (game.inPlay[1] === 20) {
             game.inPlay = game[player].hand[i];
             game[player].hand.splice(i, 1);
