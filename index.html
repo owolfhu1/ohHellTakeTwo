@@ -130,8 +130,7 @@
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
-    socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play()});
-    socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play()});
+
 
     socket.emit('setName', nam);
 
@@ -193,6 +192,8 @@
             if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high');
             if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low');
         });
+        socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play()});
+        socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play()});
     });
 
     socket.on('picker', function(info) {
