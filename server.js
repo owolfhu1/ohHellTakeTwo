@@ -104,16 +104,17 @@ io.on('connection', function(socket){
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        
+        if (game.round - game[opponent].goal !== pick) {
             game[player].goal = pick;
             game[player].turn = false;
             game[opponent].turn = true;
             game[player].picked = true;
             //io.sockets.emit('log', `${player1name} guesses ${pick} tricks`);
-        gameMap[gameId] = game;
-        if (game[player].picked && game[opponent].picked){
-            sendInfo(gameId);
-        } else sendPick(gameId);
+            gameMap[gameId] = game;
+            if (game[player].picked && game[opponent].picked) {
+                sendInfo(gameId);
+            } else sendPick(gameId);
+        }
     });
     
     socket.on('play_card', function (i) {
