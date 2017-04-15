@@ -18,6 +18,7 @@ const userMap = {};
 const gameMap = {};
 const idArray = [];
 const nameArray = [];
+const finishedGameArray = [];
 
 let emptyGame = function() {
     this.player1Id = null;
@@ -52,6 +53,7 @@ io.on('connection', function(socket){
         let user = userMap[userId];
         user.name = name;
         nameArray.push(user.name);
+        io.sockets.emit('receiveMessage', name + ' has joined the server');
         updateLobby();
     });
 
@@ -176,8 +178,9 @@ io.on('connection', function(socket){
 });
 
 function updateLobby(){
+    let board = makeBoard();
     for (let i = 0; i < idArray.length; i++){
-        io.sockets.connected[idArray[i]].emit('updateLobby', [nameArray, idArray]);
+        io.sockets.connected[idArray[i]].emit('updateLobby', [nameArray, idArray, board]);
     }
 }
 
@@ -359,11 +362,40 @@ const endGame = gameId => {
   idArray.push(player2);
   nameArray.push(game[player1].name);
   nameArray.push(game[player2].name);
+  finishedGameArray.push(gameId);
   updateLobby();
 };
 
-
-
+const makeBoard = () => {
+    let board = {};
+    for (let i = 0; i < finishedGameArray.length; i++){
+        let game = gameMap[finishedGameArray[i]];
+        let tie = false;
+        let player1win;
+        let player1 = game.player1Id;
+        let player2 = game.player2Id;
+        if (!(game[player1].name in board)) board[game[player1].name] = [];
+        if (!(game[player2].name in board)) board[game[player2].name] = [];
+        if (game[player1].score > game[player2].score) { player1win = true; }
+        if (game[player1].score < game[player2].score) { player1win = false; }
+        else {tie = true}
+    
+        if (!tie) {
+            if (player1win){
+                board[game[player1].name].push('win');
+                board[game[player2].name].push('lose');
+            } else {
+                board[game[player1].name].push('lose');
+                board[game[player2].name].push('win');
+            }
+        } else {
+            board[game[player1].name].push('tie');
+            board[game[player2].name].push('tie');
+        }
+    }
+    console.dir(board);
+    return board;
+};
 
 
 

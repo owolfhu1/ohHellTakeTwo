@@ -31,7 +31,7 @@
 
         .cards{ padding: 1px; width: 94px; height: 130px; }
 
-        .float_left { float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
+        .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
             padding: 10px; background: #529848; line-height: .7; }
 
         .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
@@ -71,6 +71,7 @@
 <body>
 <div id="back_drop" class="back_drop">
     <div id="float_left" class="float_left">
+        <!--
         <h2 id="opponent_name"></h2>
         <p id="opponent_score"></p>
         <p id="opponent_goal"></p>
@@ -80,19 +81,13 @@
         <p id="player_goal"></p>
         <p id="player_tricks"></p>
         <p></p>
-        <div id="aces">
-            <!-- add when game starts:
-            <button id="aces_button" class="aces_button">Aces low</button>
-            -->
-        </div>
+        <div id="aces"></div>
         <p></p>
         <div id="trump_text">
-            <!-- add when game starts:
-            <h2>Trump suit</h2>
-            -->
         </div>
         <p></p>
         <div id="trump_box" class="trump_box"></div>
+        -->
     </div>
     <div id="float_right" class="float_right">
         <div id="log" class="log"></div>
@@ -130,8 +125,6 @@
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
-
-
     socket.emit('setName', nam);
 
     socket.on('updateLobby', function(users){
@@ -150,6 +143,7 @@
                 socket.emit('pair', users[id][i]);
             });
         }
+        document.getElementById('float_left').innerHTML = printBoard(users[2]);
     });
 
     socket.on('rePair', function(pair){
@@ -176,7 +170,6 @@
     });
 
     socket.on('newGame', function(id) {
-        document.getElementById('trump_text').innerHTML = `<h2>Trump suit</h2>`;
         document.getElementById('card_area').innerHTML = `
 
             <div id="opponent_hand" class="opponent_hand"></div>
@@ -185,6 +178,23 @@
             <div id="turn_indicator" class="turn_indicator"></div>
 
         `;
+        document.getElementById('float_left').innerHTML = `
+            <h2 id="opponent_name"></h2>
+            <p id="opponent_score"></p>
+            <p id="opponent_goal"></p>
+            <p id="opponent_tricks"></p>
+            <h2 id="player_name"></h2>
+            <p id="player_score"></p>
+            <p id="player_goal"></p>
+            <p id="player_tricks"></p>
+            <p></p>
+            <div id="aces"></div>
+            <p></p>
+            <div id="trump_text"></div>
+            <p></p>
+            <div id="trump_box" class="trump_box"></div>
+        `;
+        document.getElementById('trump_text').innerHTML = `<h2>Trump suit</h2>`;
         document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
         let acesButton = document.getElementById('aces_button');
 
@@ -287,7 +297,7 @@
 
     socket.on('setup_lobby', function() {
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
-        document.getElementById('aces').innerHTML = '';
+        document.getElementById('float_left').innerHTML = '';
     });
 
     const isLegal = (hand, i) => {
@@ -312,6 +322,24 @@
         return [suits, jokers];
     };
 
+    const printBoard = board => {
+        let print = '';
+        for(let key in board){
+            let wins = 0;
+            let loses = 0;
+            let ties = 0;
+            for(let i = 0; i < board[key].length; i++){
+                if(board[key][i] === "win") wins++;
+                if(board[key][i] === "lose") loses++;
+                if(board[key][i] === "tie") ties++;
+            }
+            print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
+        }
+        return print;
+    };
+
 </script>
 </body>
 </html>
+
+
