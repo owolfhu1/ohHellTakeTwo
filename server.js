@@ -80,7 +80,8 @@ io.on('connection', function(socket){
         
         let game = new emptyGame();
         let gameId = Math.random().toString(36).substr(2, 5);
-        
+        userMap[userIds[0]].gameId = gameId;
+        userMap[userIds[1]].gameId = gameId;
         game[userIds[0]] = new blankPlayer();
         game[userIds[1]] = new blankPlayer();
         game.player1Id = userIds[0];
@@ -90,14 +91,11 @@ io.on('connection', function(socket){
         game[userIds[0]].name = userMap[userIds[0]].name;
         game[userIds[1]].name = userMap[userIds[1]].name;
         
-        
         gameMap[gameId] = game;
         
-        userMap[userIds[0]].gameId = gameId;
-        userMap[userIds[1]].gameId = gameId;
         io.sockets.connected[userIds[0]].emit('newGame');
         io.sockets.connected[userIds[1]].emit('newGame');
-        console.dir(gameMap);
+        
         deal(gameId);
     });
 

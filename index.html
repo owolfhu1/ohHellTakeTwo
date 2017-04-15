@@ -17,165 +17,54 @@
         const OPPONENT_NAME = 7;
     </script>
     <style>
-        html {
-            background: #b03f48;
-            color: #f0f0f0;
-            font-size: 1.2em;
-            line-height: 1;
-            font-family: "Comic Sans MS"
-        }
+        html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
 
-        .lobby{
-            margin-left: 600px;
-            height: 500px;
-            width: 250px;
-            background-color: #b03f48;
-            border:6px dotted #2e2e2e;
-            border-radius: 40px;
-        }
+        .lobby { margin-left: 600px; height: 500px; width: 250px; background-color: #b03f48; border:6px dotted #2e2e2e; border-radius: 40px; }
 
-        .chat_input {
-            color: white;
-        }
+        .chat_input { color: white; }
 
-        .turn_indicator {
-            padding: 20px;
-            text-align: center;
-        }
+        .turn_indicator { padding: 20px; text-align: center; }
 
-        .picker:hover {
-            transform: scale(1.05) rotate(1deg);
-        }
+        .picker:hover { transform: scale(1.05) rotate(1deg); }
 
-        .picker:active {
-            transform: scale(.94) rotate(-1deg);
-        }
+        .picker:active { transform: scale(.94) rotate(-1deg); }
 
-        .cards{
-            padding: 1px;
-            width: 94px;
-            height: 130px;
+        .cards{ padding: 1px; width: 94px; height: 130px; }
 
-        }
+        .float_left { float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
+            padding: 10px; background: #529848; line-height: .7; }
 
-        .float_left {
-            float:left;
-            width: 180px;
-            height: 650px;
-            text-align:center;
-            border:6px dotted #2e2e2e;
-            border-radius: 40px;
-            margin: 20px;
-            padding: 10px;
-            background: #529848;
-            line-height: .7;
-        }
+        .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
+            padding: 10px; background: #529848; }
 
-        .float_right {
-            float:right;
-            width: 300px;
-            height: 650px;
-            text-align:center;
-            border:6px dotted #2e2e2e;
-            border-radius: 40px;
-            margin: 20px;
-            padding: 10px;
-            background: #529848;
-        }
+        .play_area { text-align: center; height: 190px; }
 
-        .play_area {
-            text-align: center;
-            height: 190px;
-        }
+        .player_hand{ text-align:center; }
 
-        .player_hand{
-            text-align:center;
-        }
+        .opponent_hand { height: 135px; text-align:center; }
 
-        .opponent_hand {
-            height: 135px;
-            text-align:center;
-        }
+        .text_class{ text-align:center; }
 
-        .text_class{
-            text-align:center;
-        }
+        .back_drop { height: 720px; width: 1620px; margin: 30px; border:6px dotted #b03f48; border-radius: 70px; background: #2e2e2e; }
 
-        .back_drop {
-            height: 720px;
-            width: 1620px;
-            margin: 30px;
-            border:6px dotted #b03f48;
-            border-radius: 70px;
-            background: #2e2e2e;
-        }
-        .card_area {
-            height: 440px;
-            padding: 115px 0;
-            text-align: center;
-        }
+        .card_area { height: 440px; padding: 115px 0; text-align: center; }
 
-        .aces_button {
-            background-color: #2e2e2e;
-            border: 6px dotted #529848;
-            border-radius: 20px;
-            color: white;
-            margin-top: 10px;
-            padding: 20px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 20px;
-            font-family: "Comic Sans MS";
-            line-height: 1px;
-        }
+        .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px;
+            text-align: center; text-decoration: none; display: inline-block; font-size: 20px; font-family: "Comic Sans MS"; line-height: 1px; }
 
-        .log {
-            overflow-y: scroll;
-            overflow-wrap: normal;
-            height: 250px;
-            width: 280px;
-            border: 6px dotted #529848;
-            background: #2e2e2e;
-            border-radius: 20px;
-            font-size: 12px;
-            text-align: left;
-            padding-left: 10px;
-        }
+        .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
+            border-radius: 20px; font-size: 12px; text-align: left; padding-left: 10px; }
 
-        .chat{
-            overflow-y: scroll;
-            overflow-wrap: normal;
-            height: 300px;
-            width: 280px;
-            border: 6px dotted #529848;
-            background: #2e2e2e;
-            border-radius: 20px;
-            font-size: 12px;
-            text-align: left;
-            padding: 1px;
-        }
+        .chat{ overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
+            border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
 
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
+        ::-webkit-scrollbar { width: 12px; }
 
-        ::-webkit-scrollbar-track {
-            display: none;
-        }
+        ::-webkit-scrollbar-track { display: none; }
 
-        ::-webkit-scrollbar-thumb {
-            width: 12px;
-            background-color: #529848;
-            border-radius: 7px;
-        }
+        ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
 
-        .chat_input{
-            background-color: #2e2e2e;
-            width: 280px;
-            border: 6px dotted #529848;
-            border-radius: 20px;
-        }
+        .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
 
     </style>
 </head>
