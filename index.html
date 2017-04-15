@@ -162,12 +162,14 @@
     socket.on('receiveMessage', function (msg) {
         let body = document.getElementById('messages');
         smallSound.play();
-        body.innerHTML = `<p>${msg}</p>` + body.innerHTML;
+        body.innerHTML += `<p>${msg}</p>`;
+        body.scrollTop = body.scrollHeight;
     });
 
     socket.on('receive_log', function (msg) {
         let body = document.getElementById('log');
-        body.innerHTML = `<p>${msg}</p>` + body.innerHTML;
+        body.innerHTML += `<p>${msg}</p>`;
+        body.scrollTop = body.scrollHeight;
     });
 
     socket.on('newGame', function(id) {
