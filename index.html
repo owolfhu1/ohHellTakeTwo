@@ -14,6 +14,7 @@
         const SCORE = 0;
         const GOAL = 1;
         const TRICKS = 2;
+        const OPPONENT_NAME = 7;
     </script>
     <style>
         html {
@@ -22,6 +23,15 @@
             font-size: 1.2em;
             line-height: 1;
             font-family: "Comic Sans MS"
+        }
+
+        .lobby{
+            margin-left: 600px;
+            height: 500px;
+            width: 250px;
+            background-color: #b03f48;
+            border:6px dotted #2e2e2e;
+            border-radius: 40px;
         }
 
         .chat_input {
@@ -172,11 +182,11 @@
 <body>
 <div id="back_drop" class="back_drop">
     <div id="float_left" class="float_left">
-        <h2>Opponent</h2>
+        <h2 id="opponent_name">Opponent</h2>
         <p id="opponent_score">---</p>
         <p id="opponent_goal">---</p>
         <p id="opponent_tricks">---</p>
-        <h2>Player</h2>
+        <h2 id="player_name">You</h2>
         <p id="player_score">---</p>
         <p id="player_goal">---</p>
         <p id="player_tricks">---</p>
@@ -205,7 +215,7 @@
         <div id="turn_indicator" class="turn_indicator"></div>
         -->
 
-        <div id="lobby" style="margin-left: 600px; height: 500px; width: 250px; background-color: #b03f48"></div>
+        <div class="lobby" id="lobby"></div>
 
 
     </div>
@@ -213,10 +223,6 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
-
-    /*   !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&
-      !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&
-   !@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&!@#$%&  */
 
     let socket = io();
     let trump;
@@ -230,8 +236,8 @@
     let acesButton = document.getElementById('aces_button');
 
     acesButton.addEventListener('click', function () {
-        if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high', 0);
-        if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low', 0);
+        if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high');
+        if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low');
     });
 
     socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play()});
@@ -284,17 +290,16 @@
     });
 
     socket.on('picker', function(info) {
-        trump = info[2];
-        inPlay = info[3];
+        trump = info[TRUMP];
+        inPlay = info[IN_PLAY];
 
         let showHand = '';
-        for (let i = 0; i < info[0].length; i++){
-            showHand += cardImg(info[0][i])
+        for (let i = 0; i < info[HAND].length; i++){
+            showHand += cardImg(info[HAND][i])
         }
         let showPicker = '';
         if (info[4]) {
-            for (let i = 0; i < info[1]+1; i++) {
-                if (info[1] - i === info[6][2]) {}
+            for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
                 showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
 
             }
@@ -310,6 +315,8 @@
             audio.play();
         } else { turn.innerHTML = ''; }
 
+        document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
+        document.getElementById("player_name").innerHTML = nam;
         document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
         document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
         document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
@@ -327,16 +334,16 @@
     });
 
     socket.on('info', function (info) {
-        trump = info[2];
-        inPlay = info[3];
+        trump = info[TRUMP];
+        inPlay = info[IN_PLAY];
 
         let showHand = '';
-        for (let i = 0; i < info[0].length; i++){
-            showHand += cardImg(info[0][i])
+        for (let i = 0; i < info[HAND].length; i++){
+            showHand += cardImg(info[HAND][i])
         }
 
         let showOpponentHand = '';
-        for (let i = 0; i < info[1]; i++){
+        for (let i = 0; i < info[OPPONENT_HAND_SIZE]; i++){
             showOpponentHand += `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card_back.png" >`
         }
 
@@ -351,8 +358,8 @@
             audio.play();
         } else { turn.innerHTML = ''; }
 
-       //document.getElementById("opponent").innerHTML = info[7];
-        //document.getElementById("player").innerHTML = name;
+        document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
+        document.getElementById("player_name").innerHTML = nam;
         document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
         document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
         document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
