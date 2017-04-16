@@ -112,7 +112,6 @@ io.on('connection', socket => {
             game[player].turn = false;
             game[opponent].turn = true;
             game[player].picked = true;
-            //io.sockets.emit('log', `${player1name} guesses ${pick} tricks`);
             gameMap[gameId] = game;
             if (game[player].picked && game[opponent].picked) {
                 sendInfo(gameId);
@@ -133,20 +132,20 @@ io.on('connection', socket => {
     
         let value = game[player].hand[i][0];
         
-        if (value === 1) value = 'low Ace';
-        else if (value === 2) value = 'Two';
-        else if (value === 3) value = 'Three';
-        else if (value === 4) value = 'Four';
-        else if (value === 5) value = 'Five';
-        else if (value === 6) value = 'Six';
-        else if (value === 7) value = 'Seven';
-        else if (value === 8) value = 'Eight';
-        else if (value === 9) value = 'Nine';
-        else if (value === 10) value = 'Ten';
-        else if (value === 13) value = 'Jack';
-        else if (value === 14) value = 'Queen';
-        else if (value === 15) value = 'King';
-        else if (value === 16) value = 'high Ace';
+             if (value ===  1 ) value = 'low Ace';
+        else if (value ===  2 ) value = 'Two';
+        else if (value ===  3 ) value = 'Three';
+        else if (value ===  4 ) value = 'Four';
+        else if (value ===  5 ) value = 'Five';
+        else if (value ===  6 ) value = 'Six';
+        else if (value ===  7 ) value = 'Seven';
+        else if (value ===  8 ) value = 'Eight';
+        else if (value ===  9 ) value = 'Nine';
+        else if (value === 10 ) value = 'Ten';
+        else if (value === 13 ) value = 'Jack';
+        else if (value === 14 ) value = 'Queen';
+        else if (value === 15 ) value = 'King';
+        else if (value === 16 ) value = 'high Ace';
         
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
@@ -316,13 +315,16 @@ const isTrick = data => {
     const VALUE = 0;
     
     let game = gameMap[data[GAME_ID]];
-    
+    //one card is joker, return (played>inPlay)
     if (!(data[CARD][SUIT] === 'joker' && game.inPlay[SUIT] === 'joker')) {
-        if (data[CARD][SUIT] === 'joker' || game.inPlay[SUIT] === 'joker') return (data[CARD][0] > game.inPlay[CARD]); //one is joker, return (played>inPlay)
+        if (data[CARD][SUIT] === 'joker' || game.inPlay[SUIT] === 'joker') return (data[CARD][0] > game.inPlay[CARD]);
     }
-    if (data[CARD][SUIT] === game.trump[SUIT] && game.inPlay[SUIT] !== game.trump[SUIT])  return true; //if trump is played on to non-trump, return true
-    if (data[CARD][SUIT] === 'joker' && game.inPlay[SUIT] === 'joker') return false; //both are joker, return false
-    if (data[CARD][SUIT] === game.inPlay[SUIT]) return (data[CARD][VALUE] > game.inPlay[VALUE]); // if same suits, return (played>inPlay)
+    //if trump is played on to non-trump, return true
+    if (data[CARD][SUIT] === game.trump[SUIT] && game.inPlay[SUIT] !== game.trump[SUIT])  return true;
+    //both are joker, return false
+    if (data[CARD][SUIT] === 'joker' && game.inPlay[SUIT] === 'joker') return false;
+    // if same suits, return (played>inPlay)
+    if (data[CARD][SUIT] === game.inPlay[SUIT]) return (data[CARD][VALUE] > game.inPlay[VALUE]);
     return false;
 };
 
