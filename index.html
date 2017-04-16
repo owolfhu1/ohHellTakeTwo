@@ -30,9 +30,15 @@
 
         .picker:hover { transform: scale(1.05) rotate(1deg); }
 
+        .legal:hover { transform: scale(1.05) rotate(1deg); }
+
         .picker:active { transform: scale(.94) rotate(-1deg); }
 
+        .legal:active { transform: scale(.94) rotate(-1deg); }
+
         .cards{ padding: 1px; width: 94px; height: 130px; }
+
+        .legal{ padding: 1px; width: 94px; height: 130px; }
 
         .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
             padding: 10px; background: #529848; line-height: .7; }
@@ -123,10 +129,59 @@
     let trump;
     let inPlay;
 
+    const isLegal = (hand, i) => {
+        if (inPlay[1] === 20) return true;
+        if (inPlay[1] === hand[i][1]) return true;
+        else {
+            let haveCards = haveCard(hand);
+            if (!haveCards[0] && !haveCards[1]) return true;
+            if (!haveCards[0] && hand[i][1] === 'joker') return true;
+            if (inPlay[1] === 'joker' && !haveCards[1]) return true;
+        }
+        return false
+    };
+
+    const haveCard = hand => {
+        let jokers = false;
+        let suits = false;
+        for (let i = 0; i<hand.length; i++){
+            if (hand[i][1] === inPlay[1]) suits = true;
+            if (hand[i][1] === 'joker') jokers = true;
+        }
+        return [suits, jokers];
+    };
+
+    const printBoard = board => {
+        let print = '';
+        for(let key in board){
+            let wins = 0;
+            let loses = 0;
+            let ties = 0;
+            for(let i = 0; i < board[key].length; i++){
+                if(board[key][i] === "win") wins++;
+                if(board[key][i] === "lose") loses++;
+                if(board[key][i] === "tie") ties++;
+            }
+            print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
+        }
+        return print;
+    };
+
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
+    const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
+    $('form').submit( () => {
+        socket.emit('message', '<p>' + nam + ': ' + $('#text').val()) + '</p>';
+        $('#text').val('');
+        return false;
+    });
+
     socket.emit('setName', nam);
+
+    socket.on('shuffle', () => shuffleSound.play());
 
     socket.on('updateLobby', users => {
         let name = 0;
@@ -152,12 +207,6 @@
         if (pair[1] === pair[0]) {
             alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
         } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
-    });
-
-    $('form').submit( () => {
-        socket.emit('message', '<p>' + nam + ': ' + $('#text').val()) + '</p>';
-       $('#text').val('');
-        return false;
     });
 
     socket.on('receiveMessage', msg => {
@@ -261,7 +310,8 @@
 
         let showHand = '';
         for (let i = 0; i < info[HAND].length; i++){
-            showHand += cardImg(info[HAND][i])
+
+            if (isLegal(info[HAND], i) && info[TURN]) showHand += legalCardImg(info[HAND][i]); else showHand += cardImg(info[HAND][i]);
         }
 
         let showOpponentHand = '';
@@ -304,46 +354,6 @@
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
         document.getElementById('float_left').innerHTML = '';
     });
-
-    socket.on('shuffle', () => shuffleSound.play());
-
-    const isLegal = (hand, i) => {
-        if (inPlay[1] === 20) return true;
-        if (inPlay[1] === hand[i][1]) return true;
-        else {
-            let haveCards = haveCard(hand);
-            if (!haveCards[0] && !haveCards[1]) return true;
-            if (!haveCards[0] && hand[i][1] === 'joker') return true;
-            if (inPlay[1] === 'joker' && !haveCards[1]) return true;
-        }
-        return false
-    };
-
-    const haveCard = hand => {
-        let jokers = false;
-        let suits = false;
-        for (let i = 0; i<hand.length; i++){
-            if (hand[i][1] === inPlay[1]) suits = true;
-            if (hand[i][1] === 'joker') jokers = true;
-        }
-        return [suits, jokers];
-    };
-
-    function printBoard (board) {
-        let print = '';
-        for(let key in board){
-            let wins = 0;
-            let loses = 0;
-            let ties = 0;
-            for(let i = 0; i < board[key].length; i++){
-                if(board[key][i] === "win") wins++;
-                if(board[key][i] === "lose") loses++;
-                if(board[key][i] === "tie") ties++;
-            }
-            print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
-        }
-        return print;
-    }
 
 </script>
 </body>
