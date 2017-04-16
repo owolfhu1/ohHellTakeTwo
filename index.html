@@ -329,7 +329,7 @@
         return [suits, jokers];
     };
 
-    const printBoard = board => {
+    function printBoard (board) {
         let print = '';
         for(let key in board){
             let wins = 0;
@@ -343,7 +343,7 @@
             print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
         }
         return print;
-    };
+    }
 
 </script>
 </body>
