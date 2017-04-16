@@ -23,11 +23,11 @@ const finishedGameArray = [];
 let emptyGame = function() {
     this.player1Id = null;
     this.player2Id = null;
-    this.round = 1;
+    this.round = 3;
     this.gameDeck = null;
     this.trump = null;
     this.inPlay = null;
-    this.plusMinus = 1;
+    this.plusMinus = -1;
     this.aceValue = 1;
 };
 
@@ -383,17 +383,23 @@ const endGame = gameId => {
 };
 
 const makeBoard = () => {
+    /*logs*/console.log('finished game array::');
+    /*logs*/console.dir(finishedGameArray);
+    /*logs*/console.log('');
     let board = {};
     for (let i = 0; i < finishedGameArray.length; i++){
         let game = gameMap[finishedGameArray[i]];
+        /*logs*/game.gameDeck = 'Deck deleted for beautiful directory';
+        /*logs*/console.log(`game ${finishedGameArray[i]}:`);
+        /*logs*/console.dir(game);
         let tie = false;
         let player1win;
         let player1 = game.player1Id;
         let player2 = game.player2Id;
-        if (!(game[player1].name in board)) board[game[player1].name] = [];
-        if (!(game[player2].name in board)) board[game[player2].name] = [];
+        if (!(game[player1].name in board)) board[game[player1].name] = [];//
+        if (!(game[player2].name in board)) board[game[player2].name] = [];//
         if (game[player1].score > game[player2].score) { player1win = true; }
-        if (game[player1].score < game[player2].score) { player1win = false; }
+        else if (game[player1].score < game[player2].score) { player1win = false; }
         else {tie = true}
     
         if (!tie) {
@@ -409,7 +415,9 @@ const makeBoard = () => {
             board[game[player2].name].push('tie');
         }
     }
-    console.dir(board);
+    /*logs*/console.log('leaderboard to send to client:');
+    /*logs*/console.dir(board);
+    /*logs*/console.log('');
     return board;
 };
 
