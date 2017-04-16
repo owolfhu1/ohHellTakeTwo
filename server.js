@@ -6,11 +6,11 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
 
-app.get('/', function(req, res){
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-http.listen(port, function(){
+http.listen(port,() => {
     console.log('listening on *:' + port);
 });
 
@@ -43,13 +43,13 @@ let blankPlayer = function() {
     this.score = 0;
 };
 
-io.on('connection', function(socket){
+io.on('connection', socket => {
     let userId = socket.id;
     idArray.push(userId);
 
     userMap[socket.id] = {name: 'none', gameId: 'none' };
 
-    socket.on('setName', function(name) {
+    socket.on('setName', name => {
         let user = userMap[userId];
         user.name = name;
         nameArray.push(user.name);
@@ -57,7 +57,7 @@ io.on('connection', function(socket){
         updateLobby();
     });
 
-    socket.on('disconnect', function () {
+    socket.on('disconnect', () => {
         if (idArray.indexOf(userId)>-1){
             removeFromLobby(userId);
             updateLobby();
@@ -66,15 +66,15 @@ io.on('connection', function(socket){
         delete userMap[socket.id];
     });
 
-    socket.on('message', function (msg) {
+    socket.on('message', msg => {
         io.sockets.emit('receiveMessage', msg);
     });
 
-    socket.on('pair', function(user) {
+    socket.on('pair', user => {
         io.to(user).emit('rePair', [user, socket.id, userMap[user].name]);
     });
 
-    socket.on('finalPair', function (userIds){
+    socket.on('finalPair', userIds => {
         console.log(userMap[userIds[0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
         removeFromLobby(userIds[0]);
         removeFromLobby(userIds[1]);
@@ -101,7 +101,7 @@ io.on('connection', function(socket){
         deal(gameId);
     });
 
-    socket.on('pick', function(pick){
+    socket.on('pick', pick => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         let player = socket.id;
@@ -120,7 +120,7 @@ io.on('connection', function(socket){
         }
     });
     
-    socket.on('play_card', function (i) {
+    socket.on('play_card', i => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         let player = socket.id;
@@ -179,7 +179,7 @@ io.on('connection', function(socket){
         sendInfo(gameId);
     });
     
-    socket.on('aces_low', function(){
+    socket.on('aces_low', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 1;
@@ -187,7 +187,7 @@ io.on('connection', function(socket){
         io.sockets.connected[game.player2Id].emit('lowAce');
     });
     
-    socket.on('aces_high', function(){
+    socket.on('aces_high', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 16;
@@ -197,20 +197,20 @@ io.on('connection', function(socket){
 
 });
 
-function updateLobby(){
+const updateLobby = () => {
     let board = makeBoard();
     for (let i = 0; i < idArray.length; i++){
         io.sockets.connected[idArray[i]].emit('updateLobby', [nameArray, idArray, board]);
     }
-}
+};
 
-function removeFromLobby(id){
+const removeFromLobby = id => {
     let key = idArray.indexOf(id);
     idArray.splice(key, 1);
     nameArray.splice(key, 1);
-}
+};
 
-function deck() {
+const deck = () => {
     let deckReturn = [];
     const vAnds =[
         [1,2,3,4,5,6,7,8,9,10,13,14,15],
@@ -225,16 +225,16 @@ function deck() {
     deckReturn.push(card(12,'joker'));
     shuffle(deckReturn);
     return deckReturn;
-}
+};
 
-function card(value, suit) {return [value, suit];}
+const card = (value, suit) =>  [value, suit];
 
-function shuffle(a) {
+const shuffle = a => {
     for (let i = a.length; i; i--) {
         let j = Math.floor(Math.random() * i);
         [a[i - 1], a[j]] = [a[j], a[i - 1]];
     }
-}
+};
 
 const deal = gameId => {
     let game = gameMap[gameId];

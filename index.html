@@ -128,7 +128,7 @@
 
     socket.emit('setName', nam);
 
-    socket.on('updateLobby', function(users){
+    socket.on('updateLobby', users => {
         let name = 0;
         let id = 1;
         let body = '<ul>';
@@ -140,40 +140,40 @@
         document.getElementById('lobby').innerHTML = body;
 
         for(let i = 0; i< users[1].length; i++) {
-            document.getElementById(i.toString()).addEventListener('click', function () {
+            document.getElementById(i.toString()).addEventListener('click', () => {
                 socket.emit('pair', users[id][i]);
             });
         }
         document.getElementById('float_left').innerHTML = printBoard(users[2]);
     });
 
-    socket.on('rePair', function(pair){
+    socket.on('rePair', pair =>{
 
         if (pair[1] === pair[0]) {
             alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
         } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
     });
 
-    $('form').submit(function () {
+    $('form').submit( () => {
         socket.emit('message', '<p>' + nam + ': ' + $('#text').val()) + '</p>';
        $('#text').val('');
         return false;
     });
 
-    socket.on('receiveMessage', function (msg) {
+    socket.on('receiveMessage', msg => {
         let body = document.getElementById('messages');
         smallSound.play();
         body.innerHTML += `<p>${msg}</p>`;
         body.scrollTop = body.scrollHeight;
     });
 
-    socket.on('receive_log', function (msg) {
+    socket.on('receive_log', msg => {
         let body = document.getElementById('log');
         body.innerHTML += `<p>${msg}</p>`;
         body.scrollTop = body.scrollHeight;
     });
 
-    socket.on('newGame', function(id) {
+    socket.on('newGame', id => {
         document.getElementById('card_area').innerHTML = `
 
             <div id="opponent_hand" class="opponent_hand"></div>
@@ -210,7 +210,7 @@
         socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play();});
     });
 
-    socket.on('picker', function(info) {
+    socket.on('picker', info => {
         trump = info[TRUMP];
         inPlay = info[IN_PLAY];
 
@@ -255,7 +255,7 @@
         }
     });
 
-    socket.on('info', function(info) {
+    socket.on('info', info => {
         trump = info[TRUMP];
         inPlay = info[IN_PLAY];
 
@@ -300,14 +300,12 @@
         }
     });
 
-    socket.on('setup_lobby', function() {
+    socket.on('setup_lobby', () => {
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
         document.getElementById('float_left').innerHTML = '';
     });
 
-    socket.on('shuffle', function(){
-       shuffleSound.play();
-    });
+    socket.on('shuffle', () => shuffleSound.play());
 
     const isLegal = (hand, i) => {
         if (inPlay[1] === 20) return true;
