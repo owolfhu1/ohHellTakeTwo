@@ -1,9 +1,9 @@
 <!doctype html>
 <html>
 <head>
-    <title>ohHellTestTime</title>
-    <script>let nam = prompt('name', 'your name here');</script>
+    <title>Orion's Oh Hell</title>
     <script>    /* ---CONSTANTS--- */
+        const userName = prompt('name', 'your name here');
         const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
         const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
         const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
@@ -126,6 +126,7 @@
 <script>
 
     let socket = io();
+    socket.emit('setName', userName);
     let trump;
     let inPlay;
 
@@ -174,12 +175,10 @@
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
     $('form').submit( () => {
-        socket.emit('message', '<p>' + nam + ': ' + $('#text').val()) + '</p>';
+        socket.emit('message', '<p>' + userName + ': ' + $('#text').val()) + '</p>';
         $('#text').val('');
         return false;
     });
-
-    socket.emit('setName', nam);
 
     socket.on('shuffle', () => shuffleSound.play());
 
@@ -287,7 +286,7 @@
         } else { turn.innerHTML = ''; }
 
         document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
-        document.getElementById("player_name").innerHTML = nam;
+        document.getElementById("player_name").innerHTML = userName;
         document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
         document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
         document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
@@ -331,7 +330,7 @@
         } else { turn.innerHTML = ''; }
 
         document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
-        document.getElementById("player_name").innerHTML = nam;
+        document.getElementById("player_name").innerHTML = userName;
         document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
         document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
         document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;

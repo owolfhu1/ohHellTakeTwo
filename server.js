@@ -27,7 +27,7 @@ let emptyGame = function() {
     this.gameDeck = null;
     this.trump = null;
     this.inPlay = null;
-    this.plusMinus = -1;
+    this.plusMinus = 1;
     this.aceValue = 1;
 };
 
@@ -266,6 +266,9 @@ const deal = gameId => {
             game[game.player1Id].hand.push(game.gameDeck.pop());
             game[game.player2Id].hand.push(game.gameDeck.pop());
         }
+        game[game.player1Id].hand = sortHand(game[game.player1Id].hand);
+        game[game.player2Id].hand = sortHand(game[game.player2Id].hand);
+        
         io.sockets.connected[game.player1Id].emit('shuffle');
         io.sockets.connected[game.player2Id].emit('shuffle');
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
@@ -420,6 +423,37 @@ const makeBoard = () => {
     /*logs*/console.log('');
     return board;
 };
+
+const sortHand = unSortedHand => {
+    let sortedHand = [];
+    
+    for (let i = 0; i < unSortedHand.length; i++){
+        if (unSortedHand[i][1] === 'joker') sortedHand.push(unSortedHand[i]);
+    }
+    for (let i = 0; i < unSortedHand.length; i++){
+        if (unSortedHand[i][1] === 'spades') sortedHand.push(unSortedHand[i]);
+    }
+    for (let i = 0; i < unSortedHand.length; i++){
+        if (unSortedHand[i][1] === 'diamonds') sortedHand.push(unSortedHand[i]);
+    }
+    for (let i = 0; i < unSortedHand.length; i++){
+        if (unSortedHand[i][1] === 'clubs') sortedHand.push(unSortedHand[i]);
+    }
+    for (let i = 0; i < unSortedHand.length; i++){
+        if (unSortedHand[i][1] === 'hearts') sortedHand.push(unSortedHand[i]);
+    }
+    
+    return sortedHand;
+};
+
+
+
+
+
+
+
+
+
 
 
 
