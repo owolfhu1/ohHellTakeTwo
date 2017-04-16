@@ -4,6 +4,9 @@
     <title>ohHellTestTime</title>
     <script>let nam = prompt('name', 'your name here');</script>
     <script>    /* ---CONSTANTS--- */
+        const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
+        const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
+        const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
         const HAND = 0;
         const OPPONENT_HAND_SIZE = 1;
         const TRUMP = 2;
@@ -19,7 +22,7 @@
     <style>
         html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
 
-        .lobby { margin-left: 600px; height: 500px; width: 250px; background-color: #b03f48; border:6px dotted #2e2e2e; border-radius: 40px; }
+        .lobby {overflow-y: scroll; margin-left: 600px; height: 500px; width: 250px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
 
         .chat_input { color: white; }
 
@@ -119,8 +122,6 @@
     let socket = io();
     let trump;
     let inPlay;
-    let audio = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
-    let smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
 
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
@@ -133,7 +134,7 @@
         let body = '<ul>';
 
         for (let i = 0; i < users[1].length; i++) {
-            body += `<li><button id="${i}">${users[name][i]}</button></li>`;
+            body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[name][i]}</button></p>`;
         }
         body += '</ul>';
         document.getElementById('lobby').innerHTML = body;
@@ -234,7 +235,6 @@
         let turn = document.getElementById('turn_indicator');
         if (info[TURN]) {
             turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
-            audio.play();
         } else { turn.innerHTML = ''; }
 
         document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
@@ -277,7 +277,7 @@
         let turn = document.getElementById('turn_indicator');
         if (info[4]) {
             turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
-            audio.play();
+            alertSound.play();
         } else { turn.innerHTML = ''; }
 
         document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
@@ -303,6 +303,10 @@
     socket.on('setup_lobby', function() {
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
         document.getElementById('float_left').innerHTML = '';
+    });
+
+    socket.on('shuffle', function(){
+       shuffleSound.play();
     });
 
     const isLegal = (hand, i) => {

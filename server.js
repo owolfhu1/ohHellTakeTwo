@@ -243,7 +243,6 @@ const deal = gameId => {
         endGame(gameId)
     } else {
         sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}.</span>`);
-    
         if (isEven(game.round)) {
             game[game.player1Id].turn = true;
             game[game.player2Id].turn = false;
@@ -251,9 +250,7 @@ const deal = gameId => {
             game[game.player1Id].turn = false;
             game[game.player2Id].turn = true;
         }
-    
-        game.inPlay = card(20, 20);
-    
+        game.gameDeck = deck();
         game[game.player1Id].picked = false;
         game[game.player2Id].picked = false;
         game[game.player1Id].tricksWon = [];
@@ -264,18 +261,15 @@ const deal = gameId => {
         game[game.player2Id].tricks = 0;
         game[game.player1Id].hand = [];
         game[game.player2Id].hand = [];
-    
-        game.gameDeck = deck();
-    
+        game.inPlay = card(20, 20);
+        game.trump = gameMap[gameId].gameDeck.pop();
         for (let i = 0; i < game.round; i++) {
             game[game.player1Id].hand.push(game.gameDeck.pop());
             game[game.player2Id].hand.push(game.gameDeck.pop());
         }
-    
-        game.trump = gameMap[gameId].gameDeck.pop();
-    
+        io.sockets.connected[game.player1Id].emit('shuffle');
+        io.sockets.connected[game.player2Id].emit('shuffle');
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
-        //gameMap[gameId] = game;
         sendPick(gameId);
     }
 };
