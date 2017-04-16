@@ -175,34 +175,37 @@
     const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
     $('form').submit( () => {
-        socket.emit('message', '<p>' + userName + ': ' + $('#text').val()) + '</p>';
-        $('#text').val('');
+       if ($('#text').val() === '$resign'){
+           socket.emit('resign');
+       } else {
+           socket.emit('message', '<p>' + userName + ': ' + $('#text').val() + '</p>');
+           $('#text').val('');
+       }
         return false;
     });
 
     socket.on('shuffle', () => shuffleSound.play());
 
     socket.on('updateLobby', users => {
-        let name = 0;
-        let id = 1;
+        let NAME = 0;
+        let ID = 1;
         let body = '<ul>';
 
         for (let i = 0; i < users[1].length; i++) {
-            body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[name][i]}</button></p>`;
+            body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[NAME][i]}</button></p>`;
         }
         body += '</ul>';
         document.getElementById('lobby').innerHTML = body;
 
-        for(let i = 0; i< users[1].length; i++) {
+        for(let i = 0; i< users[ID].length; i++) {
             document.getElementById(i.toString()).addEventListener('click', () => {
-                socket.emit('pair', users[id][i]);
+                socket.emit('pair', users[ID][i]);
             });
         }
         document.getElementById('float_left').innerHTML = printBoard(users[2]);
     });
 
-    socket.on('rePair', pair =>{
-
+    socket.on('rePair', pair => {
         if (pair[1] === pair[0]) {
             alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
         } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);

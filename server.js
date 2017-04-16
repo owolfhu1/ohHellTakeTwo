@@ -193,6 +193,23 @@ io.on('connection', socket => {
         io.sockets.connected[game.player1Id].emit('highAce');
         io.sockets.connected[game.player2Id].emit('highAce');
     });
+    
+    socket.on('resign', () => {
+        let gameId = userMap[userId].gameId;
+        let game = gameMap[gameId];
+        let opponentId = game[userId].opponentId;
+        finishedGameArray.push(gameId);
+        io.sockets.connected[userId].emit('setup_lobby');
+        io.sockets.connected[opponentId].emit('setup_lobby');
+        io.sockets.emit('receiveMessage', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
+        idArray.push(userId);
+        idArray.push(opponentId);
+        nameArray.push(userMap[userId].name);
+        nameArray.push(userMap[opponentId].name);
+        game[userId].score = -2;
+        game[opponentId].score = -1;
+        updateLobby();
+    });
 
 });
 
@@ -426,7 +443,6 @@ const makeBoard = () => {
 
 const sortHand = unSortedHand => {
     let sortedHand = [];
-    
     for (let i = 0; i < unSortedHand.length; i++){
         if (unSortedHand[i][1] === 'joker') sortedHand.push(unSortedHand[i]);
     }
@@ -442,7 +458,6 @@ const sortHand = unSortedHand => {
     for (let i = 0; i < unSortedHand.length; i++){
         if (unSortedHand[i][1] === 'hearts') sortedHand.push(unSortedHand[i]);
     }
-    
     return sortedHand;
 };
 
