@@ -23,11 +23,11 @@ const finishedGameArray = [];
 let emptyGame = function() {
     this.player1Id = null;
     this.player2Id = null;
-    this.round = 3;
+    this.round = 1;
     this.gameDeck = null;
     this.trump = null;
     this.inPlay = null;
-    this.plusMinus = -1;
+    this.plusMinus = 1;
     this.aceValue = 1;
 };
 
