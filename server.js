@@ -210,7 +210,10 @@ io.on('connection', socket => {
         game[opponentId].score = -1;
         updateLobby();
     });
-
+    
+    socket.on('buzz', () => {
+        io.sockets.connected[gameMap[userMap[userId].gameId][userId].opponentId].emit('buzzed');
+    });
 });
 
 const updateLobby = () => {

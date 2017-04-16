@@ -7,6 +7,7 @@
         const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
         const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
         const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
+        const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
         const HAND = 0;
         const OPPONENT_HAND_SIZE = 1;
         const TRUMP = 2;
@@ -177,6 +178,8 @@
     $('form').submit( () => {
        if ($('#text').val() === '$resign'){
            socket.emit('resign');
+       } else if ($('#text').val() === '$buzz') {
+           socket.emit('buzz');
        } else {
            socket.emit('message', '<p>' + userName + ': ' + $('#text').val() + '</p>');
            $('#text').val('');
@@ -356,6 +359,8 @@
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
         document.getElementById('float_left').innerHTML = '';
     });
+
+    socket.on('buzzed', () => secretSound.play());
 
 </script>
 </body>
