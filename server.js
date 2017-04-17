@@ -29,6 +29,8 @@ let emptyGame = function() {
     this.inPlay = null;
     this.plusMinus = 1;
     this.aceValue = 1;
+    this.spies = [];
+    this.locked = false;
 };
 
 let blankPlayer = function() {
@@ -47,8 +49,8 @@ io.on('connection', socket => {
     let userId = socket.id;
     idArray.push(userId);
 
-    userMap[socket.id] = {name: 'none', gameId: 'none' };
-
+    userMap[socket.id] = {name: 'no_input', gameId: 'none' };
+    
     socket.on('setName', name => {
         let user = userMap[userId];
         user.name = name;
@@ -58,19 +60,35 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', () => {
-        if (idArray.indexOf(userId)>-1){
+        if (idArray.indexOf(userId) > -1){
             removeFromLobby(userId);
             updateLobby();
         }
-        io.sockets.emit('receive_message', userMap[socket.id].name + ' has left the server');
-        delete userMap[socket.id];
+        let gameId;
+        if (userMap[userId].gameId !== 'none'){
+            gameId = userMap[userId].gameId;
+            let game = gameMap[gameId];
+            let opponentId = game[userId].opponentId;
+            finishedGameIdArray.push(gameId);
+            io.sockets.connected[opponentId].emit('setup_lobby');
+            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} left unexpectedly, ${game[opponentId].name} has won by default.`);
+            idArray.push(opponentId);
+            nameArray.push(userMap[opponentId].name);
+            game[userId].score = -1;
+            game[opponentId].score = 1;
+            userMap[opponentId].gameId = 'none';
+            userMap[userId].gameId = 'none';
+            updateLobby()
+        }
+        io.sockets.emit('receive_message', userMap[userId].name + ' has left the server');
+        delete userMap[userId];
     });
 
     socket.on('message', msg => {
         io.sockets.emit('receive_message', msg);
     });
 
-    socket.on('pair', user => {
+    socket.on('pair_request', user => {
         io.to(user).emit('rePair', [user, socket.id, userMap[user].name]);
     });
 
@@ -218,6 +236,7 @@ io.on('connection', socket => {
     socket.on('buzz', () => {
         if (userMap[userId].gameId !== 'none') {
             io.sockets.connected[gameMap[userMap[userId].gameId][userId].opponentId].emit('buzzed');
+            io.sockets.connected[userId].emit('buzzed');
         }
     });
     
@@ -229,6 +248,55 @@ io.on('connection', socket => {
         io.sockets.connected[userId].emit('games', finishedGameMap());
     });
     
+    socket.on('watch_game', (gameId) => {
+       if (gameId in gameMap){
+           let game = gameMap[gameId];
+           if (!game.locked) {
+               removeFromLobby(userId);
+               updateLobby();
+               game.spies.push(userId);
+               io.sockets.connected[userId].emit('newGame');
+               io.sockets.connected[game.player1Id].emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
+               io.sockets.connected[game.player2Id].emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
+           }
+       }
+    });
+    
+    socket.on('lock', () => {
+        if (userMap[userId].gameId !== 'none') {
+            let game = gameMap[userMap[userId].gameId];
+            game.locked = true;
+            io.sockets.connected[game.player1Id].emit('receive_message', 'The game has been locked');
+            io.sockets.connected[game.player2Id].emit('receive_message', 'The game has been locked');
+        }
+    });
+    
+    socket.on('unlock', () => {
+        if (userMap[userId].gameId !== 'none') {
+            let game = gameMap[userMap[userId].gameId];
+            game.locked = false;
+            io.sockets.connected[game.player1Id].emit('receive_message', 'The game has been unlocked');
+            io.sockets.connected[game.player2Id].emit('receive_message', 'The game has been unlocked');
+        }
+    });
+    
+    socket.on('kick', () => {
+        if (userMap[userId].gameId !== 'none') {
+            let game = gameMap[userMap[userId].gameId];
+            io.sockets.connected[game.player1Id].emit('receive_message', 'Kicking unwanted spectators');
+            io.sockets.connected[game.player2Id].emit('receive_message', 'Kicking unwanted spectators');
+            for (let i = 0; i < game.spies.length; i++){
+                if (game.spies[i] in userMap) {
+                    io.sockets.connected[game.spies[i]].emit('receive_message', 'You have been kicked!');
+                    io.sockets.connected[game.spies[i]].emit('setup_lobby');
+                    nameArray.push(userMap[game.spies[i]].name);
+                    idArray.push(game.spies[i]);
+                }
+            }
+            game.spies = [];
+            updateLobby();
+        }
+    });
     
 });
 
@@ -277,7 +345,12 @@ const deal = gameId => {
     if (game.round === 0) {
         endGame(gameId)
     } else {
-        sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}.</span>`);
+        
+        let extraInfo = '';
+        if (game.round === 1 && game.plusMinus === 1) extraInfo = `gameId: ${gameId}`;
+        if (game.plusMinus === -1) extraInfo = '( - )';
+        sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}. ${extraInfo}</span>`);
+        extraInfo = ``;
         if (isEven(game.round)) {
             game[game.player1Id].turn = true;
             game[game.player2Id].turn = false;
@@ -324,6 +397,13 @@ const sendPick = id => {
     let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
     io.sockets.connected[game.player1Id].emit('picker', player1info);
     io.sockets.connected[game.player2Id].emit('picker', player2info);
+    
+    for (let i = 0; i < game.spies.length; i++){
+        if (game.spies[i] in userMap) {
+            io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
+        }
+    }
+    
 };
 
 const sendInfo = id => {
@@ -343,6 +423,12 @@ const sendInfo = id => {
         let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
         io.sockets.connected[game.player1Id].emit('info', player1info);
         io.sockets.connected[game.player2Id].emit('info', player2info);
+        
+        for (let i = 0; i < game.spies.length; i++){
+            if (game.spies[i] in userMap) {
+                io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
+            }
+        }
     }
 };
 
@@ -394,6 +480,11 @@ const endRound = gameId => {
 const sendLog = (gameId, msg) => {
     io.sockets.connected[gameMap[gameId].player1Id].emit('receive_log', msg);
     io.sockets.connected[gameMap[gameId].player2Id].emit('receive_log', msg);
+    for (let i = 0; i < gameMap[gameId].spies.length; i++){
+        if (gameMap[gameId].spies[i] in userMap) {
+            io.sockets.connected[gameMap[gameId].spies[i]].emit('receive_log', msg);
+        }
+    }
 };
 
 const endGame = gameId => {
@@ -468,7 +559,11 @@ const endRoundNow = game => {
     let player2CantWin = false;
     if (player1.tricks > player1.goal || player1.tricks + player1.hand.length < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + player2.hand.length < player2.goal) player2CantWin = true;
-    return (player1CantWin && player2CantWin);
+    if (player1CantWin && player2CantWin) {
+        io.sockets.connected[game.player1Id].emit('receive_message', `No one could win so the round has ended.`);
+        io.sockets.connected[game.player2Id].emit('receive_message', `No one could win so the round has ended.`);
+    }
+    return false;
     
 };
 

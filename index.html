@@ -19,6 +19,19 @@
         const GOAL = 1;
         const TRICKS = 2;
         const OPPONENT_NAME = 7;
+        const HELP_TEXT = `
+
+            <p> . . . . <b>$ $ $ $ $ COMMANDS $ $ $ $ $</b> . . . .</p>
+            <p></p>
+            <p><b>'$rules'</b> . . . Prints the rules in the chat screen.</p>
+            <p><b>'$buzz'</b> . . . Plays a sound to your opponent.</p>
+            <p><b>'$resign'</b> . . . Forfeits the game.</p>
+            <p><b>'$watch'</b> . . . Followed by a gameId lets you watch that game.</p>
+            <p><b>'$kick'</b> . . . Kicks all spectators.</p>
+            <p><b>'$lock'</b> . . . Locks the game from spectators (doesn't kick).</p>
+            <p><b>'$unlock'</b> . . . unLocks the game to spectators.</p>
+
+        `;
     </script>
     <style>
         html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
@@ -102,7 +115,7 @@
     <div id="float_right" class="float_right">
         <div id="log" class="log"></div>
         <p></p>
-        <div id="messages" class="chat"></div>
+        <div id="messages" class="chat"><p></p><b>For help type $help.</b></div>
         <p></p>
         <form action="">
             <input id="text" class="chat_input" type="text"/>
@@ -176,16 +189,28 @@
     const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
     $('form').submit( () => {
-       if ($('#text').val() === '$resign'){
+        let text = $('#text').val();
+
+       if (text === '$help') {
+           document.getElementById('messages').innerHTML += HELP_TEXT;
+       } else if (text === '$kick'){
+           socket.emit('kick');
+       } else if (text === '$lock') {
+           socket.emit('lock');
+       } else if (text === '$unlock') {
+           socket.emit('unlock');
+       } else if (text === '$resign'){
            socket.emit('resign');
-       } else if ($('#text').val() === '$games') {
+       } else if (text === '$games') {
            socket.emit('games');
-       } else if ($('#text').val() === '$buzz') {
+       } else if (text === '$buzz') {
            socket.emit('buzz');
-       } else if ($('#text').val() === '$board') {
+       } else if (text === '$board') {
            socket.emit('leaderboard');
+       } else if (text.substring(0, 7) === '$watch '){
+           socket.emit('watch_game', text.substring(7, text.length));
        } else {
-           socket.emit('message', '<p>' + userName + ': ' + $('#text').val() + '</p>');
+           socket.emit('message', '<p>' + userName + ': ' + text + '</p>');
            $('#text').val('');
        }
         return false;
@@ -206,7 +231,7 @@
 
         for(let i = 0; i< users[ID].length; i++) {
             document.getElementById(i.toString()).addEventListener('click', () => {
-                socket.emit('pair', users[ID][i]);
+                socket.emit('pair_request', users[ID][i]);
             });
         }
         document.getElementById('float_left').innerHTML = printBoard(users[2]);
@@ -322,7 +347,6 @@
 
         let showHand = '';
         for (let i = 0; i < info[HAND].length; i++){
-
             if (isLegal(info[HAND], i) && info[TURN]) showHand += legalCardImg(info[HAND][i]); else showHand += cardImg(info[HAND][i]);
         }
 
@@ -372,6 +396,37 @@
     socket.on('leaderboard', board => console.dir(board));
 
     socket.on('games', games => console.dir(games));
+
+    socket.on('spy_setup', spyInfo => {
+        let PLAYER_1 = 0;
+        let PLAYER_2 = 1;
+
+        document.getElementById('trump_box').innerHTML = bigCardImg(spyInfo[PLAYER_1][TRUMP]);
+        document.getElementById('play_area').innerHTML = bigCardImg(spyInfo[PLAYER_2][IN_PLAY]);
+
+        let showPlayer1 = '';
+        let showPlayer2 = '';
+        for (let i = 0; i < spyInfo[PLAYER_1][HAND].length; i++) {
+            showPlayer1 += cardImg(spyInfo[PLAYER_1][HAND][i]);
+        }
+        for (let i = 0; i < spyInfo[PLAYER_2][HAND].length; i++) {
+            showPlayer2 += cardImg(spyInfo[PLAYER_2][HAND][i]);
+        }
+        document.getElementById('player_hand').innerHTML = showPlayer1;
+        document.getElementById('opponent_hand').innerHTML = showPlayer2;
+
+        document.getElementById("opponent_name").innerHTML = spyInfo[PLAYER_1][OPPONENT_NAME];
+        document.getElementById("player_name").innerHTML = spyInfo[PLAYER_2][OPPONENT_NAME];
+        document.getElementById("opponent_score").innerHTML = `Score: ${spyInfo[PLAYER_2][PLAYER_STATS][SCORE]}`;
+        document.getElementById("opponent_goal").innerHTML = `Goal: ${spyInfo[PLAYER_2][PLAYER_STATS][GOAL]}`;
+        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${spyInfo[PLAYER_2][PLAYER_STATS][TRICKS]}`;
+        document.getElementById("player_score").innerHTML = `Score: ${spyInfo[PLAYER_1][PLAYER_STATS][SCORE]}`;
+        document.getElementById("player_goal").innerHTML = `Goal: ${spyInfo[PLAYER_1][PLAYER_STATS][GOAL]}`;
+        document.getElementById("player_tricks").innerHTML = `Tricks: ${spyInfo[PLAYER_1][PLAYER_STATS][TRICKS]}`;
+
+        if (spyInfo[PLAYER_1][TURN]) document.getElementById("player_name").innerHTML += '(turn)';
+        if (spyInfo[PLAYER_2][TURN]) document.getElementById("opponent_name").innerHTML += '(turn)';
+    });
 
 </script>
 </body>
