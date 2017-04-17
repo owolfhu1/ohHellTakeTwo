@@ -195,25 +195,32 @@ io.on('connection', socket => {
     });
     
     socket.on('resign', () => {
-        let gameId = userMap[userId].gameId;
-        let game = gameMap[gameId];
-        let opponentId = game[userId].opponentId;
-        finishedGameArray.push(gameId);
-        io.sockets.connected[userId].emit('setup_lobby');
-        io.sockets.connected[opponentId].emit('setup_lobby');
-        io.sockets.emit('receiveMessage', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
-        idArray.push(userId);
-        idArray.push(opponentId);
-        nameArray.push(userMap[userId].name);
-        nameArray.push(userMap[opponentId].name);
-        game[userId].score = -2;
-        game[opponentId].score = -1;
-        updateLobby();
+        if (userMap[userId].gameId !== 'none') {
+            let gameId = userMap[userId].gameId;
+            let game = gameMap[gameId];
+            let opponentId = game[userId].opponentId;
+            finishedGameArray.push(gameId);
+            io.sockets.connected[userId].emit('setup_lobby');
+            io.sockets.connected[opponentId].emit('setup_lobby');
+            io.sockets.emit('receiveMessage', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
+            idArray.push(userId);
+            idArray.push(opponentId);
+            nameArray.push(userMap[userId].name);
+            nameArray.push(userMap[opponentId].name);
+            game[userId].score = -2;
+            game[opponentId].score = -1;
+            userMap[opponentId].gameId = 'none';
+            userMap[userId].gameId = 'none';
+            updateLobby();
+        }
     });
     
     socket.on('buzz', () => {
-        io.sockets.connected[gameMap[userMap[userId].gameId][userId].opponentId].emit('buzzed');
+        if (userMap[userId].gameId !== 'none') {
+            io.sockets.connected[gameMap[userMap[userId].gameId][userId].opponentId].emit('buzzed');
+        }
     });
+    
 });
 
 const updateLobby = () => {
@@ -399,6 +406,8 @@ const endGame = gameId => {
   nameArray.push(game[player1].name);
   nameArray.push(game[player2].name);
   finishedGameArray.push(gameId);
+  userMap[player1].gameId = 'none';
+  userMap[player2].gameId = 'none';
   updateLobby();
 };
 
