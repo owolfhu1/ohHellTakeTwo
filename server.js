@@ -313,7 +313,7 @@ const sendPick = id => {
 const sendInfo = id => {
     let game = gameMap[id];
     
-    if(game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0){
+    if(endRoundNow(game)){
         if (game.round === 10) {
             gameMap[id].plusMinus = -1;
         }
@@ -385,7 +385,6 @@ const endGame = gameId => {
   let player1 = game.player1Id;
   let player2 = game.player2Id;
   let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
-  
   if (game[player1].score > game[player2].score) {
       io.sockets.emit('receiveMessage', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
   } else if (game[player1].score < game[player2].score) {
@@ -393,10 +392,8 @@ const endGame = gameId => {
   } else {
       io.sockets.emit('receiveMessage', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
   }
-  
   io.sockets.connected[player1].emit('setup_lobby');
   io.sockets.connected[player2].emit('setup_lobby');
-  
   idArray.push(player1);
   idArray.push(player2);
   nameArray.push(game[player1].name);
@@ -406,25 +403,18 @@ const endGame = gameId => {
 };
 
 const makeBoard = () => {
-    /*logs*/console.log('finished game array::');
-    /*logs*/console.dir(finishedGameArray);
-    /*logs*/console.log('');
     let board = {};
     for (let i = 0; i < finishedGameArray.length; i++){
         let game = gameMap[finishedGameArray[i]];
-        /*logs*/game.gameDeck = 'Deck deleted for beautiful directory';
-        /*logs*/console.log(`game ${finishedGameArray[i]}:`);
-        /*logs*/console.dir(game);
         let tie = false;
         let player1win;
         let player1 = game.player1Id;
         let player2 = game.player2Id;
-        if (!(game[player1].name in board)) board[game[player1].name] = [];//
-        if (!(game[player2].name in board)) board[game[player2].name] = [];//
+        if (!(game[player1].name in board)) board[game[player1].name] = [];
+        if (!(game[player2].name in board)) board[game[player2].name] = [];
         if (game[player1].score > game[player2].score) { player1win = true; }
         else if (game[player1].score < game[player2].score) { player1win = false; }
         else {tie = true}
-    
         if (!tie) {
             if (player1win){
                 board[game[player1].name].push('win');
@@ -438,30 +428,30 @@ const makeBoard = () => {
             board[game[player2].name].push('tie');
         }
     }
-    /*logs*/console.log('leaderboard to send to client:');
-    /*logs*/console.dir(board);
-    /*logs*/console.log('');
     return board;
 };
 
 const sortHand = unSortedHand => {
     let sortedHand = [];
-    for (let i = 0; i < unSortedHand.length; i++){
-        if (unSortedHand[i][1] === 'joker') sortedHand.push(unSortedHand[i]);
-    }
-    for (let i = 0; i < unSortedHand.length; i++){
-        if (unSortedHand[i][1] === 'spades') sortedHand.push(unSortedHand[i]);
-    }
-    for (let i = 0; i < unSortedHand.length; i++){
-        if (unSortedHand[i][1] === 'diamonds') sortedHand.push(unSortedHand[i]);
-    }
-    for (let i = 0; i < unSortedHand.length; i++){
-        if (unSortedHand[i][1] === 'clubs') sortedHand.push(unSortedHand[i]);
-    }
-    for (let i = 0; i < unSortedHand.length; i++){
-        if (unSortedHand[i][1] === 'hearts') sortedHand.push(unSortedHand[i]);
+    let suitArray = ['diamonds','clubs','hearts','spades','joker'];
+    for (let s = 0; s < suitArray.length; s++){
+        for (let i = 0; i < unSortedHand.length; i++){
+            if (unSortedHand[i][1] === suitArray[s]) sortedHand.push(unSortedHand[i]);
+        }
     }
     return sortedHand;
+};
+
+const endRoundNow = game =>{
+    if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
+    let player1 = game[game.player1Id];
+    let player2 = game[game.player2Id];
+    let player1CantWin = false;
+    let player2CantWin = false;
+    if (player1.tricks > player1.goal || player1.tricks + player1.hand.length < player1.goal) player1CantWin = true;
+    if (player2.tricks > player2.goal || player2.tricks + player2.hand.length < player2.goal) player2CantWin = true;
+    return (player1CantWin && player2CantWin);
+    
 };
 
 
