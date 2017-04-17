@@ -221,6 +221,10 @@ io.on('connection', socket => {
         }
     });
     
+    socket.on('leaderboard', () => {
+        io.sockets.connected[userId].emit('leaderboard', makeBoard());
+    });
+    
 });
 
 const updateLobby = () => {

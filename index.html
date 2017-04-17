@@ -180,6 +180,8 @@
            socket.emit('resign');
        } else if ($('#text').val() === '$buzz') {
            socket.emit('buzz');
+       } else if ($('#text').val() === '$board') {
+           socket.emit('leaderboard');
        } else {
            socket.emit('message', '<p>' + userName + ': ' + $('#text').val() + '</p>');
            $('#text').val('');
@@ -365,6 +367,7 @@
 
     socket.on('buzzed', () => secretSound.play());
 
+    socket.on('leaderboard', board => console.dir(board));
 </script>
 </body>
 </html>
