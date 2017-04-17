@@ -560,8 +560,8 @@ const endRoundNow = game => {
     if (player1.tricks > player1.goal || player1.tricks + player1.hand.length < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + player2.hand.length < player2.goal) player2CantWin = true;
     if (player1CantWin && player2CantWin) {
-        io.sockets.connected[game.player1Id].emit('receive_message', `No one could win so the round has ended.`);
-        io.sockets.connected[game.player2Id].emit('receive_message', `No one could win so the round has ended.`);
+        sendLog(userMap[game.player1Id].gameId, `No one could win so the round has ended.`);
+        return true;
     }
     return false;
     
