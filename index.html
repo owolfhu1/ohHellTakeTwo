@@ -178,6 +178,8 @@
     $('form').submit( () => {
        if ($('#text').val() === '$resign'){
            socket.emit('resign');
+       } else if ($('#text').val() === '$games') {
+           socket.emit('games');
        } else if ($('#text').val() === '$buzz') {
            socket.emit('buzz');
        } else if ($('#text').val() === '$board') {
@@ -216,7 +218,7 @@
         } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
     });
 
-    socket.on('receiveMessage', msg => {
+    socket.on('receive_message', msg => {
         let body = document.getElementById('messages');
         smallSound.play();
         body.innerHTML += `<p>${msg}</p>`;
@@ -368,6 +370,9 @@
     socket.on('buzzed', () => secretSound.play());
 
     socket.on('leaderboard', board => console.dir(board));
+
+    socket.on('games', games => console.dir(games));
+
 </script>
 </body>
 </html>

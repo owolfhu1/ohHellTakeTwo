@@ -18,7 +18,7 @@ const userMap = {};
 const gameMap = {};
 const idArray = [];
 const nameArray = [];
-const finishedGameArray = [];
+const finishedGameIdArray = [];
 
 let emptyGame = function() {
     this.player1Id = null;
@@ -53,7 +53,7 @@ io.on('connection', socket => {
         let user = userMap[userId];
         user.name = name;
         nameArray.push(user.name);
-        io.sockets.emit('receiveMessage', name + ' has joined the server');
+        io.sockets.emit('receive_message', name + ' has joined the server');
         updateLobby();
     });
 
@@ -62,12 +62,12 @@ io.on('connection', socket => {
             removeFromLobby(userId);
             updateLobby();
         }
-        io.sockets.emit('receiveMessage', userMap[socket.id].name + ' has left the server');
+        io.sockets.emit('receive_message', userMap[socket.id].name + ' has left the server');
         delete userMap[socket.id];
     });
 
     socket.on('message', msg => {
-        io.sockets.emit('receiveMessage', msg);
+        io.sockets.emit('receive_message', msg);
     });
 
     socket.on('pair', user => {
@@ -199,10 +199,10 @@ io.on('connection', socket => {
             let gameId = userMap[userId].gameId;
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
-            finishedGameArray.push(gameId);
+            finishedGameIdArray.push(gameId);
             io.sockets.connected[userId].emit('setup_lobby');
             io.sockets.connected[opponentId].emit('setup_lobby');
-            io.sockets.emit('receiveMessage', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
+            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             idArray.push(userId);
             idArray.push(opponentId);
             nameArray.push(userMap[userId].name);
@@ -224,6 +224,11 @@ io.on('connection', socket => {
     socket.on('leaderboard', () => {
         io.sockets.connected[userId].emit('leaderboard', makeBoard());
     });
+    
+    socket.on('games', () => {
+        io.sockets.connected[userId].emit('games', finishedGameMap());
+    });
+    
     
 });
 
@@ -397,11 +402,11 @@ const endGame = gameId => {
   let player2 = game.player2Id;
   let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
   if (game[player1].score > game[player2].score) {
-      io.sockets.emit('receiveMessage', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
+      io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
   } else if (game[player1].score < game[player2].score) {
-      io.sockets.emit('receiveMessage', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
+      io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
   } else {
-      io.sockets.emit('receiveMessage', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
+      io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
   }
   io.sockets.connected[player1].emit('setup_lobby');
   io.sockets.connected[player2].emit('setup_lobby');
@@ -409,7 +414,7 @@ const endGame = gameId => {
   idArray.push(player2);
   nameArray.push(game[player1].name);
   nameArray.push(game[player2].name);
-  finishedGameArray.push(gameId);
+  finishedGameIdArray.push(gameId);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
   updateLobby();
@@ -417,8 +422,8 @@ const endGame = gameId => {
 
 const makeBoard = () => {
     let board = {};
-    for (let i = 0; i < finishedGameArray.length; i++){
-        let game = gameMap[finishedGameArray[i]];
+    for (let i = 0; i < finishedGameIdArray.length; i++){
+        let game = gameMap[finishedGameIdArray[i]];
         let tie = false;
         let player1win;
         let player1 = game.player1Id;
@@ -455,7 +460,7 @@ const sortHand = unSortedHand => {
     return sortedHand;
 };
 
-const endRoundNow = game =>{
+const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
@@ -467,11 +472,13 @@ const endRoundNow = game =>{
     
 };
 
-
-
-
-
-
+const finishedGameMap = () => {
+    let map = {};
+    for (let i = 0; i < finishedGameIdArray.length; i++){
+        map[finishedGameIdArray[i]] = gameMap[finishedGameIdArray[i]];
+    }
+    return map;
+};
 
 
 
