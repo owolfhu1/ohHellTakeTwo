@@ -173,7 +173,7 @@
 
     const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
-    const otherImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+    const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
     $('form').submit( () => {
        if ($('#text').val() === '$resign'){
@@ -275,15 +275,18 @@
         let showPicker = '';
         if (info[TURN]) {
             for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
-                showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
-
+                if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]) {
+                    showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
+                } else {
+                    showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
+                }
             }
         }
         document.getElementById('player_hand').innerHTML = showHand;
         if(info[TURN]) {
             document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
         } else { document.getElementById('opponent_hand').innerHTML = '';}
-        document.getElementById('trump_box').innerHTML = otherImg(trump);
+        document.getElementById('trump_box').innerHTML = bigCardImg(trump);
         document.getElementById('play_area').innerHTML = showPicker;
 
         let turn = document.getElementById('turn_indicator');
@@ -326,8 +329,8 @@
 
         document.getElementById('player_hand').innerHTML = showHand;
         document.getElementById('opponent_hand').innerHTML = showOpponentHand;
-        document.getElementById('trump_box').innerHTML = otherImg(trump);
-        document.getElementById('play_area').innerHTML = otherImg(inPlay);
+        document.getElementById('trump_box').innerHTML = bigCardImg(trump);
+        document.getElementById('play_area').innerHTML = bigCardImg(inPlay);
 
         let turn = document.getElementById('turn_indicator');
         if (info[4]) {
