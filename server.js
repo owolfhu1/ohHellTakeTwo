@@ -298,6 +298,14 @@ io.on('connection', socket => {
         }
     });
     
+    socket.on('whisper', msg => {
+        if(userMap[userId].gameId !== 'none') {
+            let game = gameMap[userMap[userId].gameId];
+            io.sockets.connected[game.player1Id].emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
+            io.sockets.connected[game.player2Id].emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
+        }
+    });
+    
 });
 
 const updateLobby = () => {

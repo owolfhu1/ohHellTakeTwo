@@ -31,6 +31,7 @@
             <p><b>'$lock'</b> . . . Locks the game from spectators (doesn't kick).</p>
             <p><b>'$unlock'</b> . . . Unlocks the game to spectators.</p>
             <p><b>'$board'</b> . . . View raw leaderboard in console.</p>
+            <p><b>'$whisper'</b> . . . Sends a private message to your opponent.</p>
 
         `;
     </script>
@@ -194,6 +195,8 @@
 
        if (text === '$help') {
            document.getElementById('messages').innerHTML += HELP_TEXT;
+       } else if (text.substring(0, 9) === '$whisper ') {
+           socket.emit('whisper', text.substring(7, text.length));
        } else if (text === '$kick'){
            socket.emit('kick');
        } else if (text === '$lock') {
