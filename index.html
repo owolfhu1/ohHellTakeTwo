@@ -2,12 +2,14 @@
 <html>
 <head>
     <title>Orion's Oh Hell</title>
-    <script>    /* ---CONSTANTS--- */
-        const userName = prompt('name', 'your name here');
+    <script>    /* ---VARIABLES--- */
+        let userName = '';
         const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
         const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
         const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
         const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
+        const NAME = 0;
+        const ID = 1;
         const HAND = 0;
         const OPPONENT_HAND_SIZE = 1;
         const TRUMP = 2;
@@ -19,11 +21,13 @@
         const GOAL = 1;
         const TRICKS = 2;
         const OPPONENT_NAME = 7;
+        const PLAYER_1 = 0;
+        const PLAYER_2 = 1;
         const HELP_TEXT = `
 
             <p> . . . . <b>$ $ $ $ $ COMMANDS $ $ $ $ $</b> . . . .</p>
             <p></p>
-            <!--<p><b>'$rules'</b> . . . Prints the rules in the chat screen.</p>-->
+            <!-- TODO: <p><b>'$rules'</b> . . . Prints the rules in the chat screen.</p> -->
             <p><b>'$buzz'</b> . . . Plays a sound to your opponent.</p>
             <p><b>'$resign'</b> . . . Forfeits the game.</p>
             <p><b>'$watch'</b> . . . Followed by a gameId lets you watch that game.</p>
@@ -34,11 +38,13 @@
             <p><b>'$whisper'</b> . . . Sends a private message to your opponent.</p>
 
         `;
+        let trump;
+        let inPlay;
     </script>
     <style>
         html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
 
-        .lobby {overflow-y: scroll; margin-left: 600px; height: 500px; width: 250px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
+        .lobby {overflow-y: scroll; margin-left: 500px; height: 500px; width: 400px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
 
         .chat_input { color: white; }
 
@@ -117,7 +123,7 @@
     <div id="float_right" class="float_right">
         <div id="log" class="log"></div>
         <p></p>
-        <div id="messages" class="chat"><p></p><b>For help type $help.</b></div>
+        <div id="messages" class="chat"><p></p><h2>For help type $help.</h2></div>
         <p></p>
         <form action="">
             <input id="text" class="chat_input" type="text"/>
@@ -141,23 +147,40 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
 
+    //connects to server
     let socket = io();
-    socket.emit('setName', userName);
-    let trump;
-    let inPlay;
 
+    //tells the server your name
+    socket.emit('setName', userName);
+
+    //checks if card is legal play, returns boolean
     const isLegal = (hand, i) => {
+
+        //if there is no card in play, all moves are legal
         if (inPlay[1] === 20) return true;
+
+        //if the card to be played is the same suit as the card in play, move is legal
         if (inPlay[1] === hand[i][1]) return true;
+
+        //else check the rest of the players hand
         else {
             let haveCards = haveCard(hand);
+
+            //if you don't have any inPlay suit cards or jokers in hand, move is legal
             if (!haveCards[0] && !haveCards[1]) return true;
+
+            //if you don't have the suit inPlay and the card you are trying to play is a joker, move is legal
             if (!haveCards[0] && hand[i][1] === 'joker') return true;
+
+            //if card inPlay is a joker and you don't have a joker, any move is legal
             if (inPlay[1] === 'joker' && !haveCards[1]) return true;
         }
+
+        //returns false if all checks fail
         return false
     };
 
+    //checks if you have joker or trump suits in your hand, used by isLegal()
     const haveCard = hand => {
         let jokers = false;
         let suits = false;
@@ -168,28 +191,33 @@
         return [suits, jokers];
     };
 
+    //reads an object of { names : [tally of wins/losses/ties] } and returns scores in html
     const printBoard = board => {
         let print = '';
         for(let key in board){
             let wins = 0;
             let loses = 0;
             let ties = 0;
-            for(let i = 0; i < board[key].length; i++){
-                if(board[key][i] === "win") wins++;
-                if(board[key][i] === "lose") loses++;
-                if(board[key][i] === "tie") ties++;
+            for(let i = 0; i < board[key].length; i++) {
+                if (board[key][i] === "win") wins++;
+                if (board[key][i] === "lose") loses++;
+                if (board[key][i] === "tie") ties++;
             }
             print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
         }
         return print;
     };
 
+    //returns html for cards which can't be played
     const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
+    //returns html for cards which can be played
     const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
+    //returns html for inPlay and trump cards
     const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
+    //what happens when you press enter on the keyboard.
     $('form').submit( () => {
         let text = $('#text').val();
 
@@ -220,19 +248,35 @@
         return false;
     });
 
+    socket.on('setup_login', () => {
+        userName = 'GUEST';
+        document.getElementById('lobby').innerHTML = `<br><br>
+                user name: <input type="text" id="userName"><br><br>
+                password: <input type="password" id="password"><br><br><br><br>
+                <button style="font-family: 'Comic Sans MS'; color: white ; background-color: #2e2e2e ; border:30px dashed #b03f48; border-radius: 150px; height: 300px; width: 300px" id="login"><h1>Login / Create</h1></button>
+        `;
+        document.getElementById('login').addEventListener('click', () => {
+            let userName = document.getElementById('userName').value;
+            let password = document.getElementById('password').value;
+            socket.emit('login_request', [userName, password]);
+        });
+    });
+
+    //plays a shuffle sound to indicate a new hand has been dealt
     socket.on('shuffle', () => shuffleSound.play());
 
+    //displays lobby (list of buttons representing players waiting to play a game)
     socket.on('updateLobby', users => {
-        let NAME = 0;
-        let ID = 1;
-        let body = '<ul>';
 
+        //displays buttons
+        let body = '<ul>';
         for (let i = 0; i < users[1].length; i++) {
             body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[NAME][i]}</button></p>`;
         }
         body += '</ul>';
         document.getElementById('lobby').innerHTML = body;
 
+        //adds event to send pair request when button is pushed
         for(let i = 0; i< users[ID].length; i++) {
             document.getElementById(i.toString()).addEventListener('click', () => {
                 socket.emit('pair_request', users[ID][i]);
@@ -241,12 +285,14 @@
         document.getElementById('float_left').innerHTML = printBoard(users[2]);
     });
 
+    //gets pair request and confirms user
     socket.on('rePair', pair => {
         if (pair[1] === pair[0]) {
             alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
         } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
     });
 
+    //prints chat received by server in chat window
     socket.on('receive_message', msg => {
         let body = document.getElementById('messages');
         smallSound.play();
@@ -254,12 +300,14 @@
         body.scrollTop = body.scrollHeight;
     });
 
+    //prints log received by server in log window
     socket.on('receive_log', msg => {
         let body = document.getElementById('log');
         body.innerHTML += `<p>${msg}</p>`;
         body.scrollTop = body.scrollHeight;
     });
 
+    //gets DOM ready for a game
     socket.on('newGame', id => {
         document.getElementById('card_area').innerHTML = `
 
@@ -297,6 +345,7 @@
         socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play();});
     });
 
+    //receives information about the game and displays it along with a row of buttons for players to pick there goal with
     socket.on('picker', info => {
         trump = info[TRUMP];
         inPlay = info[IN_PLAY];
@@ -345,6 +394,7 @@
         }
     });
 
+    //receives information about the game and displays it along with setting up cards to be clicked
     socket.on('info', info => {
         trump = info[TRUMP];
         inPlay = info[IN_PLAY];
@@ -390,20 +440,23 @@
         }
     });
 
+    //gets DOM ready for lobby
     socket.on('setup_lobby', () => {
         document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
         document.getElementById('float_left').innerHTML = '';
     });
 
+    //plays a sound at request of the server at the request of ether player in a game to get players attention
     socket.on('buzzed', () => secretSound.play());
 
+    //prints player information to console
     socket.on('leaderboard', board => console.dir(board));
 
+    //prints past game stats to console
     socket.on('games', games => console.dir(games));
 
+    //sets displays game for spectator mode
     socket.on('spy_setup', spyInfo => {
-        let PLAYER_1 = 0;
-        let PLAYER_2 = 1;
 
         document.getElementById('trump_box').innerHTML = bigCardImg(spyInfo[PLAYER_1][TRUMP]);
         document.getElementById('play_area').innerHTML = bigCardImg(spyInfo[PLAYER_2][IN_PLAY]);
@@ -432,6 +485,8 @@
         if (spyInfo[PLAYER_2][TURN]) document.getElementById("opponent_name").innerHTML += '(turn)';
         document.getElementById('aces').innerHTML = '';
     });
+
+    socket.on('set_user_name', name => { userName = name; });
 
 </script>
 </body>

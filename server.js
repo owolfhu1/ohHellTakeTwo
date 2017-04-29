@@ -19,6 +19,7 @@ const gameMap = {};
 const idArray = [];
 const nameArray = [];
 const finishedGameIdArray = [];
+const passwordMap = {};
 
 let emptyGame = function() {
     this.player1Id = null;
@@ -47,16 +48,35 @@ let blankPlayer = function() {
 
 io.on('connection', socket => {
     let userId = socket.id;
-    idArray.push(userId);
-
-    userMap[socket.id] = {name: 'no_input', gameId: 'none' };
+    userMap[socket.id] = { name: 'no_input', gameId: 'none' };
+    let user = userMap[userId];
     
-    socket.on('setName', name => {
-        let user = userMap[userId];
-        user.name = name;
-        nameArray.push(user.name);
-        io.sockets.emit('receive_message', name + ' has joined the server');
-        updateLobby();
+    io.to(userId).emit('setup_lobby');
+    io.to(userId).emit('setup_login');
+    
+    socket.on('login_request', login => {
+        if (login[0] in passwordMap) {
+            if (passwordMap[login[0]] === login[1]){
+                user.name = login[0];
+                nameArray.push(user.name);
+                idArray.push(userId);
+                io.sockets.emit('receive_message', user.name + ' has logged in.');
+                io.to(userId).emit('setup_lobby');
+                io.to(userId).emit('set_user_name', user.name);
+                updateLobby();
+            } else {
+                //TODO: give failed login message to client chat box
+            }
+        } else {
+            passwordMap[login[0]] = login[1];
+            user.name = login[0];
+            nameArray.push(user.name);
+            idArray.push(userId);
+            io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
+            io.to(userId).emit('setup_lobby');
+            io.to(userId).emit('set_user_name', user.name);
+            updateLobby();
+        }
     });
 
     socket.on('disconnect', () => {
