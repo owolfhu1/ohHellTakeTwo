@@ -253,7 +253,7 @@
         document.getElementById('lobby').innerHTML = `<br><br>
                 user name: <input type="text" id="userName"><br><br>
                 password: <input type="password" id="password"><br><br><br><br>
-                <button style="font-family: 'Comic Sans MS'; color: white ; background-color: #2e2e2e ; border:30px dashed #b03f48; border-radius: 150px; height: 300px; width: 300px" id="login"><h1>Login / Create</h1></button>
+                <button style="font-family: 'Comic Sans MS'; color: white ; background-color: #2e2e2e ; border:31px dashed #b03f48; border-radius: 150px; height: 300px; width: 300px" id="login"><h1>Login<br>or<br>Create</h1></button>
         `;
         document.getElementById('login').addEventListener('click', () => {
             let userName = document.getElementById('userName').value;
@@ -308,7 +308,7 @@
     });
 
     //gets DOM ready for a game
-    socket.on('newGame', id => {
+    socket.on('setup_game', id => {
         document.getElementById('card_area').innerHTML = `
 
             <div id="opponent_hand" class="opponent_hand"></div>
