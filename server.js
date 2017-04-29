@@ -63,7 +63,6 @@ io.on('connection', socket => {
         
         if (login[0] in passwordMap && !onlineNameArray.includes(login[0])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
-               
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 io.sockets.emit('receive_message', user.name + ' has logged in.');
@@ -85,13 +84,9 @@ io.on('connection', socket => {
                         game[userId] = player2;
                         game.player2Id = userId;
                     }
-                    
                     io.to(userId).emit('set_user_name', user.name);
                     io.to(userId).emit('setup_game');
-                    
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
-                    
-                    
                 } else {
                     nameArray.push(user.name);
                     idArray.push(userId);
@@ -99,15 +94,10 @@ io.on('connection', socket => {
                     io.to(userId).emit('set_user_name', user.name);
                     updateLobby();
                 }
-                
-                
-                
             } else {
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
         } else {
-            
-            
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 onlineNameArray.push(login[USER_NAME]);
                 passwordMap[login[USER_NAME]] = login[PASSWORD];
@@ -119,8 +109,6 @@ io.on('connection', socket => {
                 io.to(userId).emit('set_user_name', user.name);
                 updateLobby();
             }
-            
-            
         }
     });
 
@@ -133,24 +121,7 @@ io.on('connection', socket => {
             removeFromLobby(userId);
             updateLobby();
         }
-        let gameId;
-        if (userMap[userId].gameId !== 'none'){
-        /*
-            gameId = userMap[userId].gameId;
-            let game = gameMap[gameId];
-            let opponentId = game[userId].opponentId;
-            finishedGameIdArray.push(gameId);
-            io.sockets.connected[opponentId].emit('setup_lobby');
-            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} left unexpectedly, ${game[opponentId].name} has won by default.`);
-            idArray.push(opponentId);
-            nameArray.push(userMap[opponentId].name);
-            game[userId].score = -1;
-            game[opponentId].score = 1;
-            userMap[opponentId].gameId = 'none';
-            userMap[userId].gameId = 'none';
-            updateLobby()
-        */
-        }
+        
         io.sockets.emit('receive_message', userMap[userId].name + ' has left the server');
         delete userMap[userId];
     });
@@ -272,9 +243,6 @@ io.on('connection', socket => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 1;
-        
-        
-        
         if (game.player1Id in userMap) {
             io.sockets.connected[game.player1Id].emit('lowAce');
         }
@@ -282,22 +250,18 @@ io.on('connection', socket => {
         if (game.player2Id in userMap) {
             io.sockets.connected[game.player2Id].emit('lowAce');
         }
-        
-        
     });
     
     socket.on('aces_high', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 16;
-    
         if (game.player1Id in userMap) {
             io.sockets.connected[game.player1Id].emit('highAce');
         }
         if (game.player2Id in userMap) {
             io.sockets.connected[game.player2Id].emit('highAce');
         }
-        
     });
     
     socket.on('resign', () => {
@@ -306,13 +270,19 @@ io.on('connection', socket => {
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
-            io.sockets.connected[userId].emit('setup_lobby');
-            io.sockets.connected[opponentId].emit('setup_lobby');
-            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             idArray.push(userId);
             idArray.push(opponentId);
             nameArray.push(userMap[userId].name);
             nameArray.push(userMap[opponentId].name);
+            io.sockets.connected[userId].emit('setup_lobby');
+            if(opponentId in userMap) {
+                io.sockets.connected[opponentId].emit('setup_lobby');
+            }
+            for (let i = namesPlaying.length-1; i >= 0; i--) {
+                if (namesPlaying[i] === game[userId].name) namesPlaying.splice(i, 1);
+                if (namesPlaying[i] === game[opponentId].name) namesPlaying.splice(i, 1);
+            }
+            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             game[userId].score = -2;
             game[opponentId].score = -1;
             userMap[opponentId].gameId = 'none';
@@ -332,9 +302,7 @@ io.on('connection', socket => {
         io.sockets.connected[userId].emit('leaderboard', makeBoard());
     });
     
-    socket.on('games', () => {
-        io.sockets.connected[userId].emit('games', finishedGameMap());
-    });
+    socket.on('games', () => { io.sockets.connected[userId].emit('games', finishedGameMap()); });
     
     socket.on('watch_game', (gameId) => {
        if (gameId in gameMap){
@@ -485,26 +453,22 @@ const isEven = n => n % 2 === 0;
 
 const sendPick = id => {
     let game = gameMap[id];
-    
     let player1Stats = [game[game.player1Id].score, game[game.player1Id].goal, game[game.player1Id].tricks];
     let player2Stats = [game[game.player2Id].score, game[game.player2Id].goal, game[game.player2Id].tricks];
     // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
     let player1info = [game[game.player1Id].hand, game[game.player2Id].hand.length, game.trump, game.inPlay, game[game.player1Id].turn, player1Stats, player2Stats, game[game.player2Id].name];
     let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
-    
     if (game.player1Id in userMap) {
         io.sockets.connected[game.player1Id].emit('picker', player1info);
     }
     if (game.player2Id in userMap) {
         io.sockets.connected[game.player2Id].emit('picker', player2info);
     }
-    
     for (let i = 0; i < game.spies.length; i++){
         if (game.spies[i] in userMap) {
             io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
         }
     }
-    
 };
 
 const sendInfo = id => {
@@ -522,18 +486,12 @@ const sendInfo = id => {
         // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
         let player1info = [game[game.player1Id].hand, game[game.player2Id].hand.length, game.trump, game.inPlay, game[game.player1Id].turn, player1Stats, player2Stats, game[game.player2Id].name];
         let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
-    
-    
-    
         if (game.player1Id in userMap) {
             io.sockets.connected[game.player1Id].emit('info', player1info);
         }
         if (game.player2Id in userMap) {
             io.sockets.connected[game.player2Id].emit('info', player2info);
         }
-        
-        
-        
         for (let i = 0; i < game.spies.length; i++){
             if (game.spies[i] in userMap) {
                 io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
@@ -588,14 +546,12 @@ const endRound = gameId => {
 };
 
 const sendLog = (gameId, msg) => {
-    
     if (gameMap[gameId].player1Id in userMap) {
         io.sockets.connected[gameMap[gameId].player1Id].emit('receive_log', msg);
     }
     if (gameMap[gameId].player2Id in userMap) {
         io.sockets.connected[gameMap[gameId].player2Id].emit('receive_log', msg);
     }
-    
     for (let i = 0; i < gameMap[gameId].spies.length; i++){
         if (gameMap[gameId].spies[i] in userMap) {
             io.sockets.connected[gameMap[gameId].spies[i]].emit('receive_log', msg);
@@ -615,8 +571,12 @@ const endGame = gameId => {
   } else {
       io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
   }
-  io.sockets.connected[player1].emit('setup_lobby');
-  io.sockets.connected[player2].emit('setup_lobby');
+  if (player1 in userMap) {
+      io.sockets.connected[player1].emit('setup_lobby');
+  }
+  if (player2 in userMap) {
+      io.sockets.connected[player2].emit('setup_lobby');
+  }
   idArray.push(player1);
   idArray.push(player2);
   nameArray.push(game[player1].name);
