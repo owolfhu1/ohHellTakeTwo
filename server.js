@@ -273,7 +273,11 @@ io.on('connection', socket => {
             idArray.push(userId);
             idArray.push(opponentId);
             nameArray.push(userMap[userId].name);
-            nameArray.push(userMap[opponentId].name);
+            
+            if (opponentId in userMap) {
+                nameArray.push(userMap[opponentId].name);
+            }
+            
             io.sockets.connected[userId].emit('setup_lobby');
             if(opponentId in userMap) {
                 io.sockets.connected[opponentId].emit('setup_lobby');
@@ -642,7 +646,6 @@ const endRoundNow = game => {
         return true;
     }
     return false;
-    
 };
 
 const finishedGameMap = () => {
