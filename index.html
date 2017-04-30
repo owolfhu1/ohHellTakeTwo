@@ -217,7 +217,7 @@
     //returns html for inPlay and trump cards
     const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
 
-    //what happens when you press enter on the keyboard.
+    //what happens when you press enter in the chat input.
     $('form').submit( () => {
         let text = $('#text').val();
 
@@ -248,6 +248,7 @@
         return false;
     });
 
+    //creates form for logging in and user creation
     socket.on('setup_login', () => {
         userName = 'GUEST';
         document.getElementById('lobby').innerHTML = `<br><br>
@@ -486,6 +487,7 @@
         document.getElementById('aces').innerHTML = '';
     });
 
+    //gets userName from server after login
     socket.on('set_user_name', name => { userName = name; });
 
 </script>
