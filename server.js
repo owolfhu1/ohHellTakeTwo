@@ -63,15 +63,13 @@ io.on('connection', socket => {
         if so, checks if is correct userName/password combo and logs in if correct
         if first check fails userName and password are added to passwordMap and user is logged in */
     socket.on('login_request', login => {
-        let USER_NAME = 0;
-        let PASSWORD = 1;
-        
+        const USER_NAME = 0;
+        const PASSWORD = 1;
         if (login[0] in passwordMap && !onlineNameArray.includes(login[0])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 io.sockets.emit('receive_message', user.name + ' has logged in.');
-                
                 if (user.name in namesPlaying){
                     let gameId = namesPlaying[user.name];
                     let game = gameMap[gameId];
@@ -121,18 +119,16 @@ io.on('connection', socket => {
         user has logged out, if user is in lobby they are removed from nameArray and idArray. */
     socket.on('disconnect', () => {
         let name = userMap[userId].name;
-    
         for (let i = onlineNameArray.length-1; i >= 0; i--) { if (onlineNameArray[i] === name) onlineNameArray.splice(i, 1); }
-        
         if (idArray.indexOf(userId) > -1){
             removeFromLobby(userId);
             updateLobby();
         }
-        
         io.sockets.emit('receive_message', userMap[userId].name + ' has left the server');
         delete userMap[userId];
     });
 
+    //sends receives chat messages and sends them to all users.
     socket.on('message', msg => {
         io.sockets.emit('receive_message', msg);
     });
@@ -142,11 +138,11 @@ io.on('connection', socket => {
 
     //if user accepts 'pair_request' the 2 users are removed from lobby and put into a game object.
     socket.on('finalPair', userIds => {
+        // 0 = player1, 1 = player2..
         console.log(userMap[userIds[0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
         removeFromLobby(userIds[0]);
         removeFromLobby(userIds[1]);
         updateLobby();
-        
         let game = new emptyGame();
         let gameId = Math.random().toString(36).substr(2, 5);
         userMap[userIds[0]].gameId = gameId;
@@ -157,17 +153,13 @@ io.on('connection', socket => {
         game.player2Id = userIds[1];
         game[userIds[0]].opponentId = userIds[1];
         game[userIds[1]].opponentId = userIds[0];
-        
         game[userIds[0]].name = userMap[userIds[0]].name;
         game[userIds[1]].name = userMap[userIds[1]].name;
         gameMap[gameId] = game;
-    
         namesPlaying[game[userIds[0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
-        
-        io.sockets.connected[userIds[0]].emit('setup_game');
-        io.sockets.connected[userIds[1]].emit('setup_game');
-        
+        io.to(userIds[0]).emit('setup_game');
+        io.to(userIds[1]).emit('setup_game');
         deal(gameId);
     });
 
@@ -199,14 +191,11 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        
         if (game[player].hand[i][0] === 1) {
             let holderSuit = game[player].hand[i][1];
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
-    
         let value = game[player].hand[i][0];
-        
              if (value ===  1 ) value = 'low Ace';
         else if (value ===  2 ) value = 'Two';
         else if (value ===  3 ) value = 'Three';
@@ -221,11 +210,9 @@ io.on('connection', socket => {
         else if (value === 14 ) value = 'Queen';
         else if (value === 15 ) value = 'King';
         else if (value === 16 ) value = 'high Ace';
-        
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
         } else sendLog(gameId, `${game[player].name} plays ${value} of ${game[player].hand[i][1]}`);
-        
         if (game.inPlay[1] === 20) {
             game.inPlay = game[player].hand[i];
             game[player].hand.splice(i, 1);
@@ -259,24 +246,15 @@ io.on('connection', socket => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 1;
-        if (game.player1Id in userMap) {
-            io.sockets.connected[game.player1Id].emit('lowAce');
-        }
-    
-        if (game.player2Id in userMap) {
-            io.sockets.connected[game.player2Id].emit('lowAce');
-        }
+        if (game.player1Id in userMap) io.to(game.player1Id).emit('lowAce');
+        if (game.player2Id in userMap) io.to(game.player2Id).emit('lowAce');
     });
     socket.on('aces_high', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         game.aceValue = 16;
-        if (game.player1Id in userMap) {
-            io.sockets.connected[game.player1Id].emit('highAce');
-        }
-        if (game.player2Id in userMap) {
-            io.sockets.connected[game.player2Id].emit('highAce');
-        }
+        if (game.player1Id in userMap) io.to(game.player1Id).emit('highAce');
+        if (game.player2Id in userMap) io.to(game.player2Id).emit('highAce');
     });
     
     //if user types '$resign' user is resigned and opponent wins, both are placed in lobby.
@@ -287,19 +265,17 @@ io.on('connection', socket => {
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
             idArray.push(userId);
-            
             nameArray.push(userMap[userId].name);
             if (opponentId in userMap) {
                 nameArray.push(userMap[opponentId].name);
                 idArray.push(opponentId);
             }
-            io.sockets.connected[userId].emit('setup_lobby');
+            io.to(userId).emit('setup_lobby');
             if(opponentId in userMap) {
-                io.sockets.connected[opponentId].emit('setup_lobby');
+                io.to(opponentId).emit('setup_lobby');
             }
             delete namesPlaying[game[userId].name];
             delete namesPlaying[game[opponentId].name];
-            
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             game[userId].score = -2;
             game[opponentId].score = -1;
@@ -314,30 +290,28 @@ io.on('connection', socket => {
     //if user types '$buzz' plays a sound to alert opponent.
     socket.on('buzz', () => {
         if (userMap[userId].gameId !== 'none') {
-            io.sockets.connected[gameMap[userMap[userId].gameId][userId].opponentId].emit('buzzed');
-            io.sockets.connected[userId].emit('buzzed');
+            io.to(gameMap[userMap[userId].gameId][userId].opponentId).emit('buzzed');
+            io.to(userId).emit('buzzed');
         }
     });
     
     //if user types '$board' prints raw leaderboard (map with win/lose/tie tally) to client's console.
-    socket.on('leaderboard', () => {
-        io.sockets.connected[userId].emit('leaderboard', makeBoard());
-    });
+    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', makeBoard()));
     
     //if user types '$games' prints raw finished game map to client's console.
-    socket.on('games', () => { io.sockets.connected[userId].emit('games', finishedGameMap()); });
+    socket.on('games', () => io.to(userId).emit('games', finishedGameMap()));
     
-    //if user types '$watch' followed by gameId, puts user in spectator mode for that game.
-    socket.on('watch_game', (gameId) => {
+    //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
+    socket.on('watch_game', gameId => {
        if (gameId in gameMap){
            let game = gameMap[gameId];
            if (!game.locked) {
                removeFromLobby(userId);
                updateLobby();
                game.spies.push(userId);
-               io.sockets.connected[userId].emit('setup_game');
-               io.sockets.connected[game.player1Id].emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
-               io.sockets.connected[game.player2Id].emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
+               io.to(userId).emit('setup_game');
+               io.to(game.player1Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
+               io.to(game.player2Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
            }
        }
     });
@@ -347,8 +321,8 @@ io.on('connection', socket => {
         if (userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
             game.locked = true;
-            io.sockets.connected[game.player1Id].emit('receive_message', 'The game has been locked');
-            io.sockets.connected[game.player2Id].emit('receive_message', 'The game has been locked');
+            io.to(game.player1Id).emit('receive_message', 'The game has been locked');
+            io.to(game.player2Id).emit('receive_message', 'The game has been locked');
         }
     });
     
@@ -357,8 +331,8 @@ io.on('connection', socket => {
         if (userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
             game.locked = false;
-            io.sockets.connected[game.player1Id].emit('receive_message', 'The game has been unlocked');
-            io.sockets.connected[game.player2Id].emit('receive_message', 'The game has been unlocked');
+            io.to(game.player1Id).emit('receive_message', 'The game has been unlocked');
+            io.to(game.player2Id).emit('receive_message', 'The game has been unlocked');
         }
     });
     
@@ -366,12 +340,12 @@ io.on('connection', socket => {
     socket.on('kick', () => {
         if (userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
-            io.sockets.connected[game.player1Id].emit('receive_message', 'Kicking unwanted spectators');
-            io.sockets.connected[game.player2Id].emit('receive_message', 'Kicking unwanted spectators');
+            io.to(game.player1Id).emit('receive_message', 'Kicking unwanted spectators');
+            io.to(game.player2Id).emit('receive_message', 'Kicking unwanted spectators');
             for (let i = 0; i < game.spies.length; i++){
                 if (game.spies[i] in userMap) {
-                    io.sockets.connected[game.spies[i]].emit('receive_message', 'You have been kicked!');
-                    io.sockets.connected[game.spies[i]].emit('setup_lobby');
+                    io.to(game.spies[i]).emit('receive_message', 'You have been kicked!');
+                    io.tp(game.spies[i]).emit('setup_lobby');
                     nameArray.push(userMap[game.spies[i]].name);
                     idArray.push(game.spies[i]);
                 }
@@ -385,8 +359,8 @@ io.on('connection', socket => {
     socket.on('whisper', msg => {
         if(userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
-            io.sockets.connected[game.player1Id].emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
-            io.sockets.connected[game.player2Id].emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
+            io.to(game.player1Id).emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
+            io.to(game.player2Id).emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
         }
     });
     
@@ -396,7 +370,7 @@ io.on('connection', socket => {
 const updateLobby = () => {
     let board = makeBoard();
     for (let i = 0; i < idArray.length; i++){
-        io.sockets.connected[idArray[i]].emit('updateLobby', [nameArray, idArray, board]);
+        io.to(idArray[i]).emit('updateLobby', [nameArray, idArray, board]);
     }
 };
 
@@ -469,8 +443,8 @@ const deal = gameId => {
         }
         game[game.player1Id].hand = sortHand(game[game.player1Id].hand);
         game[game.player2Id].hand = sortHand(game[game.player2Id].hand);
-        io.sockets.connected[game.player1Id].emit('shuffle');
-        io.sockets.connected[game.player2Id].emit('shuffle');
+        io.to(game.player1Id).emit('shuffle');
+        io.to(game.player2Id).emit('shuffle');
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
     }
@@ -488,14 +462,14 @@ const sendPick = id => {
     let player1info = [game[game.player1Id].hand, game[game.player2Id].hand.length, game.trump, game.inPlay, game[game.player1Id].turn, player1Stats, player2Stats, game[game.player2Id].name];
     let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
     if (game.player1Id in userMap) {
-        io.sockets.connected[game.player1Id].emit('picker', player1info);
+        io.to(game.player1Id).emit('picker', player1info);
     }
     if (game.player2Id in userMap) {
-        io.sockets.connected[game.player2Id].emit('picker', player2info);
+        io.to(game.player2Id).emit('picker', player2info);
     }
     for (let i = 0; i < game.spies.length; i++){
         if (game.spies[i] in userMap) {
-            io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
+            io.to(game.spies[i]).emit('spy_setup', [player1info, player2info]);
         }
     }
 };
@@ -517,14 +491,14 @@ const sendInfo = id => {
         let player1info = [game[game.player1Id].hand, game[game.player2Id].hand.length, game.trump, game.inPlay, game[game.player1Id].turn, player1Stats, player2Stats, game[game.player2Id].name];
         let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
         if (game.player1Id in userMap) {
-            io.sockets.connected[game.player1Id].emit('info', player1info);
+            io.to(game.player1Id).emit('info', player1info);
         }
         if (game.player2Id in userMap) {
-            io.sockets.connected[game.player2Id].emit('info', player2info);
+            io.to(game.player2Id).emit('info', player2info);
         }
         for (let i = 0; i < game.spies.length; i++){
             if (game.spies[i] in userMap) {
-                io.sockets.connected[game.spies[i]].emit('spy_setup', [player1info, player2info]);
+                io.to(game.spies[i]).emit('spy_setup', [player1info, player2info]);
             }
         }
     }
@@ -578,14 +552,14 @@ const endRound = gameId => {
 //used in various functions to send log information to player's logs.
 const sendLog = (gameId, msg) => {
     if (gameMap[gameId].player1Id in userMap) {
-        io.sockets.connected[gameMap[gameId].player1Id].emit('receive_log', msg);
+        io.to(gameMap[gameId].player1Id).emit('receive_log', msg);
     }
     if (gameMap[gameId].player2Id in userMap) {
-        io.sockets.connected[gameMap[gameId].player2Id].emit('receive_log', msg);
+        io.to(gameMap[gameId].player2Id).emit('receive_log', msg);
     }
     for (let i = 0; i < gameMap[gameId].spies.length; i++){
         if (gameMap[gameId].spies[i] in userMap) {
-            io.sockets.connected[gameMap[gameId].spies[i]].emit('receive_log', msg);
+            io.to(gameMap[gameId].spies[i]).emit('receive_log', msg);
         }
     }
 };
@@ -604,10 +578,10 @@ const endGame = gameId => {
       io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
   }
   if (player1 in userMap) {
-      io.sockets.connected[player1].emit('setup_lobby');
+      io.to(player1).emit('setup_lobby');
   }
   if (player2 in userMap) {
-      io.sockets.connected[player2].emit('setup_lobby');
+      io.to(player2).emit('setup_lobby');
   }
   idArray.push(player1);
   idArray.push(player2);
