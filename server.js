@@ -271,25 +271,25 @@ io.on('connection', socket => {
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
             idArray.push(userId);
-            idArray.push(opponentId);
-            nameArray.push(userMap[userId].name);
             
+            nameArray.push(userMap[userId].name);
             if (opponentId in userMap) {
                 nameArray.push(userMap[opponentId].name);
+                idArray.push(opponentId);
             }
-            
             io.sockets.connected[userId].emit('setup_lobby');
             if(opponentId in userMap) {
                 io.sockets.connected[opponentId].emit('setup_lobby');
             }
-            for (let i = namesPlaying.length-1; i >= 0; i--) {
-                if (namesPlaying[i] === game[userId].name) namesPlaying.splice(i, 1);
-                if (namesPlaying[i] === game[opponentId].name) namesPlaying.splice(i, 1);
-            }
+            delete namesPlaying[game[userId].name];
+            delete namesPlaying[game[opponentId].name];
+            
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             game[userId].score = -2;
             game[opponentId].score = -1;
-            userMap[opponentId].gameId = 'none';
+            if (opponentId in userMap) {
+                userMap[opponentId].gameId = 'none';
+            }
             userMap[userId].gameId = 'none';
             updateLobby();
         }
