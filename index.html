@@ -1,497 +1,409 @@
 <!doctype html>
 <html>
-<head>
-    <title>Orion's Oh Hell</title>
-    <script>    /* ---VARIABLES--- */
-        let userName = '';
-        const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
-        const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
-        const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
-        const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
-        const NAME = 0;
-        const ID = 1;
-        const HAND = 0;
-        const OPPONENT_HAND_SIZE = 1;
-        const TRUMP = 2;
-        const IN_PLAY = 3;
-        const TURN = 4;
-        const PLAYER_STATS = 5;
-        const OPPONENT_STATS = 6;
-        const SCORE = 0;
-        const GOAL = 1;
-        const TRICKS = 2;
-        const OPPONENT_NAME = 7;
-        const PLAYER_1 = 0;
-        const PLAYER_2 = 1;
-        const HELP_TEXT = `
+    <head>
+        <title id="title">Orion's Oh Hell</title>
+        <script>    /* ---VARIABLES--- */
+            let
+                title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
+                play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
+                player_goal, player_tricks, lobby, userName = '', trump, inPlay, aces_button;
+            const
+                SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
+                PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
 
-            <p> . . . . <b>$ $ $ $ $ COMMANDS $ $ $ $ $</b> . . . .</p>
-            <p></p>
-            <!-- TODO: <p><b>'$rules'</b> . . . Prints the rules in the chat screen.</p> -->
-            <p><b>'$buzz'</b> . . . Plays a sound to your opponent.</p>
-            <p><b>'$resign'</b> . . . Forfeits the game.</p>
-            <p><b>'$watch'</b> . . . Followed by a gameId lets you watch that game.</p>
-            <p><b>'$kick'</b> . . . Kicks all spectators.</p>
-            <p><b>'$lock'</b> . . . Locks the game from spectators (doesn't kick).</p>
-            <p><b>'$unlock'</b> . . . Unlocks the game to spectators.</p>
-            <p><b>'$board'</b> . . . View raw leaderboard in console.</p>
-            <p><b>'$whisper'</b> . . . Sends a private message to your opponent.</p>
+            const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
+            const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
+            const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
+            const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
 
-        `;
-        let trump;
-        let inPlay;
-    </script>
-    <style>
-        html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
-
-        .lobby {overflow-y: scroll; margin-left: 500px; height: 500px; width: 400px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
-
-        .chat_input { color: white; }
-
-        .turn_indicator { padding: 20px; text-align: center; }
-
-        .picker:hover { transform: scale(1.05) rotate(1deg); }
-
-        .legal:hover { transform: scale(1.05) rotate(1deg); }
-
-        .picker:active { transform: scale(.94) rotate(-1deg); }
-
-        .legal:active { transform: scale(.94) rotate(-1deg); }
-
-        .cards{ padding: 1px; width: 94px; height: 130px; }
-
-        .legal{ padding: 1px; width: 94px; height: 130px; }
-
-        .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
-            padding: 10px; background: #529848; line-height: .7; }
-
-        .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
-            padding: 10px; background: #529848; }
-
-        .play_area { text-align: center; height: 190px; }
-
-        .player_hand{ text-align:center; }
-
-        .opponent_hand { height: 135px; text-align:center; }
-
-        .text_class{ text-align:center; }
-
-        .back_drop { height: 720px; width: 1620px; margin: 30px; border:6px dotted #b03f48; border-radius: 70px; background: #2e2e2e; }
-
-        .card_area { height: 440px; padding: 115px 0; text-align: center; }
-
-        .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px;
+            const HELP_TEXT = `
+                <p><b>$instructions: </b>Prints the rules in the chat screen.</p>
+                <p><b>$buzz: </b>Plays a sound to your opponent.</p>
+                <p><b>$resign: </b>Forfeits the game.</p>
+                <p><b>$watch: </b>Followed by a gameId lets you watch that game.</p>
+                <p><b>$kick: </b>Kicks all spectators.</p>
+                <p><b>$lock: </b>Locks the game from spectators (doesn't kick).</p>
+                <p><b>$unlock: </b>Unlocks the game to spectators.</p>
+                <p><b>$board: </b>View raw leaderboard in console.</p>
+                <p><b>$whisper: </b>Sends a private message to your opponent.</p>
+            `;
+            const INSTRUCTIONS_TEXT = `
+                <p><b>Objective:</b> Score the most points by correctly guessing how many tricks you will win each round.</p>
+                <p><b>Picking Your Goal:</b> At the beginning each round you will be prompted a row of buttons to pick your goal with. You cannot agree with your opponent, your goal's must not add up to the round # </p>
+                <p><b>Playing a Card:</b> If you are the first to play a card (there is no card in the middle of the card area), you may play any card. If not, you must follow the suit previously played. If you do not have the suit, you must play a joker, otherwise you can play any card.</p>
+                <p><b>Winning Tricks:</b> The first card played determines the strong suit, however a trump suit will beat the strong suit. If the second card is the same suit, it will win only if it is a higher card, otherwise the first card wins the trick. If the second card is a different suit, it wins the trick if it is a trump, otherwise loses. If ether card is a joker, the suit is irrelevant, the higher card wins the trick with jokers being between ten and jack. If both cards are jokers, the first card wins the trick.</p>
+                <p><b>Scoring:</b> If you guess the correct number of tricks, you will score the number of tricks you won, plus the number of cards you started with, plus 5 for any joker in your tricks.</p>
+                <p><b>Game Play:</b> Start each round by picking your goal, then players take turns playing cards until each player is out of cards or neither player can reach their goal. Then a new round is dealt with an increasing or decreasing number of cards. Starting at 1 card each, working your way up to ten cards than back down to one card</p>
+            `;
+        </script>
+        <style>
+            html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
+            .lobby {overflow-y: scroll; margin-left: 500px; height: 500px; width: 400px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
+            .chat_input { color: white; }
+            .turn_indicator { padding: 20px; text-align: center; }
+            .picker:hover { transform: scale(1.05) rotate(1deg); }
+            .legal:hover { transform: scale(1.05) rotate(1deg); }
+            .picker:active { transform: scale(.94) rotate(-1deg); }
+            .legal:active { transform: scale(.94) rotate(-1deg); }
+            .cards{ padding: 1px; width: 94px; height: 130px; }
+            .legal{ padding: 1px; width: 94px; height: 130px; }
+            .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
+                padding: 10px; background: #529848; line-height: .7; }
+            .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px;
+                padding: 10px; background: #529848; }
+            .play_area { text-align: center; height: 190px; }
+            .player_hand{ text-align:center; }
+            .opponent_hand { height: 135px; text-align:center; }
+            .back_drop { height: 720px; width: 1620px; margin: 30px; border:6px dotted #b03f48; border-radius: 70px; background: #2e2e2e; }
+            .card_area { height: 440px; padding: 115px 0; text-align: center; }
+            .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px;
             text-align: center; text-decoration: none; display: inline-block; font-size: 20px; font-family: "Comic Sans MS"; line-height: 1px; }
-
-        .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
+            .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
             border-radius: 20px; font-size: 12px; text-align: left; padding-left: 10px; }
-
-        .chat{ overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
+            .chat{ overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e;
             border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
-
-        ::-webkit-scrollbar { width: 12px; }
-
-        ::-webkit-scrollbar-track { display: none; }
-
-        ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
-
-        .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
-
-    </style>
-</head>
-<body>
-<div id="back_drop" class="back_drop">
-    <div id="float_left" class="float_left">
-        <!--
-        <h2 id="opponent_name"></h2>
-        <p id="opponent_score"></p>
-        <p id="opponent_goal"></p>
-        <p id="opponent_tricks"></p>
-        <h2 id="player_name"></h2>
-        <p id="player_score"></p>
-        <p id="player_goal"></p>
-        <p id="player_tricks"></p>
-        <p></p>
-        <div id="aces"></div>
-        <p></p>
-        <div id="trump_text">
+            ::-webkit-scrollbar { width: 12px; }
+            ::-webkit-scrollbar-track { display: none; }
+            ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
+            .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
+        </style>
+    </head>
+    <body>
+        <div id="back_drop" class="back_drop">
+            <div id="float_left" class="float_left"></div>
+            <div id="float_right" class="float_right">
+                <div id="log" class="log"></div><br>
+                <div id="messages" class="chat"><br><h2>For help type $help.</h2></div><br>
+                <form action="">
+                    <input id="text" class="chat_input" type="text"/>
+                </form>
+            </div>
+            <div id="card_area" class="card_area"></div>
         </div>
-        <p></p>
-        <div id="trump_box" class="trump_box"></div>
-        -->
-    </div>
-    <div id="float_right" class="float_right">
-        <div id="log" class="log"></div>
-        <p></p>
-        <div id="messages" class="chat"><p></p><h2>For help type $help.</h2></div>
-        <p></p>
-        <form action="">
-            <input id="text" class="chat_input" type="text"/>
-        </form>
-    </div>
-    <div id="card_area" class="card_area">
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script>
 
-        <!-- add when game starts:
-        <div id="opponent_hand" class="opponent_hand"></div>
-        <div id="play_area" class="play_area"></div>
-        <div id="player_hand" class="player_hand"></div>
-        <div id="turn_indicator" class="turn_indicator"></div>
-        -->
+            //connects to server
+            let socket = io();
 
-        <div class="lobby" id="lobby"></div>
+            //tells the server your name
+            socket.emit('setName', userName);
 
+            //checks if card is legal play, returns boolean
+            const isLegal = (hand, i) => {
 
-    </div>
-</div>
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-<script>
+                //if there is no card in play, all moves are legal
+                if (inPlay[1] === 20) return true;
 
-    //connects to server
-    let socket = io();
+                //if the card to be played is the same suit as the card in play, move is legal
+                if (inPlay[1] === hand[i][1]) return true;
 
-    //tells the server your name
-    socket.emit('setName', userName);
+                //else check the rest of the players hand
+                else {
+                    let haveCards = haveCard(hand);
 
-    //checks if card is legal play, returns boolean
-    const isLegal = (hand, i) => {
+                    //if you don't have any inPlay suit cards or jokers in hand, move is legal
+                    if (!haveCards[0] && !haveCards[1]) return true;
 
-        //if there is no card in play, all moves are legal
-        if (inPlay[1] === 20) return true;
+                    //if you don't have the suit inPlay and the card you are trying to play is a joker, move is legal
+                    if (!haveCards[0] && hand[i][1] === 'joker') return true;
 
-        //if the card to be played is the same suit as the card in play, move is legal
-        if (inPlay[1] === hand[i][1]) return true;
-
-        //else check the rest of the players hand
-        else {
-            let haveCards = haveCard(hand);
-
-            //if you don't have any inPlay suit cards or jokers in hand, move is legal
-            if (!haveCards[0] && !haveCards[1]) return true;
-
-            //if you don't have the suit inPlay and the card you are trying to play is a joker, move is legal
-            if (!haveCards[0] && hand[i][1] === 'joker') return true;
-
-            //if card inPlay is a joker and you don't have a joker, any move is legal
-            if (inPlay[1] === 'joker' && !haveCards[1]) return true;
-        }
-
-        //returns false if all checks fail
-        return false
-    };
-
-    //checks if you have joker or trump suits in your hand, used by isLegal()
-    const haveCard = hand => {
-        let jokers = false;
-        let suits = false;
-        for (let i = 0; i<hand.length; i++){
-            if (hand[i][1] === inPlay[1]) suits = true;
-            if (hand[i][1] === 'joker') jokers = true;
-        }
-        return [suits, jokers];
-    };
-
-    //reads an object of { names : [tally of wins/losses/ties] } and returns scores in html
-    const printBoard = board => {
-        let print = '';
-        for(let key in board){
-            let wins = 0;
-            let loses = 0;
-            let ties = 0;
-            for(let i = 0; i < board[key].length; i++) {
-                if (board[key][i] === "win") wins++;
-                if (board[key][i] === "lose") loses++;
-                if (board[key][i] === "tie") ties++;
-            }
-            print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
-        }
-        return print;
-    };
-
-    //returns html for cards which can't be played
-    const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
-
-    //returns html for cards which can be played
-    const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
-
-    //returns html for inPlay and trump cards
-    const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
-
-    //what happens when you press enter in the chat input.
-    $('form').submit( () => {
-        let text = $('#text').val();
-
-       if (text === '$help') {
-           document.getElementById('messages').innerHTML += HELP_TEXT;
-       } else if (text.substring(0, 9) === '$whisper ') {
-           socket.emit('whisper', text.substring(7, text.length));
-       } else if (text === '$kick'){
-           socket.emit('kick');
-       } else if (text === '$lock') {
-           socket.emit('lock');
-       } else if (text === '$unlock') {
-           socket.emit('unlock');
-       } else if (text === '$resign'){
-           socket.emit('resign');
-       } else if (text === '$games') {
-           socket.emit('games');
-       } else if (text === '$buzz') {
-           socket.emit('buzz');
-       } else if (text === '$board') {
-           socket.emit('leaderboard');
-       } else if (text.substring(0, 7) === '$watch '){
-           socket.emit('watch_game', text.substring(7, text.length));
-       } else {
-           socket.emit('message', '<p>' + userName + ': ' + text + '</p>');
-           $('#text').val('');
-       }
-        return false;
-    });
-
-    //creates form for logging in and user creation
-    socket.on('setup_login', () => {
-        userName = 'GUEST';
-        document.getElementById('lobby').innerHTML = `<br><br>
-                user name: <input type="text" id="userName"><br><br>
-                password: <input type="password" id="password"><br><br><br><br>
-                <button style="font-family: 'Comic Sans MS'; color: white ; background-color: #2e2e2e ; border:31px dashed #b03f48; border-radius: 150px; height: 300px; width: 300px" id="login"><h1>Login<br>or<br>Create</h1></button>
-        `;
-        document.getElementById('login').addEventListener('click', () => {
-            let userName = document.getElementById('userName').value;
-            let password = document.getElementById('password').value;
-            socket.emit('login_request', [userName, password]);
-        });
-    });
-
-    //plays a shuffle sound to indicate a new hand has been dealt
-    socket.on('shuffle', () => shuffleSound.play());
-
-    //displays lobby (list of buttons representing players waiting to play a game)
-    socket.on('updateLobby', users => {
-
-        //displays buttons
-        let body = '<ul>';
-        for (let i = 0; i < users[1].length; i++) {
-            body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[NAME][i]}</button></p>`;
-        }
-        body += '</ul>';
-        document.getElementById('lobby').innerHTML = body;
-
-        //adds event to send pair request when button is pushed
-        for(let i = 0; i< users[ID].length; i++) {
-            document.getElementById(i.toString()).addEventListener('click', () => {
-                socket.emit('pair_request', users[ID][i]);
-            });
-        }
-        document.getElementById('float_left').innerHTML = printBoard(users[2]);
-    });
-
-    //gets pair request and confirms user
-    socket.on('rePair', pair => {
-        if (pair[1] === pair[0]) {
-            alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
-        } else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
-    });
-
-    //prints chat received by server in chat window
-    socket.on('receive_message', msg => {
-        let body = document.getElementById('messages');
-        smallSound.play();
-        body.innerHTML += `<p>${msg}</p>`;
-        body.scrollTop = body.scrollHeight;
-    });
-
-    //prints log received by server in log window
-    socket.on('receive_log', msg => {
-        let body = document.getElementById('log');
-        body.innerHTML += `<p>${msg}</p>`;
-        body.scrollTop = body.scrollHeight;
-    });
-
-    //gets DOM ready for a game
-    socket.on('setup_game', id => {
-        document.getElementById('card_area').innerHTML = `
-
-            <div id="opponent_hand" class="opponent_hand"></div>
-            <div id="play_area" class="play_area"></div>
-            <div id="player_hand" class="player_hand"></div>
-            <div id="turn_indicator" class="turn_indicator"></div>
-
-        `;
-        document.getElementById('float_left').innerHTML = `
-            <h2 id="opponent_name"></h2>
-            <p id="opponent_score"></p>
-            <p id="opponent_goal"></p>
-            <p id="opponent_tricks"></p>
-            <h2 id="player_name"></h2>
-            <p id="player_score"></p>
-            <p id="player_goal"></p>
-            <p id="player_tricks"></p>
-            <p></p>
-            <div id="aces"></div>
-            <p></p>
-            <div id="trump_text"></div>
-            <p></p>
-            <div id="trump_box" class="trump_box"></div>
-        `;
-        document.getElementById('trump_text').innerHTML = `<h2>Trump suit</h2>`;
-        document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
-        let acesButton = document.getElementById('aces_button');
-
-        acesButton.addEventListener('click', function () {
-            if (acesButton.innerHTML === 'Aces low') socket.emit('aces_high');
-            if (acesButton.innerHTML === 'Aces high') socket.emit('aces_low');
-        });
-        socket.on('lowAce', function () { acesButton.innerHTML = 'Aces low'; smallSound.play();});
-        socket.on('highAce', function () { acesButton.innerHTML = 'Aces high'; smallSound.play();});
-    });
-
-    //receives information about the game and displays it along with a row of buttons for players to pick there goal with
-    socket.on('picker', info => {
-        trump = info[TRUMP];
-        inPlay = info[IN_PLAY];
-
-        let showHand = '';
-        for (let i = 0; i < info[HAND].length; i++){
-            showHand += cardImg(info[HAND][i])
-        }
-        let showPicker = '';
-        if (info[TURN]) {
-            for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
-                if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]) {
-                    showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
-                } else {
-                    showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`
+                    //if card inPlay is a joker and you don't have a joker, any move is legal
+                    if (inPlay[1] === 'joker' && !haveCards[1]) return true;
                 }
-            }
-        }
-        document.getElementById('player_hand').innerHTML = showHand;
-        if(info[TURN]) {
-            document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
-        } else { document.getElementById('opponent_hand').innerHTML = '';}
-        document.getElementById('trump_box').innerHTML = bigCardImg(trump);
-        document.getElementById('play_area').innerHTML = showPicker;
 
-        let turn = document.getElementById('turn_indicator');
-        if (info[TURN]) {
-            turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
-        } else { turn.innerHTML = ''; }
+                //returns false if all checks fail
+                return false
+            };
 
-        document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
-        document.getElementById("player_name").innerHTML = userName;
-        document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
-        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
-        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
-        document.getElementById("player_score").innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
-        document.getElementById("player_goal").innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
-        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
+            //checks if you have joker or trump suits in your hand, used by isLegal()
+            const haveCard = hand => {
+                let jokers = false;
+                let suits = false;
+                for (let i = 0; i<hand.length; i++){
+                    if (hand[i][1] === inPlay[1]) suits = true;
+                    if (hand[i][1] === 'joker') jokers = true;
+                }
+                return [suits, jokers];
+            };
 
-        if (info[TURN]){
-            for (let i = 0; i < info[1]+1; i++){
-                document.getElementById(`picker${i}`).addEventListener('click', () => {
-                    socket.emit('pick', i);
-                });
-            }
-        }
-    });
-
-    //receives information about the game and displays it along with setting up cards to be clicked
-    socket.on('info', info => {
-        trump = info[TRUMP];
-        inPlay = info[IN_PLAY];
-
-        let showHand = '';
-        for (let i = 0; i < info[HAND].length; i++){
-            if (isLegal(info[HAND], i) && info[TURN]) showHand += legalCardImg(info[HAND][i]); else showHand += cardImg(info[HAND][i]);
-        }
-
-        let showOpponentHand = '';
-        for (let i = 0; i < info[OPPONENT_HAND_SIZE]; i++){
-            showOpponentHand += `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card_back.png" >`
-        }
-
-        document.getElementById('player_hand').innerHTML = showHand;
-        document.getElementById('opponent_hand').innerHTML = showOpponentHand;
-        document.getElementById('trump_box').innerHTML = bigCardImg(trump);
-        document.getElementById('play_area').innerHTML = bigCardImg(inPlay);
-
-        let turn = document.getElementById('turn_indicator');
-        if (info[4]) {
-            turn.innerHTML = 'ITS YOUR TURN!!! WHAT ARE YOU WAITING FOR?!?!';
-            alertSound.play();
-        } else { turn.innerHTML = ''; }
-
-        document.getElementById("opponent_name").innerHTML = info[OPPONENT_NAME];
-        document.getElementById("player_name").innerHTML = userName;
-        document.getElementById("opponent_score").innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
-        document.getElementById("opponent_goal").innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
-        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
-        document.getElementById("player_score").innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
-        document.getElementById("player_goal").innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
-        document.getElementById("player_tricks").innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
-
-        if (info[4]){
-            for (let i = 0; i < info[0].length; i++){
-                document.getElementById(info[0][i][1] + info[0][i][0]).addEventListener('click', () => {
-                    if (isLegal(info[0], i)){
-                        socket.emit('play_card', i);
+            //reads an object of { names : [tally of wins/losses/ties] } and returns scores in html
+            const printBoard = board => {
+                let print = '';
+                for(let key in board){
+                    let wins = 0;
+                    let loses = 0;
+                    let ties = 0;
+                    for(let i = 0; i < board[key].length; i++) {
+                        if (board[key][i] === "win") wins++;
+                        if (board[key][i] === "lose") loses++;
+                        if (board[key][i] === "tie") ties++;
                     }
+                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
+                }
+                return print;
+            };
+
+            //returns html for cards which can't be played
+            const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
+            //returns html for cards which can be played
+            const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
+            //returns html for inPlay and trump cards
+            const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+
+            //what happens when you press enter in the chat input.
+            $('form').submit( () => {
+                let text = $('#text').val();
+                /*s*/if (text === '$help') document.getElementById('messages').innerHTML += HELP_TEXT;
+                else if (text === '$instructions') document.getElementById('messages').innerHTML += INSTRUCTIONS_TEXT;
+                else if (text.substring(0, 8) === '$whisper') socket.emit('whisper', text.substring(9, text.length));
+                else if (text === '$kick')socket.emit('kick');
+                else if (text === '$lock') socket.emit('lock');
+                else if (text === '$unlock') socket.emit('unlock');
+                else if (text === '$resign')socket.emit('resign');
+                else if (text === '$games') socket.emit('games');
+                else if (text === '$buzz') socket.emit('buzz');
+                else if (text === '$board') socket.emit('leaderboard');
+                else if (text.substring(0, 7) === '$watch ')socket.emit('watch_game', text.substring(7, text.length));
+                else { socket.emit('message', '<p>' + userName + ': ' + text + '</p>'); $('#text').val(''); }
+                return false;
+            });
+
+            //creates form for logging in and user creation
+            socket.on('setup_login', () => {
+                userName = 'GUEST';
+                lobby.innerHTML = `<br><br>
+                        user name: <input type="text" id="userName"><br><br>
+                        password: <input type="password" id="password"><br><br><br><br>
+                        <button style="font-family: 'Comic Sans MS'; color: white ; background-color: #2e2e2e ; border:31px dashed #b03f48; border-radius: 150px; height: 300px; width: 300px" id="login"><h1>Login<br>or<br>Create</h1></button>
+                `;
+                document.getElementById('login').addEventListener('click', () => {
+                    let userName = document.getElementById('userName').value;
+                    let password = document.getElementById('password').value;
+                    socket.emit('login_request', [userName, password]);
                 });
-            }
-        }
-    });
+            });
 
-    //gets DOM ready for lobby
-    socket.on('setup_lobby', () => {
-        document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
-        document.getElementById('float_left').innerHTML = '';
-    });
+            //plays a shuffle sound to indicate a new hand has been dealt
+            socket.on('shuffle', () => shuffleSound.play());
 
-    //plays a sound at request of the server at the request of ether player in a game to get players attention
-    socket.on('buzzed', () => secretSound.play());
+            //displays lobby (list of buttons representing players waiting to play a game)
+            socket.on('updateLobby', users => {
 
-    //prints player information to console
-    socket.on('leaderboard', board => console.dir(board));
+                //displays buttons
+                let body = '<ul>';
+                for (let i = 0; i < users[1].length; i++) {
+                    body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[NAME][i]}</button></p>`;
+                }
+                body += '</ul>';
+                lobby.innerHTML = body;
 
-    //prints past game stats to console
-    socket.on('games', games => console.dir(games));
+                //adds event to send pair request when button is pushed
+                for(let i = 0; i< users[ID].length; i++) {
+                    document.getElementById(i.toString()).addEventListener('click', () => {
+                        socket.emit('pair_request', users[ID][i]);
+                    });
+                }
+                document.getElementById('float_left').innerHTML = printBoard(users[2]);
+            });
 
-    //sets displays game for spectator mode
-    socket.on('spy_setup', spyInfo => {
+            //gets pair request and confirms user
+            socket.on('rePair', pair => {
+                if (pair[1] === pair[0]) alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
+                else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
+            });
 
-        document.getElementById('trump_box').innerHTML = bigCardImg(spyInfo[PLAYER_1][TRUMP]);
-        document.getElementById('play_area').innerHTML = bigCardImg(spyInfo[PLAYER_2][IN_PLAY]);
+            //prints chat received by server in chat window
+            socket.on('receive_message', msg => {
+                let body = document.getElementById('messages');
+                smallSound.play();
+                body.innerHTML += `<p>${msg}</p>`;
+                body.scrollTop = body.scrollHeight;
+            });
 
-        let showPlayer1 = '';
-        let showPlayer2 = '';
-        for (let i = 0; i < spyInfo[PLAYER_1][HAND].length; i++) {
-            showPlayer1 += cardImg(spyInfo[PLAYER_1][HAND][i]);
-        }
-        for (let i = 0; i < spyInfo[PLAYER_2][HAND].length; i++) {
-            showPlayer2 += cardImg(spyInfo[PLAYER_2][HAND][i]);
-        }
-        document.getElementById('player_hand').innerHTML = showPlayer1;
-        document.getElementById('opponent_hand').innerHTML = showPlayer2;
+            //prints log received by server in log window
+            socket.on('receive_log', msg => {
+                let body = document.getElementById('log');
+                body.innerHTML += `<p>${msg}</p>`;
+                body.scrollTop = body.scrollHeight;
+            });
 
-        document.getElementById("opponent_name").innerHTML = spyInfo[PLAYER_1][OPPONENT_NAME];
-        document.getElementById("player_name").innerHTML = spyInfo[PLAYER_2][OPPONENT_NAME];
-        document.getElementById("opponent_score").innerHTML = `Score: ${spyInfo[PLAYER_2][PLAYER_STATS][SCORE]}`;
-        document.getElementById("opponent_goal").innerHTML = `Goal: ${spyInfo[PLAYER_2][PLAYER_STATS][GOAL]}`;
-        document.getElementById("opponent_tricks").innerHTML = `Tricks: ${spyInfo[PLAYER_2][PLAYER_STATS][TRICKS]}`;
-        document.getElementById("player_score").innerHTML = `Score: ${spyInfo[PLAYER_1][PLAYER_STATS][SCORE]}`;
-        document.getElementById("player_goal").innerHTML = `Goal: ${spyInfo[PLAYER_1][PLAYER_STATS][GOAL]}`;
-        document.getElementById("player_tricks").innerHTML = `Tricks: ${spyInfo[PLAYER_1][PLAYER_STATS][TRICKS]}`;
+            //gets DOM ready for a game and sets id getElementById variables
+            socket.on('setup_game', id => {
+                document.getElementById('card_area').innerHTML = `
+                    <div id="opponent_hand" class="opponent_hand"></div>
+                    <div id="play_area" class="play_area"></div>
+                    <div id="player_hand" class="player_hand"></div>
+                    <div id="turn_indicator" class="turn_indicator"></div>
+                `;
+                document.getElementById('float_left').innerHTML = `
+                    <h2 id="opponent_name"></h2>
+                    <p id="opponent_score"></p>
+                    <p id="opponent_goal"></p>
+                    <p id="opponent_tricks"></p>
+                    <h2 id="player_name"></h2>
+                    <p id="player_score"></p>
+                    <p id="player_goal"></p>
+                    <p id="player_tricks"></p><p></p>
+                    <div id="aces"></div><p></p>
+                    <h2>Trump suit</h2><p></p>
+                    <div id="trump_box" class="trump_box"></div>
+                `;
+                document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
+                aces_button = document.getElementById('aces_button');
 
-        if (spyInfo[PLAYER_1][TURN]) document.getElementById("player_name").innerHTML += '(turn)';
-        if (spyInfo[PLAYER_2][TURN]) document.getElementById("opponent_name").innerHTML += '(turn)';
-        document.getElementById('aces').innerHTML = '';
-    });
+                aces_button.addEventListener('click', function () {
+                    if (aces_button.innerHTML === 'Aces low') socket.emit('aces_high');
+                    if (aces_button.innerHTML === 'Aces high') socket.emit('aces_low');
+                });
+                socket.on('lowAce', function () { aces_button.innerHTML = 'Aces low'; smallSound.play();});
+                socket.on('highAce', function () { aces_button.innerHTML = 'Aces high'; smallSound.play();});
 
-    //gets userName from server after login
-    socket.on('set_user_name', name => { userName = name; });
+                player_hand = document.getElementById('player_hand');
+                opponent_hand = document.getElementById('opponent_hand');
+                trump_box = document.getElementById('trump_box');
+                play_area = document.getElementById('play_area');
+                opponent_name = document.getElementById('opponent_name');
+                player_name = document.getElementById('player_name');
+                opponent_score = document.getElementById('opponent_score');
+                opponent_goal = document.getElementById('opponent_goal');
+                opponent_tricks = document.getElementById('opponent_tricks');
+                player_score = document.getElementById('player_score');
+                player_goal = document.getElementById('player_goal');
+                player_tricks = document.getElementById('player_tricks');
+                turn_indicator = document.getElementById('turn_indicator')
+            });
 
-</script>
-</body>
+            //receives information about the game and displays it along with a row of buttons for players to pick there goal with
+            socket.on('picker', info => {
+                trump = info[TRUMP];
+                inPlay = info[IN_PLAY];
+
+                let showHand = '';
+                for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
+
+                let showPicker = '';
+                if (info[TURN]) {
+                    for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
+                        if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]) showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                        else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                    }
+                }
+
+                if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
+                else document.getElementById('opponent_hand').innerHTML = '';
+
+
+                if (info[TURN]) {
+                    title.innerHTML = "(Your Turn!) Orion's Oh Hell";
+                    turn_indicator.innerHTML = "<h1>! ! YOUR TURN ! !</h1>";
+                } else {
+                    title.innerHTML = "Orion's Oh Hell";
+                    turn_indicator.innerHTML = '';
+                }
+
+                player_hand.innerHTML = showHand;
+                trump_box.innerHTML = bigCardImg(trump);
+                play_area.innerHTML = showPicker;
+                opponent_name.innerHTML = info[OPPONENT_NAME];
+                player_name.innerHTML = userName;
+                opponent_score.innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
+                opponent_goal.innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
+                opponent_tricks.innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
+                player_score.innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
+                player_goal.innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
+                player_tricks.innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
+
+                if (info[TURN]) for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) document.getElementById(`picker${i}`).addEventListener('click', () => socket.emit('pick', i));
+
+            });
+
+            //receives information about the game and displays it along with setting up cards to be clicked
+            socket.on('info', info => {
+                let showHand = '';
+                for (let i = 0; i < info[HAND].length; i++) if (isLegal(info[HAND], i) && info[TURN]) showHand += legalCardImg(info[HAND][i]); else showHand += cardImg(info[HAND][i]);
+
+                let showOpponentHand = '';
+                for (let i = 0; i < info[OPPONENT_HAND_SIZE]; i++) showOpponentHand += `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card_back.png" >`;
+
+                if (info[TURN]) {
+                    title.innerHTML = "(Your Turn!) Orion's Oh Hell";
+                    turn_indicator.innerHTML = "<h1>! ! YOUR TURN ! !</h1>";
+                    alertSound.play();
+                } else {
+                    turn_indicator.innerHTML = '';
+                    title.innerHTML = "Orion's Oh Hell";
+                }
+
+                trump = info[TRUMP];
+                inPlay = info[IN_PLAY];
+                player_hand.innerHTML = showHand;
+                opponent_hand.innerHTML = showOpponentHand;
+                trump_box.innerHTML = bigCardImg(trump);
+                play_area.innerHTML = bigCardImg(inPlay);
+                opponent_name.innerHTML = info[OPPONENT_NAME];
+                player_name.innerHTML = userName;
+                opponent_score.innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
+                opponent_goal.innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
+                opponent_tricks.innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
+                player_score.innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
+                player_goal.innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
+                player_tricks.innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
+
+                if (info[TURN]) for (let i = 0; i < info[HAND].length; i++) {
+                    document.getElementById(info[HAND][i][SUIT] + info[HAND][i][VALUE]).addEventListener('click', () => {
+                        if (isLegal(info[HAND], i)) socket.emit('play_card', i);
+                    });
+                }
+            });
+
+            //gets DOM ready for lobby
+            socket.on('setup_lobby', () => {
+                document.getElementById('card_area').innerHTML = `<div class="lobby" id="lobby"></div>`;
+                document.getElementById('float_left').innerHTML = '';
+                lobby = document.getElementById('lobby');
+            });
+
+            //plays a sound at request of the server at the request of ether player in a game to get players attention
+            socket.on('buzzed', () => secretSound.play());
+
+            //prints player information to console
+            socket.on('leaderboard', board => console.dir(board));
+
+            //prints past game stats to console
+            socket.on('games', games => console.dir(games));
+
+            //sets displays game for spectator mode
+            socket.on('spy_setup', spyInfo => {
+                document.getElementById('aces').innerHTML = '';
+                let showPlayer1 = '';
+                let showPlayer2 = '';
+                for (let i = 0; i < spyInfo[PLAYER_1][HAND].length; i++) showPlayer1 += cardImg(spyInfo[PLAYER_1][HAND][i]);
+                for (let i = 0; i < spyInfo[PLAYER_2][HAND].length; i++) showPlayer2 += cardImg(spyInfo[PLAYER_2][HAND][i]);
+                player_hand.innerHTML = showPlayer1;
+                opponent_hand.innerHTML = showPlayer2;
+                opponent_name.innerHTML = spyInfo[PLAYER_1][OPPONENT_NAME];
+                player_name.innerHTML = spyInfo[PLAYER_2][OPPONENT_NAME];
+                opponent_score.innerHTML = `Score: ${spyInfo[PLAYER_2][PLAYER_STATS][SCORE]}`;
+                opponent_goal.innerHTML = `Goal: ${spyInfo[PLAYER_2][PLAYER_STATS][GOAL]}`;
+                opponent_tricks.innerHTML = `Tricks: ${spyInfo[PLAYER_2][PLAYER_STATS][TRICKS]}`;
+                player_score.innerHTML = `Score: ${spyInfo[PLAYER_1][PLAYER_STATS][SCORE]}`;
+                player_goal.innerHTML = `Goal: ${spyInfo[PLAYER_1][PLAYER_STATS][GOAL]}`;
+                player_tricks.innerHTML = `Tricks: ${spyInfo[PLAYER_1][PLAYER_STATS][TRICKS]}`;
+                trump_box.innerHTML = bigCardImg(spyInfo[PLAYER_1][TRUMP]);
+                play_area.innerHTML = bigCardImg(spyInfo[PLAYER_2][IN_PLAY]);
+                if (spyInfo[PLAYER_1][TURN]) player_name.innerHTML += '(turn)';
+                if (spyInfo[PLAYER_2][TURN]) opponent_name.innerHTML += '(turn)';
+            });
+
+            //gets userName from server after login
+            socket.on('set_user_name', name => { userName = name; });
+
+        </script>
+    </body>
 </html>
 
 
