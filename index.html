@@ -38,51 +38,28 @@
         </script>
         <style>
             html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
-
             .lobby {overflow-y: scroll; margin-left: 500px; height: 500px; width: 400px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
-
             .chat_input { color: white; }
-
             .turn_indicator { padding: 20px; text-align: center; }
-
             .picker:hover { transform: scale(1.05) rotate(1deg); }
-
             .legal:hover { transform: scale(1.05) rotate(1deg); }
-
             .picker:active { transform: scale(.94) rotate(-1deg); }
-
             .legal:active { transform: scale(.94) rotate(-1deg); }
-
             .cards{ padding: 1px; width: 94px; height: 130px; }
-
             .legal{ padding: 1px; width: 94px; height: 130px; }
-
             .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; line-height: .7; }
-
             .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; }
-
             .play_area { text-align: center; height: 190px; }
-
             .player_hand{ text-align:center; }
-
             .opponent_hand { height: 135px; text-align:center; }
-
             .back_drop { height: 720px; width: 1620px; margin: 30px; border:6px dotted #b03f48; border-radius: 70px; background: #2e2e2e; }
-
             .card_area { height: 440px; padding: 115px 0; text-align: center; }
-
             .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 20px; font-family: "Comic Sans MS"; line-height: 1px; }
-
             .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding-left: 10px; }
-
             .chat{ overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
-
             ::-webkit-scrollbar { width: 12px; }
-
             ::-webkit-scrollbar-track { display: none; }
-
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
-
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
 
         </style>
@@ -113,10 +90,10 @@
             const isLegal = (hand, i) => {
 
                 //if there is no card in play, all moves are legal
-                if (inPlay[1] === 20) return true;
+                if (inPlay[SUIT] === 20) return true;
 
                 //if the card to be played is the same suit as the card in play, move is legal
-                if (inPlay[1] === hand[i][1]) return true;
+                if (inPlay[SUIT] === hand[i][SUIT]) return true;
 
                 //else check the rest of the players hand
                 else {
@@ -129,7 +106,7 @@
                     if (!haveCards[0] && hand[i][1] === 'joker') return true;
 
                     //if card inPlay is a joker and you don't have a joker, any move is legal
-                    if (inPlay[1] === 'joker' && !haveCards[1]) return true;
+                    if (inPlay[SUIT] === 'joker' && !haveCards[1]) return true;
                 }
 
                 //returns false if all checks fail
@@ -141,8 +118,8 @@
                 let jokers = false;
                 let suits = false;
                 for (let i = 0; i<hand.length; i++){
-                    if (hand[i][1] === inPlay[1]) suits = true;
-                    if (hand[i][1] === 'joker') jokers = true;
+                    if (hand[i][SUIT] === inPlay[SUIT]) suits = true;
+                    if (hand[i][SUIT] === 'joker') jokers = true;
                 }
                 return [suits, jokers];
             };
@@ -165,13 +142,13 @@
             };
 
             //returns html for cards which can't be played
-            const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+            const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
             //returns html for cards which can be played
-            const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+            const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
             //returns html for inPlay and trump cards
-            const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[1]}${card[0]}.png" id="${card[1]}${card[0]}" >`;
+            const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
             //what happens when you press enter in the chat input.
             $('form').submit( () => {

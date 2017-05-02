@@ -5,6 +5,7 @@ let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
+let fs = require('fs');
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -17,9 +18,11 @@ const gameMap = {}; //holds all games {gameId : game object}
 const idArray = []; //an array of users in lobby
 const nameArray = []; //name array of users in lobby, lines up with idArray
 const finishedGameIdArray = []; // array of finished game objects for making leaderboard
-const passwordMap = {}; //map of {userName: password} for logging in
+let passwordMap = {}; //map of {userName: password} for logging in
 const namesPlaying = {}; //array of player names in active game, used to check if player is in an unfinished game on login
 const onlineNameArray = []; //array of active users, used to prevent double login
+const SUIT = 1;
+const VALUE = 0;
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
@@ -65,7 +68,13 @@ io.on('connection', socket => {
     socket.on('login_request', login => {
         const USER_NAME = 0;
         const PASSWORD = 1;
-        if (login[0] in passwordMap && !onlineNameArray.includes(login[0])) {
+        
+        
+        passwordMap = JSON.parse(fs.readFileSync(__dirname + "/passwordTEXT.txt"));
+        
+        
+        
+        if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
@@ -110,6 +119,12 @@ io.on('connection', socket => {
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
+    
+    
+    
+                fs.writeFileSync(__dirname + '/passwordTEXT.txt', JSON.stringify(passwordMap));
+                
+                
                 updateLobby();
             }
         }
@@ -138,7 +153,7 @@ io.on('connection', socket => {
 
     //if user accepts 'pair_request' the 2 users are removed from lobby and put into a game object.
     socket.on('finalPair', userIds => {
-        // 0 = player1, 1 = player2..
+        // 0 = player1, 1 = player2
         console.log(userMap[userIds[0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
         removeFromLobby(userIds[0]);
         removeFromLobby(userIds[1]);
@@ -176,9 +191,7 @@ io.on('connection', socket => {
             game[opponent].turn = true;
             game[player].picked = true;
             gameMap[gameId] = game;
-            if (game[player].picked && game[opponent].picked) {
-                sendInfo(gameId);
-            } else sendPick(gameId);
+            if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
         }
     });
     
@@ -196,7 +209,7 @@ io.on('connection', socket => {
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
         let value = game[player].hand[i][0];
-             if (value ===  1 ) value = 'low Ace';
+        /**/ if (value ===  1 ) value = 'low Ace';
         else if (value ===  2 ) value = 'Two';
         else if (value ===  3 ) value = 'Three';
         else if (value ===  4 ) value = 'Four';
@@ -212,8 +225,9 @@ io.on('connection', socket => {
         else if (value === 16 ) value = 'high Ace';
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
-        } else sendLog(gameId, `${game[player].name} plays ${value} of ${game[player].hand[i][1]}`);
-        if (game.inPlay[1] === 20) {
+        } else sendLog(gameId, `${game[player].name} plays ${value} of ${game[player].hand[i][SUIT]}`);
+        
+        if (game.inPlay[SUIT] === 20) {
             game.inPlay = game[player].hand[i];
             game[player].hand.splice(i, 1);
             game[player].turn = false;
@@ -508,8 +522,7 @@ const sendInfo = id => {
 const isTrick = data => {
     const CARD = 0;
     const GAME_ID = 1;
-    const SUIT = 1;
-    const VALUE = 0;
+   
     let game = gameMap[data[GAME_ID]];
     //one card is joker, return (played>inPlay)
     if (!(data[CARD][SUIT] === 'joker' && game.inPlay[SUIT] === 'joker')) {
