@@ -6,9 +6,21 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
 let fs = require('fs');
-
+let pg = require('pg');
+pg.defaults.ssl = true;
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
+});
+
+//connect to database first time
+pg.connect(process.env.DATABASE_URL, function(err, client) {
+    if (err) throw err;
+    console.log('Connected to postgres! Getting schemas...');
+    client
+        .query('SELECT table_schema,table_name FROM information_schema.tables;')
+        .on('row', function(row) {
+            console.log(JSON.stringify(row));
+        });
 });
 
 http.listen(port,() => { console.log('listening on *:' + port); });
@@ -70,7 +82,7 @@ io.on('connection', socket => {
         const PASSWORD = 1;
         
         
-        passwordMap = JSON.parse(fs.readFileSync(__dirname + "/passwordTEXT.txt"));
+        //passwordMap = JSON.parse(fs.readFileSync(__dirname + "/passwordTEXT.txt"));
         
         
         
@@ -122,7 +134,7 @@ io.on('connection', socket => {
     
     
     
-                fs.writeFileSync(__dirname + '/passwordTEXT.txt', JSON.stringify(passwordMap));
+                //fs.writeFileSync(__dirname + '/passwordTEXT.txt', JSON.stringify(passwordMap));
                 
                 
                 updateLobby();
