@@ -5,14 +5,13 @@ let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
-let fs = require('fs');
 let pg = require('pg');
+
 pg.defaults.ssl = true;
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-//connect to database first time
 pg.connect(process.env.DATABASE_URL, function(err, client) {
     if (err) throw err;
     console.log('Connected to postgres! Getting schemas...');
@@ -82,11 +81,35 @@ io.on('connection', socket => {
         const PASSWORD = 1;
         
         
-        //passwordMap = JSON.parse(fs.readFileSync(__dirname + "/passwordTEXT.txt"));
+        //test
         
+        pg.connect(process.env.DATABASE_URL, function(err, client) {
+            if (err) throw err;
+            console.log('Connected to postgres! Getting schemas...');
+            
+            client.query('SELECT passwordBank FROM information_schema.tables;').on('row', function(row) {
+                console.log(JSON.stringify(row));
+            });
+                //.query('SELECT table_schema,table_name FROM information_schema.tables;')
+                //.on('row', function(row) {
+                //    console.log(JSON.stringify(row));
+                //});
+        });
         
+        //end test
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
+    
+            pg.connect(process.env.DATABASE_URL, function(err, client) {
+                if (err) throw err;
+                console.log('Connected to postgres! Getting schemas...');
+                client
+                    .query('SELECT table_schema,table_name FROM information_schema.tables;')
+                    .on('row', function(row) {
+                        console.log(JSON.stringify(row));
+                    });
+            });
+            
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
