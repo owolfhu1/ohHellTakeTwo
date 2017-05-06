@@ -52,10 +52,10 @@
       <file leaf-file-name="server.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="449">
-              <caret line="696" column="87" lean-forward="false" selection-start-line="696" selection-start-column="87" selection-end-line="696" selection-end-column="87" />
+            <state relative-caret-position="352">
+              <caret line="97" column="10" lean-forward="false" selection-start-line="97" selection-start-column="10" selection-end-line="97" selection-end-column="10" />
               <folding>
-                <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+                <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
               </folding>
             </state>
           </provider>
@@ -197,8 +197,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -311,7 +311,8 @@
       <workItem from="1492952061416" duration="9983000" />
       <workItem from="1493424637162" duration="54401000" />
       <workItem from="1493748085232" duration="6845000" />
-      <workItem from="1494036481633" duration="2584000" />
+      <workItem from="1494036481633" duration="4506000" />
+      <workItem from="1494104925293" duration="920000" />
     </task>
     <task id="LOCAL-00001" summary="test">
       <created>1492026274174</created>
@@ -324,7 +325,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="248016000" />
+    <option name="totallyTimeSpent" value="250858000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -337,15 +338,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.060814384" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14859863" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24368826" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22612514" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -406,12 +406,59 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11328">
+          <caret line="708" column="31" lean-forward="true" selection-start-line="708" selection-start-column="31" selection-end-line="708" selection-end-column="31" />
+          <folding>
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="688">
+          <caret line="189" column="46" lean-forward="false" selection-start-line="189" selection-start-column="46" selection-end-line="189" selection-end-column="46" />
+          <folding>
+            <element signature="n#head#0;n#html#0;n#!!top" expanded="false" />
+            <element signature="n#div#0;n#body#0;n#html#0;n#!!top" expanded="false" />
+            <element signature="e#7289#8357#0" expanded="false" />
+            <element signature="e#8483#8816#0" expanded="false" />
+            <element signature="e#8959#9595#0" expanded="false" />
+            <element signature="e#10411#11534#0" expanded="false" />
+            <element signature="e#11641#12493#0" expanded="false" />
+            <element signature="e#12770#13629#0" expanded="false" />
+            <element signature="e#13723#14022#0" expanded="false" />
+            <element signature="e#14134#14351#0" expanded="false" />
+            <element signature="e#14457#14634#0" expanded="false" />
+            <element signature="e#14757#17392#0" expanded="false" />
+            <element signature="e#17566#19802#0" expanded="false" />
+            <element signature="e#19952#22209#0" expanded="false" />
+            <element signature="e#22295#22543#0" expanded="false" />
+            <element signature="e#23053#24596#0" expanded="false" />
+            <marker date="1493670337462" expanded="true" signature="2559:3073" ph="..." />
+            <marker date="1493670337462" expanded="true" signature="9467:9482" ph="..." />
+            <marker date="1493670337462" expanded="true" signature="11927:12077" ph="..." />
+            <marker date="1493670337462" expanded="true" signature="12950:13059" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1392">
           <caret line="87" column="26" lean-forward="true" selection-start-line="87" selection-start-column="26" selection-end-line="87" selection-end-column="26" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -466,7 +513,7 @@
         <state relative-caret-position="10256">
           <caret line="641" column="18" lean-forward="false" selection-start-line="641" selection-start-column="18" selection-end-line="641" selection-end-column="18" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -505,7 +552,7 @@
         <state relative-caret-position="48">
           <caret line="3" column="1" lean-forward="false" selection-start-line="3" selection-start-column="1" selection-end-line="3" selection-end-column="1" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -552,7 +599,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -599,7 +646,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -654,7 +701,7 @@
         <state relative-caret-position="3936">
           <caret line="246" column="42" lean-forward="true" selection-start-line="246" selection-start-column="42" selection-end-line="246" selection-end-column="42" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -701,7 +748,7 @@
         <state relative-caret-position="3162">
           <caret line="186" column="77" lean-forward="true" selection-start-line="186" selection-start-column="77" selection-end-line="186" selection-end-column="77" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -740,7 +787,7 @@
         <state relative-caret-position="663">
           <caret line="41" column="0" lean-forward="true" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>
@@ -760,13 +807,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Desktop/whatisnodejs/module1.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Desktop/whatisnodejs/module1.js" />
     <entry file="file://$PROJECT_DIR$/passwordTEXT.txt" />
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
@@ -807,10 +848,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="449">
-          <caret line="696" column="87" lean-forward="false" selection-start-line="696" selection-start-column="87" selection-end-line="696" selection-end-column="87" />
+        <state relative-caret-position="352">
+          <caret line="97" column="10" lean-forward="false" selection-start-line="97" selection-start-column="10" selection-end-line="97" selection-end-column="10" />
           <folding>
-            <marker date="1494045906269" expanded="true" signature="19723:19759" ph="..." />
+            <marker date="1494105573942" expanded="true" signature="19727:19763" ph="..." />
           </folding>
         </state>
       </provider>

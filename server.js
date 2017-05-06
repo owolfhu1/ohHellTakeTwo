@@ -82,7 +82,7 @@ io.on('connection', socket => {
         
         
         //test
-        /*
+        ///*
         pg.connect(process.env.DATABASE_URL, function(err, client) {
             if (err) throw err;
             console.log('Connected to postgres! Getting schemas...');
@@ -95,7 +95,7 @@ io.on('connection', socket => {
                 //    console.log(JSON.stringify(row));
                 //});
         });
-        */
+        //*/
         //end test
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
@@ -692,8 +692,12 @@ const endRoundNow = game => {
     let player2 = game[game.player2Id];
     let player1CantWin = false;
     let player2CantWin = false;
-    if (player1.tricks > player1.goal || player1.tricks + player1.hand.length < player1.goal) player1CantWin = true;
-    if (player2.tricks > player2.goal || player2.tricks + player2.hand.length < player2.goal) player2CantWin = true;
+    
+    let tricksLeft = player1.hand.length;
+    if (player2.hand.length > tricksLeft) { tricksLeft = player2.hand.length; }
+    
+    if (player1.tricks > player1.goal || player1.tricks + tricksLeft < player1.goal) player1CantWin = true;
+    if (player2.tricks > player2.goal || player2.tricks + tricksLeft < player2.goal) player2CantWin = true;
     if (player1CantWin && player2CantWin) {
         sendLog(userMap[game.player1Id].gameId, `No one could win so the round has ended.`);
         return true;
