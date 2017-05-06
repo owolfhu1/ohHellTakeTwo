@@ -81,34 +81,12 @@ io.on('connection', socket => {
         const PASSWORD = 1;
         
         
-        //test
-        ///*
-        pg.connect(process.env.DATABASE_URL, function(err, client) {
-            if (err) throw err;
-            console.log('Connected to postgres! Getting schemas...');
-            
-            client.query('SELECT passwordBank FROM information_schema.tables;').on('row', function(row) {
-                console.log(JSON.stringify(row));
-            });
-                //.query('SELECT table_schema,table_name FROM information_schema.tables;')
-                //.on('row', function(row) {
-                //    console.log(JSON.stringify(row));
-                //});
-        });
-        //*/
-        //end test
+        //get db here
+        
+        
+        
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
-    
-            pg.connect(process.env.DATABASE_URL, function(err, client) {
-                if (err) throw err;
-                console.log('Connected to postgres! Getting schemas...');
-                client
-                    .query('SELECT table_schema,table_name FROM information_schema.tables;')
-                    .on('row', function(row) {
-                        console.log(JSON.stringify(row));
-                    });
-            });
             
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
