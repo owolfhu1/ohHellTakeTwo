@@ -19,7 +19,6 @@ const gameMap = {}; //holds all games {gameId : game object}
 const idArray = []; //an array of users in lobby
 const nameArray = []; //name array of users in lobby, lines up with idArray
 const finishedGameIdArray = []; // array of finished game objects for making leaderboard
-let passwordMap = {}; //map of {userName: password} for logging in
 const namesPlaying = {}; //array of player names in active game, used to check if player is in an unfinished game on login
 const onlineNameArray = []; //array of active users, used to prevent double login
 const SUIT = 1;
@@ -69,7 +68,7 @@ io.on('connection', socket => {
     socket.on('login_request', login => {
         const USER_NAME = 0;
         const PASSWORD = 1;
-        passwordMap = {};
+        let passwordMap = {};
         
         //get database { name : pass } table
         pg.connect(process.env.DATABASE_URL, function(err, client) {
@@ -78,9 +77,9 @@ io.on('connection', socket => {
             client
                 .query('SELECT * FROM passbank;')
                 .on('row', function(row) {
-                    //passwordMap[row.name] = row.pass;
-                    console.log(row.name);
+                    passwordMap[row.name] = row.pass;
                 });
+            console.log(JSON.stringify(passwordMap));
         });
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
