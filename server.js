@@ -12,16 +12,6 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-pg.connect(process.env.DATABASE_URL, function(err, client) {
-    if (err) throw err;
-    console.log('Connected to postgres! Getting schemas...');
-    client
-        .query('SELECT * FROM passbank;')
-        .on('row', function(row) {
-            console.log(JSON.stringify(row));
-        });
-});
-
 http.listen(port,() => { console.log('listening on *:' + port); });
 
 const userMap = {}; //holds online user information {userId: {name: ____, gameId: ____} }
@@ -79,15 +69,20 @@ io.on('connection', socket => {
     socket.on('login_request', login => {
         const USER_NAME = 0;
         const PASSWORD = 1;
+        passwordMap = {};
         
-        
-        //get db here
-        
-        
-        
+        //get database { name : pass } table
+        pg.connect(process.env.DATABASE_URL, function(err, client) {
+            if (err) throw err;
+            console.log('retrieving password map...');
+            client
+                .query('SELECT * FROM passbank;')
+                .on('row', function(row) {
+                    passwordMap[row.name] = row.pass;
+                });
+        });
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
-            
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
@@ -123,6 +118,7 @@ io.on('connection', socket => {
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
         } else {
+            /*
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 onlineNameArray.push(login[USER_NAME]);
                 passwordMap[login[USER_NAME]] = login[PASSWORD];
@@ -132,14 +128,12 @@ io.on('connection', socket => {
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
-    
-    
-    
-                //fs.writeFileSync(__dirname + '/passwordTEXT.txt', JSON.stringify(passwordMap));
+
                 
-                
+               
                 updateLobby();
             }
+            */
         }
     });
     
