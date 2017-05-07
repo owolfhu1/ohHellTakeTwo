@@ -205,7 +205,7 @@ io.on('connection', socket => {
             if (err) throw err;
             console.log('adding to game map...');
             client
-                .query(`INSERT INTO gameMap values('${gameId}', ${game})`);
+                .query(`INSERT INTO gameMap values('${gameId}', '${game}')`);
         });
         
         namesPlaying[game[userIds[0]].name] = gameId;
