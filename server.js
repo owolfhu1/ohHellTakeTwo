@@ -78,7 +78,8 @@ io.on('connection', socket => {
             client
                 .query('SELECT * FROM passbank;')
                 .on('row', function(row) {
-                    passwordMap[row.name] = row.pass;
+                    //passwordMap[row.name] = row.pass;
+                    console.log(row.name);
                 });
         });
         
