@@ -34,17 +34,15 @@ pg.connect(process.env.DATABASE_URL, function(err, client) {
         .on('row', function(row) {
             gameMap[row.gameId] = row.game;
         });
-});
 
-pg.connect(process.env.DATABASE_URL, function(err, client) {
-    if (err) throw err;
+
     console.log('retrieving gameMap...');
     client
         .query('SELECT * FROM finishedGameIdArray;')
         .on('row', function(row) {
             finishedGameIdArray.push(row.gameId);
         });
-});
+
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
@@ -80,16 +78,14 @@ io.on('connection', socket => {
     userMap[userId] = { name: 'no_input', gameId: 'none' };
     let user = userMap[userId];
     
-    //get database { name : pass } table
-    pg.connect(process.env.DATABASE_URL, function(err, client) {
-        if (err) throw err;
+    
         console.log('retrieving password map...');
         client
             .query('SELECT * FROM passbank;')
             .on('row', function(row) {
                 passwordMap[row.name] = row.pass;
             });
-    });
+    
     
     //gets client ready for login
     io.to(userId).emit('setup_lobby');
@@ -141,12 +137,11 @@ io.on('connection', socket => {
             }
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
-                pg.connect(process.env.DATABASE_URL, function(err, client) {
-                    if (err) throw err;
+                
                     console.log('retrieving password map...');
                     client
                         .query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
-                });
+                
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 nameArray.push(user.name);
@@ -308,18 +303,16 @@ io.on('connection', socket => {
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
     
-            pg.connect(process.env.DATABASE_URL, function(err, client) {
-                if (err) throw err;
+            
                 console.log('adding to finished games...');
                 client
                     .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-            });
-            pg.connect(process.env.DATABASE_URL, function(err, client) {
-                if (err) throw err;
+           
+           
                 console.log('adding to game map...');
                 client
                     .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
-            });
+            
             
             idArray.push(userId);
             nameArray.push(userMap[userId].name);
@@ -647,18 +640,16 @@ const endGame = gameId => {
   delete namesPlaying[game[player1].name];
   finishedGameIdArray.push(gameId);
   
-  pg.connect(process.env.DATABASE_URL, function(err, client) {
-      if (err) throw err;
+  
       console.log('adding to finished games...');
       client
           .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-  });
-  pg.connect(process.env.DATABASE_URL, function(err, client) {
-      if (err) throw err;
+  
+  
       console.log('adding to game map...');
       client
           .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
-  });
+ 
   
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
@@ -735,3 +726,6 @@ const finishedGameMap = () => {
     }
     return map;
 };
+
+
+});
