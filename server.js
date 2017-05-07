@@ -200,14 +200,6 @@ io.on('connection', socket => {
         game[userIds[0]].name = userMap[userIds[0]].name;
         game[userIds[1]].name = userMap[userIds[1]].name;
         gameMap[gameId] = game;
-        
-        pg.connect(process.env.DATABASE_URL, function(err, client) {
-            if (err) throw err;
-            console.log('adding to game map...');
-            client
-                .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
-        });
-        
         namesPlaying[game[userIds[0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
         io.to(userIds[0]).emit('setup_game');
@@ -321,6 +313,12 @@ io.on('connection', socket => {
                 console.log('adding to finished games...');
                 client
                     .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+            });
+            pg.connect(process.env.DATABASE_URL, function(err, client) {
+                if (err) throw err;
+                console.log('adding to game map...');
+                client
+                    .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
             });
             
             idArray.push(userId);
@@ -654,6 +652,12 @@ const endGame = gameId => {
       console.log('adding to finished games...');
       client
           .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+  });
+  pg.connect(process.env.DATABASE_URL, function(err, client) {
+      if (err) throw err;
+      console.log('adding to game map...');
+      client
+          .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
   });
   
   userMap[player1].gameId = 'none';
