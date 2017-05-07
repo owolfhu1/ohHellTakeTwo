@@ -7,8 +7,10 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let port = process.env.PORT || 3000;
 let pg = require('pg');
-
 pg.defaults.ssl = true;
+let client = new pg.Client(process.env.DATABASE_URL);
+client.connect();
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
@@ -26,23 +28,14 @@ const SUIT = 1;
 const VALUE = 0;
 
 //import data from database on load
-pg.connect(process.env.DATABASE_URL, function(err, client) {
-    if (err) throw err;
-    console.log('retrieving gameMap...');
-    client
-        .query('SELECT * FROM gameMap;')
-        .on('row', function(row) {
-            gameMap[row.gameId] = row.game;
-        });
 
+client.query('SELECT * FROM gameMap;').on('row', function(row) {
+    gameMap[row.gameId] = row.game;
+});
 
-    console.log('retrieving gameMap...');
-    client
-        .query('SELECT * FROM finishedGameIdArray;')
-        .on('row', function(row) {
-            finishedGameIdArray.push(row.gameId);
-        });
-
+client.query('SELECT * FROM finishedGameIdArray;').on('row', function(row) {
+    finishedGameIdArray.push(row.gameId);
+});
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
@@ -78,13 +71,9 @@ io.on('connection', socket => {
     userMap[userId] = { name: 'no_input', gameId: 'none' };
     let user = userMap[userId];
     
-    
-        console.log('retrieving password map...');
-        client
-            .query('SELECT * FROM passbank;')
-            .on('row', function(row) {
-                passwordMap[row.name] = row.pass;
-            });
+    client.query('SELECT * FROM passbank;').on('row', function(row) {
+        passwordMap[row.name] = row.pass;
+    });
     
     
     //gets client ready for login
@@ -138,9 +127,7 @@ io.on('connection', socket => {
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 
-                    console.log('retrieving password map...');
-                    client
-                        .query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
+                client.query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
                 
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
@@ -302,18 +289,6 @@ io.on('connection', socket => {
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
-    
-            
-                console.log('adding to finished games...');
-                client
-                    .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-           
-           
-                console.log('adding to game map...');
-                client
-                    .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
-            
-            
             idArray.push(userId);
             nameArray.push(userMap[userId].name);
             if (opponentId in userMap) {
@@ -333,6 +308,10 @@ io.on('connection', socket => {
                 userMap[opponentId].gameId = 'none';
             }
             userMap[userId].gameId = 'none';
+            
+            client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+            client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
+            
             updateLobby();
         }
     });
@@ -639,18 +618,8 @@ const endGame = gameId => {
   delete namesPlaying[game[player1].name];
   delete namesPlaying[game[player1].name];
   finishedGameIdArray.push(gameId);
-  
-  
-      console.log('adding to finished games...');
-      client
-          .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-  
-  
-      console.log('adding to game map...');
-      client
-          .query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
- 
-  
+  client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+  client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
   updateLobby();
@@ -727,5 +696,3 @@ const finishedGameMap = () => {
     return map;
 };
 
-
-});
