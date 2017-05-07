@@ -1,6 +1,7 @@
 /**
  * Created by Orion Wolf_Hubbard on 4/10/2017.
  */
+
 let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
@@ -15,14 +16,35 @@ app.get('/', (req, res) => {
 http.listen(port,() => { console.log('listening on *:' + port); });
 
 const userMap = {}; //holds online user information {userId: {name: ____, gameId: ____} }
-const gameMap = {}; //holds all games {gameId : game object}
+let gameMap = {}; //holds all games {gameId : game object}
 const idArray = []; //an array of users in lobby
 const nameArray = []; //name array of users in lobby, lines up with idArray
-const finishedGameIdArray = []; // array of finished game objects for making leaderboard
-const namesPlaying = {}; //array of player names in active game, used to check if player is in an unfinished game on login
+let finishedGameIdArray = []; // array of finished game objects for making leaderboard
+let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
 const onlineNameArray = []; //array of active users, used to prevent double login
 const SUIT = 1;
 const VALUE = 0;
+
+//import data from database on load
+pg.connect(process.env.DATABASE_URL, function(err, client) {
+    if (err) throw err;
+    console.log('retrieving gameMap...');
+    client
+        .query('SELECT * FROM gameMap;')
+        .on('row', function(row) {
+            gameMap[row.gameId] = row.game;
+        });
+});
+
+pg.connect(process.env.DATABASE_URL, function(err, client) {
+    if (err) throw err;
+    console.log('retrieving gameMap...');
+    client
+        .query('SELECT * FROM finishedGameIdArray;')
+        .on('row', function(row) {
+            finishedGameIdArray.push(row.gameId);
+        });
+});
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
@@ -67,7 +89,6 @@ io.on('connection', socket => {
             .on('row', function(row) {
                 passwordMap[row.name] = row.pass;
             });
-        
     });
     
     //gets client ready for login
@@ -120,24 +141,19 @@ io.on('connection', socket => {
             }
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
-    
                 pg.connect(process.env.DATABASE_URL, function(err, client) {
                     if (err) throw err;
                     console.log('retrieving password map...');
                     client
                         .query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
                 });
-                
                 onlineNameArray.push(login[USER_NAME]);
-                //passwordMap[login[USER_NAME]] = login[PASSWORD];
                 user.name = login[USER_NAME];
                 nameArray.push(user.name);
                 idArray.push(userId);
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
-                
-               
                 updateLobby();
             }
         }
@@ -184,6 +200,14 @@ io.on('connection', socket => {
         game[userIds[0]].name = userMap[userIds[0]].name;
         game[userIds[1]].name = userMap[userIds[1]].name;
         gameMap[gameId] = game;
+        
+        pg.connect(process.env.DATABASE_URL, function(err, client) {
+            if (err) throw err;
+            console.log('adding to game map...');
+            client
+                .query(`INSERT INTO gameMap values('${gameId}', ${game})`);
+        });
+        
         namesPlaying[game[userIds[0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
         io.to(userIds[0]).emit('setup_game');
@@ -291,6 +315,14 @@ io.on('connection', socket => {
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
+    
+            pg.connect(process.env.DATABASE_URL, function(err, client) {
+                if (err) throw err;
+                console.log('adding to finished games...');
+                client
+                    .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+            });
+            
             idArray.push(userId);
             nameArray.push(userMap[userId].name);
             if (opponentId in userMap) {
@@ -616,6 +648,14 @@ const endGame = gameId => {
   delete namesPlaying[game[player1].name];
   delete namesPlaying[game[player1].name];
   finishedGameIdArray.push(gameId);
+  
+  pg.connect(process.env.DATABASE_URL, function(err, client) {
+      if (err) throw err;
+      console.log('adding to finished games...');
+      client
+          .query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+  });
+  
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
   updateLobby();
