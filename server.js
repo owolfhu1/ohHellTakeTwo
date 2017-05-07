@@ -50,13 +50,25 @@ let blankPlayer = function() {
     this.tricksWon = null;
     this.score = 0;
 };
-
+let passwordMap = {};
 //all information from client is received in this function
 io.on('connection', socket => {
     let userId = socket.id;
     io.sockets.emit('receive_message', 'A guest has joined the server.');
     userMap[userId] = { name: 'no_input', gameId: 'none' };
     let user = userMap[userId];
+    
+    //get database { name : pass } table
+    pg.connect(process.env.DATABASE_URL, function(err, client) {
+        if (err) throw err;
+        console.log('retrieving password map...');
+        client
+            .query('SELECT * FROM passbank;')
+            .on('row', function(row) {
+                passwordMap[row.name] = row.pass;
+            });
+        
+    });
     
     //gets client ready for login
     io.to(userId).emit('setup_lobby');
@@ -68,19 +80,8 @@ io.on('connection', socket => {
     socket.on('login_request', login => {
         const USER_NAME = 0;
         const PASSWORD = 1;
-        let passwordMap = {};
-        let passwordTap = [];
-        //get database { name : pass } table
-        pg.connect(process.env.DATABASE_URL, function(err, client) {
-            if (err) throw err;
-            console.log('retrieving password map...');
-            client
-                .query('SELECT * FROM passbank;')
-                .on('row', function(row) {
-                    passwordTap.push([row.name, row.pass]);
-                });
-            console.log(JSON.stringify(passwordTap));
-        });
+    
+        console.log(JSON.stringify(passwordMap));
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
