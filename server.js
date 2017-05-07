@@ -74,10 +74,14 @@ io.on('connection', socket => {
         pg.connect(process.env.DATABASE_URL, function(err, client) {
             if (err) throw err;
             console.log('retrieving password map...');
+            let x = 1;
             client
                 .query('SELECT * FROM passbank;')
                 .on('row', function(row) {
-                    passwordMap[row.name] = row.pass;
+                    let name = row.name;
+                    passwordMap[name] = row.pass;
+                    console.log('adding row ' + x);
+                    x++;
                 });
             console.log(JSON.stringify(passwordMap));
         });
