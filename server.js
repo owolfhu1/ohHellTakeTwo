@@ -69,21 +69,17 @@ io.on('connection', socket => {
         const USER_NAME = 0;
         const PASSWORD = 1;
         let passwordMap = {};
-        
+        let passwordTap = [];
         //get database { name : pass } table
         pg.connect(process.env.DATABASE_URL, function(err, client) {
             if (err) throw err;
             console.log('retrieving password map...');
-            let x = 1;
             client
                 .query('SELECT * FROM passbank;')
                 .on('row', function(row) {
-                    let name = row.name;
-                    passwordMap[name] = row.pass;
-                    console.log('adding row ' + x);
-                    x++;
+                    passwordTap.push([row.name, row.pass]);
                 });
-            console.log(JSON.stringify(passwordMap));
+            console.log(JSON.stringify(passwordTap));
         });
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
