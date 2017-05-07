@@ -119,22 +119,27 @@ io.on('connection', socket => {
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
         } else {
-            /*
             if (!onlineNameArray.includes(login[USER_NAME])) {
+    
+                pg.connect(process.env.DATABASE_URL, function(err, client) {
+                    if (err) throw err;
+                    console.log('retrieving password map...');
+                    client
+                        .query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
+                });
+                
                 onlineNameArray.push(login[USER_NAME]);
-                passwordMap[login[USER_NAME]] = login[PASSWORD];
+                //passwordMap[login[USER_NAME]] = login[PASSWORD];
                 user.name = login[USER_NAME];
                 nameArray.push(user.name);
                 idArray.push(userId);
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
-
                 
                
                 updateLobby();
             }
-            */
         }
     });
     
