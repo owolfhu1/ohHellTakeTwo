@@ -28,11 +28,9 @@ const SUIT = 1;
 const VALUE = 0;
 
 //import data from database on load
-
 client.query('SELECT * FROM gameMap;').on('row', function(row) {
     gameMap[row.gameId] = row.game;
 });
-
 client.query('SELECT * FROM finishedGameIdArray;').on('row', function(row) {
     finishedGameIdArray.push(row.gameId);
 });
