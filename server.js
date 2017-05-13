@@ -312,8 +312,8 @@ io.on('connection', socket => {
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     
         sendInfo(gameId);
-        });
     });
+    
     
     /*  aces low/high sockets flips the game.aceValue (1 or 16) when
         client presses aces button and sends high/low ace command back to clients. */
