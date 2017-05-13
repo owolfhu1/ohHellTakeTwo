@@ -69,7 +69,7 @@ let passwordMap = {};
 io.on('connection', socket => {
     
     //for testing
-    socket.on('crash', () => { System.end });
+    socket.on('crash', () => { process.exit(1); });
     
     let userId = socket.id;
     userMap[userId] = { name: 'no input', gameId: 'none' };
