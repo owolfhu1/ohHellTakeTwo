@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = '', trump, inPlay, aces_button;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button;
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -33,7 +33,7 @@
                 <p><b>Playing a Card:</b> If you are the first to play a card (there is no card in the middle of the card area), you may play any card. If not, you must follow the suit previously played. If you do not have the suit, you must play a joker, otherwise you can play any card.</p>
                 <p><b>Winning Tricks:</b> The first card played determines the strong suit, however a trump suit will beat the strong suit. If the second card is the same suit, it will win only if it is a higher card, otherwise the first card wins the trick. If the second card is a different suit, it wins the trick if it is a trump, otherwise loses. If ether card is a joker, the suit is irrelevant, the higher card wins the trick with jokers being between ten and jack. If both cards are jokers, the first card wins the trick.</p>
                 <p><b>Scoring:</b> If you guess the correct number of tricks, you will score the number of tricks you won, plus the number of cards you started with, plus 5 for any joker in your tricks.</p>
-                <p><b>Game Play:</b> Start each round by picking your goal, then players take turns playing cards until each player is out of cards or neither player can reach their goal. Then a new round is dealt with an increasing or decreasing number of cards. Starting at 1 card each, working your way up to ten cards than back down to one card</p>
+                <p><b>Game Play:</b> Start each round by picking your goal, then players take turns playing cards until each player is out of cards or neither player can reach their goal. Then a new round is dealt with an increasing or decreasing number of cards. Starting at 1 card each, working your way up to ten cards then back down to one card</p>
             `;
         </script>
         <style>
@@ -163,6 +163,7 @@
                 else if (text === '$games') socket.emit('games');
                 else if (text === '$buzz') socket.emit('buzz');
                 else if (text === '$board') socket.emit('leaderboard');
+                else if (text === '$$CRASH') socket.emit('crash');
                 else if (text.substring(0, 7) === '$watch ')socket.emit('watch_game', text.substring(7, text.length));
                 else { socket.emit('message', '<p>' + userName + ': ' + text + '</p>'); $('#text').val(''); }
                 return false;
@@ -170,7 +171,6 @@
 
             //creates form for logging in and user creation
             socket.on('setup_login', () => {
-                userName = 'GUEST';
                 lobby.innerHTML = `<br><br>
                         user name: <input type="text" id="userName"><br><br>
                         password: <input type="password" id="password"><br><br><br><br>

@@ -19,17 +19,20 @@ http.listen(port,() => { console.log('listening on *:' + port); });
 
 const userMap = {}; //holds online user information {userId: {name: ____, gameId: ____} }
 let gameMap = {}; //holds all games {gameId : game object}
-const idArray = []; //an array of users in lobby
-const nameArray = []; //name array of users in lobby, lines up with idArray
+let idArray = []; //an array of users in lobby
+let nameArray = []; //name array of users in lobby, lines up with idArray
 let finishedGameIdArray = []; // array of finished game objects for making leaderboard
 let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
-const onlineNameArray = []; //array of active users, used to prevent double login
+let onlineNameArray = []; //array of active users, used to prevent double login
 const SUIT = 1;
 const VALUE = 0;
 
-//import data from database on load
+//load maps
 client.query('SELECT * FROM gameMap;').on('row', function(row) {
-    gameMap[row.gameId] = row.game;
+    if (row.thiskey === 'KEY') gameMap = row.gamemap;
+});
+client.query('SELECT * FROM namesPlaying;').on('row', function(row) {
+    if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
 });
 client.query('SELECT * FROM finishedGameIdArray;').on('row', function(row) {
     finishedGameIdArray.push(row.gameId);
@@ -64,19 +67,60 @@ let blankPlayer = function() {
 let passwordMap = {};
 //all information from client is received in this function
 io.on('connection', socket => {
+    
+    //for testing
+    socket.on('crash', () => { let brake = 1/0 });
+    
     let userId = socket.id;
-    io.sockets.emit('receive_message', 'A guest has joined the server.');
-    userMap[userId] = { name: 'no_input', gameId: 'none' };
+    userMap[userId] = { name: 'no input', gameId: 'none' };
     let user = userMap[userId];
+    //gets client ready for login
+    io.to(userId).emit('setup_lobby');
+    io.to(userId).emit('setup_login');
+    
+    //tests
+    //checks if new user is already logged in (if the server restarted or they lost connection)/sets up game/lobby if so
+    io.to(user).emit('check_state');
+    socket.on('receive_check', (boolean, name) => {
+        if(boolean){//it is true that user is logged in
+            if (name in namesPlaying){
+                userMap.name = name;
+                let gameId = namesPlaying[name];
+                let game = gameMap[gameId];
+                let player1 = game[game.player1Id];
+                let player2 = game[game.player2Id];
+                userMap[userId].gameId = gameId;
+                if (player1.name === name){
+                    delete game[player2.opponentId];
+                    game[player1.opponentId].opponentId = userId;
+                    game[userId] = player1;
+                    game.player1Id = userId;
+                } else{
+                    delete game[player1.opponentId];
+                    game[player2.opponentId].opponentId = userId;
+                    game[userId] = player2;
+                    game.player2Id = userId;
+                }
+                io.to(userId).emit('setup_game');
+                if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
+            } else {
+                nameArray.push(name);
+                idArray.push(userId);
+                io.to(userId).emit('setup_lobby');
+                updateLobby();
+            }
+        }
+    });
+    
+    
+    //end test
+    
+    
+    io.sockets.emit('receive_message', 'A guest has joined the server.');
     
     client.query('SELECT * FROM passbank;').on('row', function(row) {
         passwordMap[row.name] = row.pass;
     });
-    
-    
-    //gets client ready for login
-    io.to(userId).emit('setup_lobby');
-    io.to(userId).emit('setup_login');
     
     /*  on login request, first check if (userName is in passwordMap and user is not online)
         if so, checks if is correct userName/password combo and logs in if correct
@@ -182,6 +226,7 @@ io.on('connection', socket => {
         gameMap[gameId] = game;
         namesPlaying[game[userIds[0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
+        client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
         io.to(userIds[0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
         deal(gameId);
@@ -200,6 +245,9 @@ io.on('connection', socket => {
             game[opponent].turn = true;
             game[player].picked = true;
             gameMap[gameId] = game;
+    
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            
             if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
         }
     });
@@ -260,7 +308,11 @@ io.on('connection', socket => {
             game[player].hand.splice(i, 1);
             game.inPlay = card(20, 20);
         }
+        
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+    
         sendInfo(gameId);
+        });
     });
     
     /*  aces low/high sockets flips the game.aceValue (1 or 16) when
@@ -299,6 +351,8 @@ io.on('connection', socket => {
             }
             delete namesPlaying[game[userId].name];
             delete namesPlaying[game[opponentId].name];
+            client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             game[userId].score = -2;
             game[opponentId].score = -1;
@@ -308,7 +362,7 @@ io.on('connection', socket => {
             userMap[userId].gameId = 'none';
             
             client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-            client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
+            //client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
             
             updateLobby();
         }
@@ -617,8 +671,9 @@ const endGame = gameId => {
   delete namesPlaying[game[player1].name];
   delete namesPlaying[game[player1].name];
   finishedGameIdArray.push(gameId);
+  client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
   client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-  client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
+  client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
   updateLobby();
