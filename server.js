@@ -31,10 +31,6 @@ let lobby = {
     ids : []
 };
 
-//load maps
-//client.query('SELECT * FROM lobby').on('row', row => {
-//    if (row.thiskey === 'KEY') lobby = row.lobby;
-//});
 //client.query('SELECT * FROM gameMap;').on('row', row => {
 //    if (row.thiskey === 'KEY') gameMap = row.gamemap;
 //});
@@ -110,7 +106,9 @@ io.on('connection', socket => {
                 }
                 io.to(userId).emit('setup_game');
                 if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
-            } else if (name in lobby.names){
+            } else {
+                lobby.names.push(name);
+                lobby.ids.push(userId);
                 io.to(userId).emit('setup_lobby');
                 updateLobby();
             }
@@ -259,7 +257,7 @@ io.on('connection', socket => {
             game[player].picked = true;
             gameMap[gameId] = game;
     
-            //client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             
             if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
         }
@@ -322,7 +320,7 @@ io.on('connection', socket => {
             game.inPlay = card(20, 20);
         }
         
-        //client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     
         sendInfo(gameId);
     });
@@ -345,7 +343,7 @@ io.on('connection', socket => {
         if (game.player2Id in userMap) io.to(game.player2Id).emit('highAce');
     });
     
-    //if user types '$resign' user is resigned and opponent wins, both are placed in lobby.
+    //if user types '$resign' user is resigned and opponent wins, both are placed in lobby
     socket.on('resign', () => {
         if (userMap[userId].gameId !== 'none') {
             let gameId = userMap[userId].gameId;
@@ -380,8 +378,8 @@ io.on('connection', socket => {
             }
             userMap[userId].gameId = 'none';
             
-            //client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-            //client.query(`INSERT INTO gameMap values('${gameId}', '${JSON.stringify(game)}')`);
+            client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             
             updateLobby();
         }
