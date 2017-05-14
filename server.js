@@ -41,6 +41,8 @@ client.query('SELECT * FROM finishedGameIdArray;').on('row', row => {
     finishedGameIdArray.push(row.gameId);
 });
 
+
+
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
     this.player1Id = null;
@@ -72,7 +74,7 @@ let passwordMap = {};
 io.on('connection', socket => {
     
     //for testing
-    socket.on('crash', () => { process.exit(1); });
+    socket.on('crash', () => { Program.restart() });
     
     let userId = socket.id;
     userMap[userId] = { name: 'no input', gameId: 'none' };
@@ -85,34 +87,38 @@ io.on('connection', socket => {
     //checks if new user is already logged in (if the server restarted or they lost connection)/sets up game/lobby if so
     io.to(user).emit('check_state');
     socket.on('receive_check', (boolean, name) => {
-        if(boolean){//it is true that user is logged in
-            if (name in namesPlaying){
-                userMap.name = name;
-                let gameId = namesPlaying[name];
-                let game = gameMap[gameId];
-                let player1 = game[game.player1Id];
-                let player2 = game[game.player2Id];
-                userMap[userId].gameId = gameId;
-                if (player1.name === name){
-                    delete game[player2.opponentId];
-                    game[player1.opponentId].opponentId = userId;
-                    game[userId] = player1;
-                    game.player1Id = userId;
-                } else{
-                    delete game[player1.opponentId];
-                    game[player2.opponentId].opponentId = userId;
-                    game[userId] = player2;
-                    game.player2Id = userId;
+    
+        setTimeout( () => {
+            if(boolean){//it is true that user is logged in
+                if (name in namesPlaying){
+                    userMap.name = name;
+                    let gameId = namesPlaying[name];
+                    let game = gameMap[gameId];
+                    let player1 = game[game.player1Id];
+                    let player2 = game[game.player2Id];
+                    userMap[userId].gameId = gameId;
+                    if (player1.name === name){
+                        delete game[player2.opponentId];
+                        game[player1.opponentId].opponentId = userId;
+                        game[userId] = player1;
+                        game.player1Id = userId;
+                    } else{
+                        delete game[player1.opponentId];
+                        game[player2.opponentId].opponentId = userId;
+                        game[userId] = player2;
+                        game.player2Id = userId;
+                    }
+                    io.to(userId).emit('setup_game');
+                    if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
+                } else {
+                    lobby.names.push(name);
+                    lobby.ids.push(userId);
+                    io.to(userId).emit('setup_lobby');
+                    updateLobby();
                 }
-                io.to(userId).emit('setup_game');
-                if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
-            } else {
-                lobby.names.push(name);
-                lobby.ids.push(userId);
-                io.to(userId).emit('setup_lobby');
-                updateLobby();
             }
-        }
+        }); }, 2000);
+        
     });
     
     
