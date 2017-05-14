@@ -19,25 +19,32 @@ http.listen(port,() => { console.log('listening on *:' + port); });
 
 const userMap = {}; //holds online user information {userId: {name: ____, gameId: ____} }
 let gameMap = {}; //holds all games {gameId : game object}
-let idArray = []; //an array of users in lobby
-let nameArray = []; //name array of users in lobby, lines up with idArray
+//let idArray = []; //an array of users in lobby
+//let nameArray = []; //name array of users in lobby, lines up with idArray
 let finishedGameIdArray = []; // array of finished game objects for making leaderboard
 let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
 let onlineNameArray = []; //array of active users, used to prevent double login
 const SUIT = 1;
 const VALUE = 0;
-/*
+let lobby = {
+    names : [],
+    ids : []
+};
+
 //load maps
-client.query('SELECT * FROM gameMap;').on('row', function(row) {
-    if (row.thiskey === 'KEY') gameMap = row.gamemap;
-});
-client.query('SELECT * FROM namesPlaying;').on('row', function(row) {
-    if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
-});
-client.query('SELECT * FROM finishedGameIdArray;').on('row', function(row) {
-    finishedGameIdArray.push(row.gameId);
-});
-*/
+//client.query('SELECT * FROM lobby').on('row', row => {
+//    if (row.thiskey === 'KEY') lobby = row.lobby;
+//});
+//client.query('SELECT * FROM gameMap;').on('row', row => {
+//    if (row.thiskey === 'KEY') gameMap = row.gamemap;
+//});
+//client.query('SELECT * FROM namesPlaying;').on('row', row => {
+//    if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
+//});
+//client.query('SELECT * FROM finishedGameIdArray;').on('row', row => {
+//    finishedGameIdArray.push(row.gameId);
+//});
+
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
     this.player1Id = null;
@@ -103,9 +110,7 @@ io.on('connection', socket => {
                 }
                 io.to(userId).emit('setup_game');
                 if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
-            } else {
-                nameArray.push(name);
-                idArray.push(userId);
+            } else if (name in lobby.names){
                 io.to(userId).emit('setup_lobby');
                 updateLobby();
             }
@@ -157,8 +162,12 @@ io.on('connection', socket => {
                     io.to(userId).emit('setup_game');
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
                 } else {
-                    nameArray.push(user.name);
-                    idArray.push(userId);
+                    
+                    
+                    lobby.names.push(user.name);
+                    lobby.ids.push(userId);
+                    
+                    
                     io.to(userId).emit('setup_lobby');
                     io.to(userId).emit('set_user_name', user.name);
                     updateLobby();
@@ -173,8 +182,12 @@ io.on('connection', socket => {
                 
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
-                nameArray.push(user.name);
-                idArray.push(userId);
+                
+                
+                lobby.names.push(user.name);
+                lobby.ids.push(userId);
+                
+                
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
@@ -188,7 +201,7 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         let name = userMap[userId].name;
         for (let i = onlineNameArray.length-1; i >= 0; i--) { if (onlineNameArray[i] === name) onlineNameArray.splice(i, 1); }
-        if (idArray.indexOf(userId) > -1){
+        if (lobby.ids.indexOf(userId) > -1){
             removeFromLobby(userId);
             updateLobby();
         }
@@ -226,7 +239,7 @@ io.on('connection', socket => {
         gameMap[gameId] = game;
         namesPlaying[game[userIds[0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
-        //client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
+        client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
         io.to(userIds[0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
         deal(gameId);
@@ -339,11 +352,17 @@ io.on('connection', socket => {
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
             finishedGameIdArray.push(gameId);
-            idArray.push(userId);
-            nameArray.push(userMap[userId].name);
+            
+            
+            
+            lobby.names.push(userMap[userId].name);
+            lobby.ids.push(userId);
+            
+            
+            
             if (opponentId in userMap) {
-                nameArray.push(userMap[opponentId].name);
-                idArray.push(opponentId);
+                lobby.names.push(userMap[opponentId].name);
+                lobby.ids.push(opponentId);
             }
             io.to(userId).emit('setup_lobby');
             if(opponentId in userMap) {
@@ -351,8 +370,8 @@ io.on('connection', socket => {
             }
             delete namesPlaying[game[userId].name];
             delete namesPlaying[game[opponentId].name];
-            //.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-            //client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             game[userId].score = -2;
             game[opponentId].score = -1;
@@ -427,8 +446,12 @@ io.on('connection', socket => {
                 if (game.spies[i] in userMap) {
                     io.to(game.spies[i]).emit('receive_message', 'You have been kicked!');
                     io.tp(game.spies[i]).emit('setup_lobby');
-                    nameArray.push(userMap[game.spies[i]].name);
-                    idArray.push(game.spies[i]);
+                    
+                    
+                    lobby.names.push(userMap[game.spies[i]].name);
+                    lobby.ids.push(game.spies[i]);
+                    
+                    
                 }
             }
             game.spies = [];
@@ -450,16 +473,22 @@ io.on('connection', socket => {
 //sends data to client to build lobby with.
 const updateLobby = () => {
     let board = makeBoard();
-    for (let i = 0; i < idArray.length; i++){
-        io.to(idArray[i]).emit('updateLobby', [nameArray, idArray, board]);
+    for (let i = 0; i < lobby.ids.length; i++){
+        io.to(lobby.ids[i]).emit('updateLobby', [lobby.names, lobby.ids, board]);
     }
 };
 
 //removes user from lobby array's (idArray and nameArray)
 const removeFromLobby = id => {
-    let key = idArray.indexOf(id);
-    idArray.splice(key, 1);
-    nameArray.splice(key, 1);
+    
+    
+    
+    let key = lobby.ids.indexOf(id);
+    lobby.ids.splice(key, 1);
+    lobby.names.splice(key, 1);
+    
+    
+    
 };
 
 //builds a deck of cards and shuffles it
@@ -664,16 +693,22 @@ const endGame = gameId => {
   if (player2 in userMap) {
       io.to(player2).emit('setup_lobby');
   }
-  idArray.push(player1);
-  idArray.push(player2);
-  nameArray.push(game[player1].name);
-  nameArray.push(game[player2].name);
+  
+  
+  
+  lobby.ids.push(player1);
+  lobby.ids.push(player2);
+  lobby.names.push(game[player1].name);
+  lobby.names.push(game[player2].name);
+  
+  
+  
   delete namesPlaying[game[player1].name];
   delete namesPlaying[game[player1].name];
   finishedGameIdArray.push(gameId);
-  //client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-  //client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-  //client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+  client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
+  client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
+  client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
   updateLobby();
