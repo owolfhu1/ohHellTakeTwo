@@ -31,15 +31,15 @@ let lobby = {
     ids : []
 };
 
-//client.query('SELECT * FROM gameMap;').on('row', row => {
-//    if (row.thiskey === 'KEY') gameMap = row.gamemap;
-//});
-//client.query('SELECT * FROM namesPlaying;').on('row', row => {
-//    if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
-//});
-//client.query('SELECT * FROM finishedGameIdArray;').on('row', row => {
-//    finishedGameIdArray.push(row.gameId);
-//});
+client.query('SELECT * FROM gameMap;').on('row', row => {
+    if (row.thiskey === 'KEY') gameMap = row.gamemap;
+});
+client.query('SELECT * FROM namesPlaying;').on('row', row => {
+    if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
+});
+client.query('SELECT * FROM finishedGameIdArray;').on('row', row => {
+    finishedGameIdArray.push(row.gameId);
+});
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
