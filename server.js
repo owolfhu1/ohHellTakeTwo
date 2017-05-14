@@ -83,7 +83,7 @@ io.on('connection', socket => {
     io.to(userId).emit('setup_lobby');
     io.to(userId).emit('setup_login');
     
-    //tests
+    /*tests
     //checks if new user is already logged in (if the server restarted or they lost connection)/sets up game/lobby if so
     io.to(user).emit('check_state');
     socket.on('receive_check', (boolean, name) => {
@@ -122,7 +122,7 @@ io.on('connection', socket => {
     });
     
     
-    //end test
+    //end test*/
     
     
     io.sockets.emit('receive_message', 'A guest has joined the server.');
