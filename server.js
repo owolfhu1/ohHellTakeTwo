@@ -117,7 +117,7 @@ io.on('connection', socket => {
                     updateLobby();
                 }
             }
-        }); }, 2000);
+        }, 2000);
         
     });
     
