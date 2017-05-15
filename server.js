@@ -95,6 +95,8 @@ io.on('connection', socket => {
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 io.sockets.emit('receive_message', user.name + ' has logged in.');
+                
+                //if user is in a game, put them in game, otherwise put them in lobby
                 if (user.name in namesPlaying){
                     let gameId = namesPlaying[user.name];
                     let game = gameMap[gameId];
@@ -116,23 +118,20 @@ io.on('connection', socket => {
                     io.to(userId).emit('setup_game');
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
                 } else {
-                    
-                    
                     lobby.names.push(user.name);
                     lobby.ids.push(userId);
-                    
-                    
                     io.to(userId).emit('setup_lobby');
                     io.to(userId).emit('set_user_name', user.name);
                     updateLobby();
                 }
-            } else {
+                
+            } else { //when username exists but wrong password is entered
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 
-                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}'),0,0,0`);
+                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}'),'0','0','0'`);
                 
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
