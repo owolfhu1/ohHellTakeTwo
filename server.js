@@ -17,11 +17,8 @@ app.get('/', (req, res) => {
 
 http.listen(port,() => { console.log('listening on *:' + port); });
 
-const userMap = {}; //holds online user information {userId: {name: ____, gameId: ____} }
+const userMap = {}; //holds online user information {userId: {name: ____ , gameId: ____ } }
 let gameMap = {}; //holds all games {gameId : game object}
-//let idArray = []; //an array of users in lobby
-//let nameArray = []; //name array of users in lobby, lines up with idArray
-let finishedGameIdArray = []; // array of finished game objects for making leaderboard
 let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
 let onlineNameArray = []; //array of active users, used to prevent double login
 const SUIT = 1;
@@ -37,11 +34,6 @@ client.query('SELECT * FROM gameMap;').on('row', row => {
 client.query('SELECT * FROM namesPlaying;').on('row', row => {
     if (row.thiskey === 'KEY') namesPlaying = row.namesplaying;
 });
-client.query('SELECT * FROM finishedGameIdArray;').on('row', row => {
-    finishedGameIdArray.push(row.gameId);
-});
-
-
 
 //creates empty game object, is put into gameMap with key gameId, can be accessed from userMap[userId].gameId
 let emptyGame = function() {
@@ -83,52 +75,10 @@ io.on('connection', socket => {
     io.to(userId).emit('setup_lobby');
     io.to(userId).emit('setup_login');
     
-    /*tests
-    //checks if new user is already logged in (if the server restarted or they lost connection)/sets up game/lobby if so
-    io.to(user).emit('check_state');
-    socket.on('receive_check', (boolean, name) => {
-    
-        setTimeout( () => {
-            if(boolean){//it is true that user is logged in
-                if (name in namesPlaying){
-                    userMap.name = name;
-                    let gameId = namesPlaying[name];
-                    let game = gameMap[gameId];
-                    let player1 = game[game.player1Id];
-                    let player2 = game[game.player2Id];
-                    userMap[userId].gameId = gameId;
-                    if (player1.name === name){
-                        delete game[player2.opponentId];
-                        game[player1.opponentId].opponentId = userId;
-                        game[userId] = player1;
-                        game.player1Id = userId;
-                    } else{
-                        delete game[player1.opponentId];
-                        game[player2.opponentId].opponentId = userId;
-                        game[userId] = player2;
-                        game.player2Id = userId;
-                    }
-                    io.to(userId).emit('setup_game');
-                    if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
-                } else {
-                    lobby.names.push(name);
-                    lobby.ids.push(userId);
-                    io.to(userId).emit('setup_lobby');
-                    updateLobby();
-                }
-            }
-        }, 2000);
-        
-    });
-    
-    
-    //end test*/
-    
-    
     io.sockets.emit('receive_message', 'A guest has joined the server.');
     
-    client.query('SELECT * FROM passbank;').on('row', function(row) {
-        passwordMap[row.name] = row.pass;
+    client.query('SELECT * FROM userbank;').on('row', function(row) {
+        passwordMap[row.username] = row.pass;
     });
     
     /*  on login request, first check if (userName is in passwordMap and user is not online)
@@ -182,7 +132,7 @@ io.on('connection', socket => {
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 
-                client.query(`INSERT INTO passbank values('${login[USER_NAME]}','${login[PASSWORD]}')`);
+                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}'),0,0,0`);
                 
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
@@ -355,7 +305,6 @@ io.on('connection', socket => {
             let gameId = userMap[userId].gameId;
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
-            finishedGameIdArray.push(gameId);
             
             
             
@@ -377,16 +326,16 @@ io.on('connection', socket => {
             client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
-            game[userId].score = -2;
-            game[opponentId].score = -1;
             if (opponentId in userMap) {
                 userMap[opponentId].gameId = 'none';
             }
             userMap[userId].gameId = 'none';
             
-            client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
+            client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
             
+            delete gameMap[gameid];
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
         }
     });
@@ -401,9 +350,6 @@ io.on('connection', socket => {
     
     //if user types '$board' prints raw leaderboard (map with win/lose/tie tally) to client's console.
     socket.on('leaderboard', () => io.to(userId).emit('leaderboard', makeBoard()));
-    
-    //if user types '$games' prints raw finished game map to client's console.
-    socket.on('games', () => io.to(userId).emit('games', finishedGameMap()));
     
     //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
     socket.on('watch_game', gameId => {
@@ -686,10 +632,16 @@ const endGame = gameId => {
   let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
   if (game[player1].score > game[player2].score) {
       io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
+      client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player1].name}';`);
+      client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player2].name}';`);
   } else if (game[player1].score < game[player2].score) {
       io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
+      client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player1].name}';`);
+      client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player2].name}';`);
   } else {
       io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
+      client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player1].name}';`);
+      client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player2].name}';`);
   }
   if (player1 in userMap) {
       io.to(player1).emit('setup_lobby');
@@ -697,54 +649,32 @@ const endGame = gameId => {
   if (player2 in userMap) {
       io.to(player2).emit('setup_lobby');
   }
-  
-  
-  
   lobby.ids.push(player1);
   lobby.ids.push(player2);
   lobby.names.push(game[player1].name);
   lobby.names.push(game[player2].name);
-  
-  
-  
   delete namesPlaying[game[player1].name];
   delete namesPlaying[game[player1].name];
-  finishedGameIdArray.push(gameId);
   client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-  client.query(`INSERT INTO finishedGameIdArray values('${gameId}')`);
-  client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
+  delete gameMap[gameId];
+  client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   updateLobby();
 };
 
 //makes an object { names: [win, lose, tie, win ... (tally)] }
 const makeBoard = () => {
     let board = {};
-    for (let i = 0; i < finishedGameIdArray.length; i++){
-        let game = gameMap[finishedGameIdArray[i]];
-        let tie = false;
-        let player1win;
-        let player1 = game.player1Id;
-        let player2 = game.player2Id;
-        if (!(game[player1].name in board)) board[game[player1].name] = [];
-        if (!(game[player2].name in board)) board[game[player2].name] = [];
-        if (game[player1].score > game[player2].score) { player1win = true; }
-        else if (game[player1].score < game[player2].score) { player1win = false; }
-        else {tie = true}
-        if (!tie) {
-            if (player1win){
-                board[game[player1].name].push('win');
-                board[game[player2].name].push('lose');
-            } else {
-                board[game[player1].name].push('lose');
-                board[game[player2].name].push('win');
-            }
-        } else {
-            board[game[player1].name].push('tie');
-            board[game[player2].name].push('tie');
-        }
-    }
+    
+    client.query('SELECT * FROM userbank;').on('row', function(row) {
+        board[row.username] ={
+            wins : row.wins,
+            losses : row.losses,
+            ties : row.ties
+        };
+    });
+    
     return board;
 };
 
@@ -779,13 +709,3 @@ const endRoundNow = game => {
     }
     return false;
 };
-
-//makes map of finished games used when making leaderboard.
-const finishedGameMap = () => {
-    let map = {};
-    for (let i = 0; i < finishedGameIdArray.length; i++){
-        map[finishedGameIdArray[i]] = gameMap[finishedGameIdArray[i]];
-    }
-    return map;
-};
-

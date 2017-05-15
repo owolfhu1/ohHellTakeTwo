@@ -128,15 +128,10 @@
             const printBoard = board => {
                 let print = '';
                 for(let key in board){
-                    let wins = 0;
-                    let loses = 0;
+                    let wins = board.wins;
+                    let losses = board.losses;
                     let ties = 0;
-                    for(let i = 0; i < board[key].length; i++) {
-                        if (board[key][i] === "win") wins++;
-                        if (board[key][i] === "lose") loses++;
-                        if (board[key][i] === "tie") ties++;
-                    }
-                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${loses} ties: ${ties}</p>`
+                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
                 }
                 return print;
             };
@@ -162,7 +157,6 @@
                 else if (text === '$resign')socket.emit('resign');
                 else if (text === '$games') socket.emit('games');
                 else if (text === '$buzz') socket.emit('buzz');
-                else if (text === '$board') socket.emit('leaderboard');
                 else if (text === '$$CRASH') socket.emit('crash');
                 else if (text.substring(0, 7) === '$watch ')socket.emit('watch_game', text.substring(7, text.length));
                 else { socket.emit('message', '<p>' + userName + ': ' + text + '</p>'); $('#text').val(''); }
@@ -188,7 +182,6 @@
 
             //displays lobby (list of buttons representing players waiting to play a game)
             socket.on('updateLobby', users => {
-
                 //displays buttons
                 let body = '<ul>';
                 for (let i = 0; i < users[1].length; i++) {

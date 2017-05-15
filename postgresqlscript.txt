@@ -1,0 +1,11 @@
+**run this in postgresql to start game databases fresh**
+
+delete from gamemap;
+delete from namesplaying;
+
+insert into namesPlaying values ( 'KEY', '{}');
+insert into gamemap values ( 'KEY', '{}');
+
+--select * from namesplaying;
+--select * from gamemap;
+--select * from passbank;
