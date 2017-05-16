@@ -683,7 +683,7 @@ let boardField = function (win, lose, tie){
 };
 let board = function() {
     client.query('SELECT * FROM userbank;').on('row', function(row) {
-        this.row.username = boardField(row.wins, row.losses, row.ties)
+        this[row.username] = boardField(row.wins, row.losses, row.ties)
     });
 };
 
