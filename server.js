@@ -131,7 +131,7 @@ io.on('connection', socket => {
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 
-                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}'),0,0,0`);
+                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}',0,0,0)`);
                 
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
