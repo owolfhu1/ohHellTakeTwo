@@ -128,9 +128,9 @@
             const printBoard = board => {
                 let print = '';
                 for(let key in board){
-                    let wins = board.wins;
-                    let losses = board.losses;
-                    let ties = 0;
+                    let wins = board[key].wins;
+                    let losses = board[key].losses;
+                    let ties = board[key].ties;
                     print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
                 }
                 return print;
@@ -184,7 +184,7 @@
             socket.on('updateLobby', users => {
                 //displays buttons
                 let body = '<ul>';
-                for (let i = 0; i < users[1].length; i++) {
+                for (let i = 0; i < users[ID].length; i++) {
                     body += `<p><button style="background-color: #2e2e2e; border: 4px dotted #529848; border-radius: 10px; color: white; padding: 10px 10px;" id="${i}">${users[NAME][i]}</button></p>`;
                 }
                 body += '</ul>';
