@@ -1,11 +1,19 @@
 **run this in postgresql to start game databases fresh**
 
+--CREATE TABLE userbank(
+	--username varchar,
+  --  password varchar,
+--    wins integer,
+    --losses integer,
+  --  ties integer
+--);
+
 delete from gamemap;
 delete from namesplaying;
 
-insert into namesPlaying values ( 'KEY', '{}');
 insert into gamemap values ( 'KEY', '{}');
+insert into namesPlaying values ( 'KEY', '{}');
 
 --select * from namesplaying;
 --select * from gamemap;
---select * from passbank;
+--select * from userbank;

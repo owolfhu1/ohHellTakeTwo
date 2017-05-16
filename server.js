@@ -21,6 +21,7 @@ const userMap = {}; //holds online user information {userId: {name: ____ , gameI
 let gameMap = {}; //holds all games {gameId : game object}
 let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
 let onlineNameArray = []; //array of active users, used to prevent double login
+let passwordMap = {};
 const SUIT = 1;
 const VALUE = 0;
 let lobby = {
@@ -61,7 +62,7 @@ let blankPlayer = function() {
     this.tricksWon = null;
     this.score = 0;
 };
-let passwordMap = {};
+
 //all information from client is received in this function
 io.on('connection', socket => {
     
@@ -78,7 +79,7 @@ io.on('connection', socket => {
     io.sockets.emit('receive_message', 'A guest has joined the server.');
     
     client.query('SELECT * FROM userbank;').on('row', function(row) {
-        passwordMap[row.username] = row.pass;
+        passwordMap[row.username] = row.password;
     });
     
     /*  on login request, first check if (userName is in passwordMap and user is not online)
