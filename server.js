@@ -664,7 +664,7 @@ const endGame = gameId => {
 };
 
 //makes an object { names: [win, lose, tie, win ... (tally)] }
-const makeBoard = () => {
+let makeBoard = () => {
     let board = {};
     client.query('SELECT * FROM userbank;').on('row', function(row) {
         board[row.username] ={
@@ -674,17 +674,6 @@ const makeBoard = () => {
         };
     });
     return board;
-};
-
-let boardField = function (win, lose, tie){
-    this.wins = win;
-    this.losses = lose;
-    this.ties = tie;
-};
-let board = function() {
-    client.query('SELECT * FROM userbank;').on('row', function(row) {
-        this[row.username] = boardField(row.wins, row.losses, row.ties)
-    });
 };
 
 
