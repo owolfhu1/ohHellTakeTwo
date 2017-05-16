@@ -348,8 +348,8 @@ io.on('connection', socket => {
         }
     });
     
-    //if user types '$board' prints raw leaderboard (map with win/lose/tie tally) to client's console.
-    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', board())); //test here
+    //if user types '$board' prints raw leaderboard to client's console.
+    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', makeBoard()));
     
     //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
     socket.on('watch_game', gameId => {
