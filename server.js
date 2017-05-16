@@ -505,7 +505,8 @@ const deal = gameId => {
         game[game.player2Id].hand = sortHand(game[game.player2Id].hand);
         io.to(game.player1Id).emit('shuffle');
         io.to(game.player2Id).emit('shuffle');
-        game.gameDeck = 'game deck deleted to save space';
+        //game.gameDeck = 'game deck deleted to save space';
+        delete game.gameDeck;
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
     }
