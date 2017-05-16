@@ -124,19 +124,6 @@
                 return [suits, jokers];
             };
 
-            //reads an object of { names : [tally of wins/losses/ties] } and returns scores in html
-            const printBoard = board => {
-                let print = '';
-                for(let key in board){
-                    let wins = board[key].wins;
-                    let losses = board[key].losses;
-                    let ties = board[key].ties;
-                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
-                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
-                }
-                return print;
-            };
-
             //returns html for cards which can't be played
             const cardImg = card => `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
@@ -197,7 +184,7 @@
                         socket.emit('pair_request', users[ID][i]);
                     });
                 }
-                document.getElementById('float_left').innerHTML = printBoard(users[2]);
+                document.getElementById('float_left').innerHTML = users[2];
             });
 
             //gets pair request and confirms user
