@@ -354,10 +354,7 @@
             socket.on('buzzed', () => secretSound.play());
 
             //prints player information to console
-            socket.on('leaderboard', board => console.dir(board));
-
-            //prints past game stats to console
-            socket.on('games', games => console.dir(games));
+            socket.on('leaderboard', board => console.log(board));
 
             //sets displays game for spectator mode
             socket.on('spy_setup', spyInfo => {
