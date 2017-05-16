@@ -132,6 +132,7 @@
                     let losses = board[key].losses;
                     let ties = board[key].ties;
                     print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
+                    print += `<p><u>${key}</u></p><p style="font-size: 14px">wins: ${wins} losses: ${losses} ties: ${ties}</p>`
                 }
                 return print;
             };
@@ -155,7 +156,7 @@
                 else if (text === '$lock') socket.emit('lock');
                 else if (text === '$unlock') socket.emit('unlock');
                 else if (text === '$resign')socket.emit('resign');
-                else if (text === '$games') socket.emit('games');
+                else if (text === '$board') socket.emit('leaderboard');
                 else if (text === '$buzz') socket.emit('buzz');
                 else if (text === '$$CRASH') socket.emit('crash');
                 else if (text.substring(0, 7) === '$watch ')socket.emit('watch_game', text.substring(7, text.length));
