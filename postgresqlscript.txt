@@ -1,11 +1,11 @@
 **run this in postgresql to start game databases fresh**
 
 --CREATE TABLE userbank(
-	--username varchar,
-  --  password varchar,
+--    username varchar,
+--    password varchar,
 --    wins integer,
-    --losses integer,
-  --  ties integer
+--    losses integer,
+--    ties integer
 --);
 
 delete from gamemap;

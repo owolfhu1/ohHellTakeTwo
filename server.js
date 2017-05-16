@@ -305,14 +305,8 @@ io.on('connection', socket => {
             let gameId = userMap[userId].gameId;
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
-            
-            
-            
             lobby.names.push(userMap[userId].name);
             lobby.ids.push(userId);
-            
-            
-            
             if (opponentId in userMap) {
                 lobby.names.push(userMap[opponentId].name);
                 lobby.ids.push(opponentId);
@@ -326,14 +320,10 @@ io.on('connection', socket => {
             client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
-            if (opponentId in userMap) {
-                userMap[opponentId].gameId = 'none';
-            }
+            if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
-            
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
             client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
-            
             delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
@@ -396,15 +386,12 @@ io.on('connection', socket => {
                 if (game.spies[i] in userMap) {
                     io.to(game.spies[i]).emit('receive_message', 'You have been kicked!');
                     io.tp(game.spies[i]).emit('setup_lobby');
-                    
-                    
                     lobby.names.push(userMap[game.spies[i]].name);
                     lobby.ids.push(game.spies[i]);
-                    
-                    
                 }
             }
             game.spies = [];
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
         }
     });

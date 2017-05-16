@@ -138,7 +138,7 @@
                 let text = $('#text').val();
                 /*s*/if (text === '$help') document.getElementById('messages').innerHTML += HELP_TEXT;
                 else if (text === '$instructions') document.getElementById('messages').innerHTML += INSTRUCTIONS_TEXT;
-                else if (text.substring(0, 8) === '$whisper') socket.emit('whisper', text.substring(9, text.length));
+                else if (text.substring(0, 8) === '$whisper' && userName !== 'GUEST') socket.emit('whisper', text.substring(9, text.length));
                 else if (text === '$kick')socket.emit('kick');
                 else if (text === '$lock') socket.emit('lock');
                 else if (text === '$unlock') socket.emit('unlock');
