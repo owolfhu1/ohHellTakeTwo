@@ -349,7 +349,7 @@ io.on('connection', socket => {
     });
     
     //if user types '$board' prints raw leaderboard (map with win/lose/tie tally) to client's console.
-    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', makeBoard()));
+    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', board())); //test here
     
     //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
     socket.on('watch_game', gameId => {
@@ -677,6 +677,18 @@ const makeBoard = () => {
     
     return board;
 };
+
+let boardField = function (win, lose, tie){
+    this.wins = win;
+    this.losses = lose;
+    this.ties = tie;
+};
+let board = function() {
+    client.query('SELECT * FROM userbank;').on('row', function(row) {
+        this.row.username = boardField(row.wins, row.losses, row.ties)
+    });
+};
+
 
 //sorts hand by suit.
 const sortHand = unSortedHand => {
