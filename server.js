@@ -24,7 +24,6 @@ let onlineNameArray = []; //array of active users, used to prevent double login
 let passwordMap = {};
 const SUIT = 1;
 const VALUE = 0;
-let board;
 let lobby = {
     names : [],
     ids : []
@@ -90,11 +89,7 @@ io.on('connection', socket => {
         const USER_NAME = 0;
         const PASSWORD = 1;
     
-        //get leaderboard ready
-        let board = '';
-        client.query('SELECT * FROM userbank;').on('row', function(row) {
-            board += `<p><u>${row.username}</u></p><p style="font-size: 14px">wins: ${row.wins} losses: ${row.losses} ties: ${row.ties}</p>`;
-        });
+        console.log(JSON.stringify(passwordMap));
         
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
@@ -354,7 +349,7 @@ io.on('connection', socket => {
     });
     
     //if user types '$board' prints raw leaderboard to client's console.
-    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', board));
+    socket.on('leaderboard', () => io.to(userId).emit('leaderboard', makeBoard()));
     
     //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
     socket.on('watch_game', gameId => {
@@ -427,6 +422,7 @@ io.on('connection', socket => {
 
 //sends data to client to build lobby with.
 const updateLobby = () => {
+    let board = makeBoard();
     for (let i = 0; i < lobby.ids.length; i++){
         io.to(lobby.ids[i]).emit('updateLobby', [lobby.names, lobby.ids, board]);
     }
@@ -666,6 +662,15 @@ const endGame = gameId => {
   client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   updateLobby();
 };
+
+let makeBoard = () => {
+    let board = '';
+    client.query('SELECT * FROM userbank;').on('row', function(row) {
+        board += '<p><u>' + row.username + '</u></p><p style="font-size: 14px">wins: ' + row.wins + ' losses: ' + row.losses + ' ties: ' + row.ties + '</p>';
+    });
+    return board;
+};
+
 
 //sorts hand by suit.
 const sortHand = unSortedHand => {
