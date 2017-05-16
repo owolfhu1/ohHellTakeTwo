@@ -334,7 +334,7 @@ io.on('connection', socket => {
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
             client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
             
-            delete gameMap[gameid];
+            delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
         }
