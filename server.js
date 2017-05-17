@@ -28,7 +28,11 @@ let lobby = {
     names : [],
     ids : []
 };
+let userScores = {};
 
+client.query('SELECT * FROM userbank;').on('row', row => {
+    userScores[row.username] = new stats(row.wins, row.losses, row.ties);
+});
 client.query('SELECT * FROM gameMap;').on('row', row => {
     if (row.thiskey === 'KEY') gameMap = row.gamemap;
 });
@@ -61,6 +65,12 @@ let blankPlayer = function() {
     this.picked = null;
     this.tricksWon = null;
     this.score = 0;
+};
+//holds user's stats
+let stats = function (w,l,t) {
+    this.wins = w;
+    this.losses = l;
+    this.ties = t;
 };
 
 //all information from client is received in this function
@@ -131,17 +141,12 @@ io.on('connection', socket => {
             }
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
-                
                 client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}',0,0,0)`);
-                
+                userScores[login[USER_NAME]] = new stats(0,0,0);
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
-                
-                
                 lobby.names.push(user.name);
                 lobby.ids.push(userId);
-                
-                
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
@@ -323,7 +328,13 @@ io.on('connection', socket => {
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
+            
+            userScores[userMap[opponentId].name].wins++;
+            
             client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
+            
+            userScores[userMap[userId].name].losses++;
+            
             delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
@@ -623,14 +634,26 @@ const endGame = gameId => {
       io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player2].name}';`);
+      
+      userScores[userMap[player1].name].wins++;
+      userScores[userMap[player2].name].losses++;
+      
   } else if (game[player1].score < game[player2].score) {
       io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player2].name}';`);
+    
+      userScores[userMap[player2].name].wins++;
+      userScores[userMap[player1].name].losses++;
+      
   } else {
       io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player2].name}';`);
+    
+      userScores[userMap[player1].name].ties++;
+      userScores[userMap[player2].name].ties++;
+      
   }
   if (player1 in userMap) {
       io.to(player1).emit('setup_lobby');
@@ -656,9 +679,9 @@ const endGame = gameId => {
 //TODO: make this work!
 let makeBoard = () => {
     let board = '';
-    client.query('SELECT * FROM userbank;').on('row', function(row) {
-        board += '<p><u>' + row.username + '</u></p><p style="font-size: 14px">wins: ' + row.wins + ' losses: ' + row.losses + ' ties: ' + row.ties + '</p>';
-    });
+    for (key in userScores) {
+        board += '<p><u>' + key + '</u></p><p style="font-size: 14px">wins: ' + userScores[key].wins + ' losses: ' + userScores[key].losses + ' ties: ' + userScores[key].ties + '</p>';
+    }
     return board;
 };
 
