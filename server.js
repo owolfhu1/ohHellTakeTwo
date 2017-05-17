@@ -385,9 +385,9 @@ io.on('connection', socket => {
             for (let i = 0; i < game.spies.length; i++){
                 if (game.spies[i] in userMap) {
                     io.to(game.spies[i]).emit('receive_message', 'You have been kicked!');
-                    io.tp(game.spies[i]).emit('setup_lobby');
                     lobby.names.push(userMap[game.spies[i]].name);
                     lobby.ids.push(game.spies[i]);
+                    io.tp(game.spies[i]).emit('setup_lobby');
                 }
             }
             game.spies = [];
