@@ -652,6 +652,8 @@ const endGame = gameId => {
   updateLobby();
 };
 
+
+//TODO: make this work!
 let makeBoard = () => {
     let board = '';
     client.query('SELECT * FROM userbank;').on('row', function(row) {

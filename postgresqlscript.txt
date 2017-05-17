@@ -1,5 +1,20 @@
-**run this in postgresql to start game databases fresh**
+*** scripts for use in pgAdmin ***
 
+*** to start game databases fresh ***
+--delete from gamemap;
+--delete from namesplaying;
+--insert into gamemap values ( 'KEY', '{}');
+--insert into namesPlaying values ( 'KEY', '{}');
+
+*** to view tables ***
+--select * from namesplaying;
+--select * from gamemap;
+--select * from userbank;
+
+*** to delete single user from userbank ***
+--delete from userbank where username = 'this user name';
+
+*** userbank format ***
 --CREATE TABLE userbank(
 --    username varchar,
 --    password varchar,
@@ -8,12 +23,14 @@
 --    ties integer
 --);
 
-delete from gamemap;
-delete from namesplaying;
+*** gamemap format ***
+--CREATE TABLE gamemap(
+--    thiskey varchar,
+--    gamemap json
+--);
 
-insert into gamemap values ( 'KEY', '{}');
-insert into namesPlaying values ( 'KEY', '{}');
-
---select * from namesplaying;
---select * from gamemap;
---select * from userbank;
+*** namesplaying format ***
+--CREATE TABLE userbank(
+--    thiskey varchar,
+--    namesplaying json
+--);
