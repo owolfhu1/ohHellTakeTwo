@@ -716,7 +716,9 @@ const endGame = gameId => {
 //TODO: make this work!
 let makeBoard = () => {
     let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
-    console.dir(order);
+    
+    
+    console.log(order);
     let board = '';
     for (let i = 0; i< order.length; i++){
         let total = userScores[order[i]].wins + userScores[order[i]].losses + userScores[order[i]].ties;
