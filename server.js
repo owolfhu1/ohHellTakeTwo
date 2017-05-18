@@ -66,6 +66,7 @@ let blankPlayer = function() {
     this.tricksWon = null;
     this.score = 0;
 };
+
 //holds user's stats
 let stats = function (w,l,t) {
     this.wins = w;
@@ -77,6 +78,7 @@ let stats = function (w,l,t) {
     } else {
         this.stat = 0;
     }
+    this.stat = (this.stat + 1)/2;
 };
 
 //all information from client is received in this function
