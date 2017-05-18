@@ -192,7 +192,7 @@ io.on('connection', socket => {
             for (let i = 0; i < game[player2].tricksWon.length; i++){
                 text += `<p>${cardValue(game[player2].tricksWon[i][VALUE])} of ${game[player2].tricksWon[i][SUIT]}</p>`;
             }
-            io.to(userId).emit('message', text);
+            io.to(userId).emit('receive_message', text);
         }
     });
     
