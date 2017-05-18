@@ -178,25 +178,15 @@ io.on('connection', socket => {
         delete userMap[userId];
     });
 
+    //sends info for client to display tricks to user with.
     socket.on('tricks', () => {
         if (userMap[userId].gameId !== 'none'){
-            let game = gameMap[userMap[userId].gameId];
-            let player1 = game.player1Id;
-            let player2 = game.player2Id;
-            /*
-            let text = '';
-            text += `<p><b>${game[player1].name}'s tricks: </b></p>`;
-            for (let i = 0; i < game[player1].tricksWon.length; i++){
-                text += `<p>${cardValue(game[player1].tricksWon[i][VALUE])} of ${game[player1].tricksWon[i][SUIT]}</p>`;
+            if (userMap[userId].gameId !== 'none'){
+                let game = gameMap[userMap[userId].gameId];
+                let player1 = game.player1Id;
+                let player2 = game.player2Id;
+                io.to(userId).emit('tricks', [game[player1].name, game[player2].name, game[player1].tricksWon, game[player2].tricksWon]);
             }
-            text += `<p><b>${game[player2].name}'s tricks: </b></p>`;
-            for (let i = 0; i < game[player2].tricksWon.length; i++){
-                text += `<p>${cardValue(game[player2].tricksWon[i][VALUE])} of ${game[player2].tricksWon[i][SUIT]}</p>`;
-            }
-            io.to(userId).emit('receive_message', text);
-            */
-            
-            io.to(userId).emit('tricks', [game[player1].name, game[player2].name, game[player1].tricksWon, game[player2].tricksWon]);
         }
     });
     
