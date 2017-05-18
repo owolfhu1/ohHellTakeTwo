@@ -24,6 +24,8 @@ let onlineNameArray = []; //array of active users, used to prevent double login
 let passwordMap = {};
 const SUIT = 1;
 const VALUE = 0;
+const CARD = 0;
+const GAME_ID = 1;
 let lobby = {
     names : [],
     ids : []
@@ -182,12 +184,10 @@ io.on('connection', socket => {
             let player1 = game.player1Id;
             let player2 = game.player2Id;
             let text = '';
-            
             text += `<p><b>${game[player1].name}'s tricks: </b></p>`;
             for (let i = 0; i < game[player1].tricksWon.length; i++){
                 text += `<p>${cardValue(game[player1].tricksWon[i][VALUE])} of ${game[player1].tricksWon[i][SUIT]}</p>`;
             }
-    
             text += `<p><b>${game[player2].name}'s tricks: </b></p>`;
             for (let i = 0; i < game[player2].tricksWon.length; i++){
                 text += `<p>${cardValue(game[player2].tricksWon[i][VALUE])} of ${game[player2].tricksWon[i][SUIT]}</p>`;
@@ -265,24 +265,13 @@ io.on('connection', socket => {
             let holderSuit = game[player].hand[i][1];
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
+        
+        
         let value = game[player].hand[i][0];
-        /**/ if (value ===  1 ) value = 'low Ace';
-        else if (value ===  2 ) value = 'Two';
-        else if (value ===  3 ) value = 'Three';
-        else if (value ===  4 ) value = 'Four';
-        else if (value ===  5 ) value = 'Five';
-        else if (value ===  6 ) value = 'Six';
-        else if (value ===  7 ) value = 'Seven';
-        else if (value ===  8 ) value = 'Eight';
-        else if (value ===  9 ) value = 'Nine';
-        else if (value === 10 ) value = 'Ten';
-        else if (value === 13 ) value = 'Jack';
-        else if (value === 14 ) value = 'Queen';
-        else if (value === 15 ) value = 'King';
-        else if (value === 16 ) value = 'high Ace';
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
-        } else sendLog(gameId, `${game[player].name} plays ${value} of ${game[player].hand[i][SUIT]}`);
+        } else sendLog(gameId, `${game[player].name} plays ${cardValue(value)} of ${game[player].hand[i][SUIT]}`);
+        
         
         if (game.inPlay[SUIT] === 20) {
             game.inPlay = game[player].hand[i];
@@ -602,9 +591,6 @@ const sendInfo = id => {
 
 //checks if play is trick, is fed data[card, gameId] returns boolean.
 const isTrick = data => {
-    const CARD = 0;
-    const GAME_ID = 1;
-   
     let game = gameMap[data[GAME_ID]];
     //one card is joker, return (played>inPlay)
     if (!(data[CARD][SUIT] === 'joker' && game.inPlay[SUIT] === 'joker')) {
@@ -669,7 +655,6 @@ const endGame = gameId => {
       io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player2].name}';`);
-      
       userScores[userMap[player1].name] = new stats (
           userScores[userMap[player1].name].wins + 1,
           userScores[userMap[player1].name].losses,
@@ -680,12 +665,10 @@ const endGame = gameId => {
           userScores[userMap[player2].name].losses + 1,
           userScores[userMap[player2].name].ties
       );
-      
   } else if (game[player1].score < game[player2].score) {
       io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player2].name}';`);
-    
       userScores[userMap[player1].name] = new stats (
           userScores[userMap[player1].name].wins,
           userScores[userMap[player1].name].losses + 1,
@@ -696,12 +679,10 @@ const endGame = gameId => {
           userScores[userMap[player2].name].losses,
           userScores[userMap[player2].name].ties
       );
-      
   } else {
       io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
       client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player1].name}';`);
       client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player2].name}';`);
-    
       userScores[userMap[player1].name] = new stats (
           userScores[userMap[player1].name].wins,
           userScores[userMap[player1].name].losses,
@@ -712,7 +693,6 @@ const endGame = gameId => {
           userScores[userMap[player2].name].losses,
           userScores[userMap[player2].name].ties + 1
       );
-      
   }
   if (player1 in userMap) {
       io.to(player1).emit('setup_lobby');
@@ -733,8 +713,7 @@ const endGame = gameId => {
   client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
   updateLobby();
 };
-//let sorted = Object.keys(obj).map(key => obj[key]).sort((a, b) => a.number - b.number);
-//TODO: make this work!
+
 let makeBoard = () => {
     //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
     let order = Object.keys(userScores).sort(((a, b) => userScores[a].stat > userScores[b].stat));
@@ -766,10 +745,8 @@ const endRoundNow = game => {
     let player2 = game[game.player2Id];
     let player1CantWin = false;
     let player2CantWin = false;
-    
     let tricksLeft = player1.hand.length;
     if (player2.hand.length > tricksLeft) { tricksLeft = player2.hand.length; }
-    
     if (player1.tricks > player1.goal || player1.tricks + tricksLeft < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + tricksLeft < player2.goal) player2CantWin = true;
     if (player1CantWin && player2CantWin) {
