@@ -265,14 +265,10 @@ io.on('connection', socket => {
             let holderSuit = game[player].hand[i][1];
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
-        
-        
         let value = game[player].hand[i][0];
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
         } else sendLog(gameId, `${game[player].name} plays ${cardValue(value)} of ${game[player].hand[i][SUIT]}`);
-        
-        
         if (game.inPlay[SUIT] === 20) {
             game.inPlay = game[player].hand[i];
             game[player].hand.splice(i, 1);
@@ -344,21 +340,17 @@ io.on('connection', socket => {
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
-            
             userScores[userMap[opponentId].name] = new stats(
                 userScores[userMap[opponentId].name].wins + 1,
                 userScores[userMap[opponentId].name].losses,
                 userScores[userMap[opponentId].name].ties
             );
-            
             client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
-            
             userScores[userMap[userId].name] = new stats(
                 userScores[userMap[userId].name].wins,
                 userScores[userMap[userId].name].losses + 1,
                 userScores[userMap[userId].name].ties
             );
-            
             delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
@@ -453,15 +445,9 @@ const updateLobby = () => {
 
 //removes user from lobby array's (idArray and nameArray)
 const removeFromLobby = id => {
-    
-    
-    
     let key = lobby.ids.indexOf(id);
     lobby.ids.splice(key, 1);
     lobby.names.splice(key, 1);
-    
-    
-    
 };
 
 //builds a deck of cards and shuffles it
@@ -481,7 +467,9 @@ const deck = () => {
     shuffle(deckReturn);
     return deckReturn;
 };
+
 const card = (value, suit) =>  [value, suit];
+
 const shuffle = a => {
     for (let i = a.length; i; i--) {
         let j = Math.floor(Math.random() * i);
@@ -562,7 +550,6 @@ const sendPick = id => {
 //sends information to players to build game (shows cards, turns event listeners on for cards if players turn)
 const sendInfo = id => {
     let game = gameMap[id];
-    
     if(endRoundNow(game)){
         if (game.round === 10) {
             gameMap[id].plusMinus = -1;
@@ -714,7 +701,7 @@ const endGame = gameId => {
   updateLobby();
 };
 
-let makeBoard = () => {
+const makeBoard = () => {
     //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
     let order = Object.keys(userScores).sort(((a, b) => userScores[a].stat > userScores[b].stat));
     console.log(order);
