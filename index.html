@@ -429,21 +429,24 @@
 
                 //fill in trick divs
 
+                player1_tricks = info[0] + "'s tricks:<br>";
+                player2_tricks = info[1] + "'s tricks:<br>";
 
-
+                for (let i = 0; i < info[2].length; i++){
+                    player1_tricks.innerHTML += cardImg(info[2][i]);
+                }
+                for (let i = 0; i < info[3].length; i++){
+                    player2_tricks.innerHTML += cardImg(info[3][i]);
+                }
 
 
                 // Get the <span> element that closes the modal
-                let span = document.getElementsByClassName("close")[0];
+                //let span = document.getElementsByClassName("close")[0];
 
                 //display pop up
                 modal.style.display = "block";
 
 
-                // When the user clicks on <span> (x), close the modal
-                //span.onclick = function() {
-                    //modal.style.display = "none";
-                //};
 
                 // When the user clicks anywhere outside of the modal, close it
                 window.onclick = function(event) {
@@ -451,7 +454,6 @@
                         modal.style.display = "none";
                     }
                 }
-
             });
 
         </script>
