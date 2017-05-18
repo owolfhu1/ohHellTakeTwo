@@ -176,6 +176,26 @@ io.on('connection', socket => {
         delete userMap[userId];
     });
 
+    socket.on('tricks', () => {
+        if (userMap[userId].gameId !== 'none'){
+            let game = gameMap[userMap[userId].gameId];
+            let player1 = game.player1Id;
+            let player2 = game.player2Id;
+            let text = '';
+            
+            text += `<p><b>${game[player1].name}'s tricks: </b></p>`;
+            for (let i = 0; i < game[player1].tricksWon.length; i++){
+                text += `<p>${cardValue(game[player1].tricksWon[i][VALUE])} of ${game[player1].tricksWon[i][SUIT]}</p>`;
+            }
+    
+            text += `<p><b>${game[player2].name}'s tricks: </b></p>`;
+            for (let i = 0; i < game[player2].tricksWon.length; i++){
+                text += `<p>${cardValue(game[player2].tricksWon[i][VALUE])} of ${game[player2].tricksWon[i][SUIT]}</p>`;
+            }
+            io.to(userId).emit('message', text);
+        }
+    });
+    
     //sends receives chat messages and sends them to all users.
     socket.on('message', msg => {
         io.sockets.emit('receive_message', msg);
@@ -293,7 +313,6 @@ io.on('connection', socket => {
     
         sendInfo(gameId);
     });
-    
     
     /*  aces low/high sockets flips the game.aceValue (1 or 16) when
         client presses aces button and sends high/low ace command back to clients. */
@@ -758,4 +777,24 @@ const endRoundNow = game => {
         return true;
     }
     return false;
+};
+
+const cardValue = value => {
+    /**/ if (value ===  1 ) value = 'low Ace';
+    else if (value ===  2 ) value = 'Two';
+    else if (value ===  3 ) value = 'Three';
+    else if (value ===  4 ) value = 'Four';
+    else if (value ===  5 ) value = 'Five';
+    else if (value ===  6 ) value = 'Six';
+    else if (value ===  7 ) value = 'Seven';
+    else if (value ===  8 ) value = 'Eight';
+    else if (value ===  9 ) value = 'Nine';
+    else if (value === 10 ) value = 'Ten';
+    else if (value === 11 ) value = 'Joker';
+    else if (value === 12 ) value = 'Joker';
+    else if (value === 13 ) value = 'Jack';
+    else if (value === 14 ) value = 'Queen';
+    else if (value === 15 ) value = 'King';
+    else if (value === 16 ) value = 'high Ace';
+    return value;
 };

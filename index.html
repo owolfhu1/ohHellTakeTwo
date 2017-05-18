@@ -18,13 +18,13 @@
 
             const HELP_TEXT = `
                 <p><b>$instructions: </b>Prints the rules in the chat screen.</p>
+                <p><b>$tricks: </b>Displays a list of tricks each player has won.</p>
                 <p><b>$buzz: </b>Plays a sound to your opponent.</p>
                 <p><b>$resign: </b>Forfeits the game.</p>
                 <p><b>$watch: </b>Followed by a gameId lets you watch that game.</p>
                 <p><b>$kick: </b>Kicks all spectators.</p>
                 <p><b>$lock: </b>Locks the game from spectators (doesn't kick).</p>
                 <p><b>$unlock: </b>Unlocks the game to spectators.</p>
-                <p><b>$board: </b>View raw leaderboard in console.</p>
                 <p><b>$whisper: </b>Sends a private message to your opponent.</p>
             `;
             const INSTRUCTIONS_TEXT = `
@@ -143,6 +143,7 @@
                 else if (text === '$lock') socket.emit('lock');
                 else if (text === '$unlock') socket.emit('unlock');
                 else if (text === '$resign')socket.emit('resign');
+                else if (text === '$tricks')socket.emit('tricks');
                 else if (text === '$board') socket.emit('leaderboard');
                 else if (text === '$buzz') socket.emit('buzz');
                 else if (text === '$$CRASH') socket.emit('crash');
