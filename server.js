@@ -715,10 +715,11 @@ const endGame = gameId => {
 //let sorted = Object.keys(obj).map(key => obj[key]).sort((a, b) => a.number - b.number);
 //TODO: make this work!
 let makeBoard = () => {
-    let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
-    
-    
+    //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
+    let order = Object.keys(userScores).sort(((a, b) => userScores[a].stat > userScores[b].stat));
     console.log(order);
+    
+    
     let board = '';
     for (let i = 0; i< order.length; i++){
         let total = userScores[order[i]].wins + userScores[order[i]].losses + userScores[order[i]].ties;
