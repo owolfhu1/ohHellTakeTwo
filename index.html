@@ -61,34 +61,8 @@
             ::-webkit-scrollbar-track { display: none; }
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
-
-            /*test tricks pop-out*/
-            /* The Modal (background) */
-            .modal {
-                display: none; /* Hidden by default */
-                position: fixed; /* Stay in place */
-                z-index: 1; /* Sit on top */
-                padding-top: 200px; /* Location of the box */
-                left: 0;
-                top: 0;
-                width: 100%; /* Full width */
-                height: 100%; /* Full height */
-                overflow: auto; /* Enable scroll if needed */
-                /*background-color: rgb(0,0,0);  Fallback color */
-                /*background-color: rgba(0,0,0,0.4);  Black w/ opacity */
-            }
-
-            /* Modal Content */
-            .modal-content {
-                text-align: center;
-                background-color: #b03f48;
-                margin: auto;
-                padding: 20px;
-                border: 6px dotted #2e2e2e;
-                border-radius: 40px;
-                width: 60%;
-            }
-
+            .modal {  display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .modal-content {  text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
         </style>
     </head>
     <body>
@@ -103,12 +77,7 @@
             </div>
             <div id="card_area" class="card_area"></div>
         </div>
-
-        <!--tricks popup test-->
-
-        <!-- The Modal -->
         <div id="myModal" class="modal">
-            <!-- Modal content -->
             <div class="modal-content">
                 <div id="player1_tricks"></div>
                 <br>
