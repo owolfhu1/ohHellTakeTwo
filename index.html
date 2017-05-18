@@ -429,8 +429,8 @@
 
                 //fill in trick divs
 
-                player1_tricks = info[0] + "'s tricks:<br>";
-                player2_tricks = info[1] + "'s tricks:<br>";
+                player1_tricks.innerHTML = info[0] + "'s tricks:<br>";
+                player2_tricks.innerHTML = info[1] + "'s tricks:<br>";
 
                 for (let i = 0; i < info[2].length; i++){
                     player1_tricks.innerHTML += cardImg(info[2][i]);
