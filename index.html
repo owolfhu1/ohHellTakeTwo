@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, modal;
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -62,6 +62,32 @@
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
 
+            /*test tricks pop-out*/
+            /* The Modal (background) */
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                padding-top: 100px; /* Location of the box */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                /*background-color: rgb(0,0,0);  Fallback color */
+                /*background-color: rgba(0,0,0,0.4);  Black w/ opacity */
+            }
+
+            /* Modal Content */
+            .modal-content {
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #888;
+                border-radius: 50px;
+                width: 80%;
+            }
+
         </style>
     </head>
     <body>
@@ -76,6 +102,20 @@
             </div>
             <div id="card_area" class="card_area"></div>
         </div>
+
+        <!--tricks popup test-->
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <span class="close">close</span>
+                <div id="player1_tricks"></div>
+                <br>
+                <div id="player2_tricks"></div>
+            </div>
+        </div>
+
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
@@ -382,6 +422,38 @@
 
             //gets userName from server after login
             socket.on('set_user_name', name => { userName = name; });
+
+            socket.on('tricks', info => {
+                player1_tricks = document.getElementById('player1_tricks');
+                player2_tricks = document.getElementById('player2_tricks');
+                modal = document.getElementById('myModal');
+
+                //fill in trick divs
+
+
+
+
+
+                // Get the <span> element that closes the modal
+                let span = document.getElementsByClassName("close")[0];
+
+                //display pop up
+                modal.style.display = "block";
+
+
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                };
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                    if (event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+            });
 
         </script>
     </body>
