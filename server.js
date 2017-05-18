@@ -699,11 +699,12 @@ const makeBoard = () => {
     //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
     let order = Object.keys(userScores).sort(((a, b) => userScores[a].stat > userScores[b].stat));
     console.log(order);
-    let board = '<h2><u>Player Stats:</u></h2>';
+    let board = '';
     for (let i = 0; i< order.length; i++){
         let total = userScores[order[i]].wins + userScores[order[i]].losses + userScores[order[i]].ties;
         board = '<p><u>' + order[i] + '</u></p><p style="font-size: 14px">stat: ' + (userScores[order[i]].stat.toFixed(3) * 1000) + ' games: ' + total + '</p>' + board;
     }
+    board = '<h3><u>Player Stats:</u></h3>' + board;
     return board;
 };
 
