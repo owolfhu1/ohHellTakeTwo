@@ -191,7 +191,12 @@ io.on('connection', socket => {
     });
 
     //when client tries to pair with another user this sends request to that user
-    socket.on('pair_request', user => { io.to(user).emit('rePair', [user, socket.id, userMap[userId].name]); });
+    socket.on('pair_request', user => {
+        if (user[0] !== userId) {
+            io.to(userId).emit('message', 'request sent.');
+            io.to(user[0]).emit('rePair', [user[0], socket.id, userMap[userId].name]);
+        }
+    });
 
     //if user accepts 'pair_request' the 2 users are removed from lobby and put into a game object.
     socket.on('finalPair', userIds => {
