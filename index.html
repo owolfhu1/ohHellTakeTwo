@@ -161,7 +161,11 @@
                     invite_popup.style.display = "none";
                 });
                 invite_popup.style.display = "block";
-
+                window.onclick = function(event) {
+                    if (event.target === tricks_popup) {
+                        invite_popup.style.display = "none";
+                    }
+                }
             };
 
             //checks if card is legal play, returns boolean
