@@ -229,10 +229,12 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
     
-        game.aces = userIds[0][1];
-        game.jokers = userIds[0][2];
-        game.joker_value = userIds[0][3];
-        game.agreement = userIds[0][4];
+        //rule variations:
+        game.aces = userIds[0][1];//working
+        game.jokers = userIds[0][2];//working
+        game.joker_value = userIds[0][3];//TODO: joker_value
+        game.agreement = userIds[0][4];//TODO: agreement
+        //TODO: MAKE MORE RULES!
         
         if (game.aces === 'high') game.aceValue = 16;
         io.to(userIds[0][0]).emit('ace_style', game.aces);
@@ -622,15 +624,16 @@ const jokerCount = hand => {
 //is called by send info to end game when players are out of cards or can no longer win. calculates scores and prints to player's logs.
 const endRound = gameId => {
     let game = gameMap[gameId];
+    let joker_value = game.joker_value;
     let firstId = game.player1Id;
     let secondId = game.player2Id;
     if (game[firstId].tricks === game[firstId].goal) {
-        game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*5;
-        sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*5} and now has ${game[firstId].score} points.`);
+        game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
+        sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
     }
     if (game[secondId].tricks === game[secondId].goal) {
-        game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*5;
-        sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*5} and now has ${game[secondId].score} points.`);
+        game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
+        sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
     }
     gameMap[gameId].round += gameMap[gameId].plusMinus;
 };
