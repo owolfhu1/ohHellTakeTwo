@@ -231,7 +231,7 @@ io.on('connection', socket => {
     });
 
     //sends decline message when an invite is declined.
-    socket.on('decline', id => { io.to(id).emit('receive_message', 'Your request has been declined.'); });
+    socket.on('decline', id => { io.to(id).emit('receive_message', 'Your invitation has been declined.'); });
     
     //revices information when player picks goal.
     socket.on('pick', pick => {

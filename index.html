@@ -90,35 +90,7 @@
         </div>
         <div id="invite_popup" class="invite_popup">
             <div id="invite_popup_content" class="invite_popup_content">
-
-
-
-<!--
-                <form id="invite_form">
-
-                    Aces:
-                    <input title="aces" type="radio" name="aces" value="high"> high
-                    <input type="radio" name="aces" value="low"> low
-                    <input type="radio" name="aces" value="both" checked> both
-                    <br><br>
-                    Jokers:
-                    <input title="jokers" type="radio" name="jokers" value="on" checked> on
-                    <input type="radio" name="jokers" value="off"> off
-                    <br><br>
-                    Joker value (between 0 and 10):
-                    <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
-                </form>
-                <button id="invite_button">invite</button>
-
--->
             </div>
-
-
-
-
-
-
-
         </div>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -163,8 +135,11 @@
                 let invite_button = document.getElementById('invite_button');
                 let cancel_button = document.getElementById('cancel_button');
                 invite_button.addEventListener('click', () => {
-                    socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
-                    invite_popup.style.display = "none";
+
+                    if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
+                        socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
+                        invite_popup.style.display = "none";
+                    }
                 });
                 cancel_button.addEventListener('click', () => {
                     invite_popup.style.display = "none";
