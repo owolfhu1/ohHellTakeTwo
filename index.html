@@ -330,6 +330,8 @@
                     <div id="trump_box" class="trump_box"></div>
                 `;
                 document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
+
+                /*
                 aces_button = document.getElementById('aces_button');
 
                 aces_button.addEventListener('click', function () {
@@ -338,7 +340,7 @@
                 });
                 socket.on('lowAce', function () { aces_button.innerHTML = 'Aces low'; smallSound.play();});
                 socket.on('highAce', function () { aces_button.innerHTML = 'Aces high'; smallSound.play();});
-
+*/
                 player_hand = document.getElementById('player_hand');
                 opponent_hand = document.getElementById('opponent_hand');
                 trump_box = document.getElementById('trump_box');
@@ -510,12 +512,27 @@
 
             socket.on('ace_style', style => {
                 aceStyle = style;
-                if (style === 'high'){
+                aces_button = document.getElementById('aces_button');
+
+
+                if (style === 'high') {
                     aces_button.innerHTML = 'Aces high';
+                } else if (style === 'both') {
+                    aces_button.addEventListener('click', function () {
+                        if (aces_button.innerHTML === 'Aces low') socket.emit('aces_high');
+                        if (aces_button.innerHTML === 'Aces high') socket.emit('aces_low');
+                    });
+                    socket.on('lowAce', function () {
+                        aces_button.innerHTML = 'Aces low';
+                        smallSound.play();
+                    });
+                    socket.on('highAce', function () {
+                        aces_button.innerHTML = 'Aces high';
+                        smallSound.play();
+                    });
                 }
-                if (style === 'high' || style === 'low'){
-                    aces_button.removeEventListener();
-                }
+
+
             });
 
         </script>
