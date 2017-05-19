@@ -234,6 +234,7 @@ io.on('connection', socket => {
         game.jokers = userIds[0][2];//working
         game.joker_value = userIds[0][3];//TODO: joker_value
         game.agreement = userIds[0][4];//TODO: agreement
+        game.follow_suit = userIds[0][5]//TODO: follow_suit
         //TODO: MAKE MORE RULES!
         
         if (game.aces === 'high') game.aceValue = 16;

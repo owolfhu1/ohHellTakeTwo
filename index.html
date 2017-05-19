@@ -121,8 +121,12 @@
                     <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
                     <br><br>
                     Agreement:
-                    <input type="radio" name="agree" value="on"> on
-                    <input title="agree" type="radio" name="agree" value="off" checked> off
+                    <input title="agree" type="radio" name="agree" value="on"> on
+                    <input type="radio" name="agree" value="off" checked> off
+                    <br><br>
+                    Following suit required:
+                    <input title="follow_suit" type="radio" name="follow_suit" value="on" checked> on
+                    <input type="radio" name="follow_suit" value="off"> off
                 </form>
 
                 <button id="invite_button">send invite to ${name}</button>
@@ -138,7 +142,7 @@
                     }
                     invite_form.joker_value.value = Math.round(invite_form.joker_value.value);
                     if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
-                        socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
+                        socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value, invite_form.follow_suit.value]);
                         invite_popup.style.display = "none";
                     }
                 });
@@ -275,6 +279,8 @@
                         Joker value: ${pair[0][3]}
                         <br><br>
                         Agreement: ${pair[0][4]}
+                        <br><br>
+                        Following suit required :${pair[0][5]}
                         <br><br>
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
