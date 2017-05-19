@@ -236,10 +236,11 @@ io.on('connection', socket => {
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
         game.joker_value = userIds[0][3];//working
-        game.agreement = userIds[0][4];//working? TODO: check end round conditions
+        game.agreement = userIds[0][4];//working
         game.follow_suit = userIds[0][5];//working
-        game.lose_points = userIds[0][6];//TODO
-        game.lose_number = userIds[0][7];//TODO
+        game.lose_points = userIds[0][6];//working
+        game.lose_number = userIds[0][7];//working
+        game.leader_only = userIds[0][8];//TODO
         //TODO: MAKE MORE RULES! so many more  >8~D
         
         //set ace_style client side
@@ -484,6 +485,7 @@ const removeFromLobby = id => {
 };
 
 //builds a deck of cards and shuffles it
+const card = (value, suit) =>  [value, suit];
 const deck = (jokers) => {
     let deckReturn = [];
     const vAnds =[
@@ -502,9 +504,6 @@ const deck = (jokers) => {
     shuffle(deckReturn);
     return deckReturn;
 };
-
-const card = (value, suit) =>  [value, suit];
-
 const shuffle = a => {
     for (let i = a.length; i; i--) {
         let j = Math.floor(Math.random() * i);
@@ -642,12 +641,19 @@ const endRound = gameId => {
     let joker_value = game.joker_value;
     let firstId = game.player1Id;
     let secondId = game.player2Id;
+    let player1leader = true;
+    let player2leader = true;
+    
+    if (game.leader_only = 'on'){
+        if (game[firstId].score < game[secondId].score) player1leader = false;
+        if (game[firstId].score > game[secondId].score) player2leader = false;
+    }
     
     
     if (game[firstId].tricks === game[firstId].goal) {
         game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
         sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
-    } else if (game.lose_points === 'on') {
+    } else if (game.lose_points === 'on' && player1leader) {
         game[firstId].score -= game.lose_number;
         sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points and now has ${game[firstId].score} points.`);
     }
@@ -657,7 +663,7 @@ const endRound = gameId => {
     if (game[secondId].tricks === game[secondId].goal) {
         game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
         sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
-    } else if (game.lose_points === 'on') {
+    } else if (game.lose_points === 'on' && player2leader) {
         game[secondId].score -= game.lose_number;
         sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
     }
