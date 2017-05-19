@@ -355,8 +355,6 @@ io.on('connection', socket => {
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
             
-            
-            
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${game[opponentId].name}';`);
             userScores[userMap[opponentId].name] = new stats(
                 userScores[userMap[opponentId].name].wins + 1,
@@ -515,7 +513,7 @@ const deal = gameId => {
             game[game.player1Id].turn = false;
             game[game.player2Id].turn = true;
         }
-        game.gameDeck = deck(game.joker_value);
+        game.gameDeck = deck(game.jokers);
         game[game.player1Id].picked = false;
         game[game.player2Id].picked = false;
         game[game.player1Id].tricksWon = [];
