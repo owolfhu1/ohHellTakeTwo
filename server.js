@@ -132,6 +132,9 @@ io.on('connection', socket => {
                     }
                     io.to(userId).emit('set_user_name', user.name);
                     io.to(userId).emit('setup_game');
+                    
+                    io.to(userId).emit('ace_style', game.aces);
+                    
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
                 } else {
                     lobby.names.push(user.name);
@@ -231,6 +234,7 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('ace_style', game.aces);
         io.to(userIds[1]).emit('ace_style', game.aces);
         
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
         deal(gameId);
     });
 
