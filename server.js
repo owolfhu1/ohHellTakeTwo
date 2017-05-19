@@ -642,16 +642,29 @@ const endRound = gameId => {
     let joker_value = game.joker_value;
     let firstId = game.player1Id;
     let secondId = game.player2Id;
+    
+    
     if (game[firstId].tricks === game[firstId].goal) {
         game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
         sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
+    } else if (game.lose_points === 'on') {
+        game[firstId].score -= game.lose_number;
+        sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points and now has ${game[firstId].score} points.`);
     }
+    
+    
+    
     if (game[secondId].tricks === game[secondId].goal) {
         game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
         sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
+    } else if (game.lose_points === 'on') {
+        game[secondId].score -= game.lose_number;
+        sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
     }
+    
+    
+    
     game.round += game.plusMinus;
-    //undo here
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 
