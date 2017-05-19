@@ -61,8 +61,12 @@
             ::-webkit-scrollbar-track { display: none; }
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
-            .tricks_popup {  display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .tricks_popup_content {  text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
+            .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
+
+            .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 400px }
+
         </style>
     </head>
     <body>
@@ -84,7 +88,38 @@
                 <div id="player2_tricks"></div>
             </div>
         </div>
+        <div id="invite_popup" class="invite_popup">
+            <div id="invite_popup_content" class="invite_popup_content">
 
+
+
+<!--
+                <form id="invite_form">
+
+                    Aces:
+                    <input title="aces" type="radio" name="aces" value="high"> high
+                    <input type="radio" name="aces" value="low"> low
+                    <input type="radio" name="aces" value="both" checked> both
+                    <br><br>
+                    Jokers:
+                    <input title="jokers" type="radio" name="jokers" value="on" checked> on
+                    <input type="radio" name="jokers" value="off"> off
+                    <br><br>
+                    Joker value (between 0 and 10):
+                    <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
+                </form>
+                <button id="invite_button">invite</button>
+
+-->
+            </div>
+
+
+
+
+
+
+
+        </div>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
@@ -94,6 +129,40 @@
 
             //tells the server your name
             //socket.emit('setName', userName);
+
+            const sendInvite = (name, id) => {
+                let invite_popup_content = document.getElementById('invite_popup_content');
+                let invite_popup = document.getElementById('invite_popup');
+
+                invite_popup_content.innerHTML = `
+
+                <form id="invite_form">
+                    please choose rules for game below: <br>
+                    Aces:
+                    <input title="aces" type="radio" name="aces" value="high"> high
+                    <input type="radio" name="aces" value="low"> low
+                    <input type="radio" name="aces" value="both" checked> both
+                    <br><br>
+                    Jokers:
+                    <input title="jokers" type="radio" name="jokers" value="on" checked> on
+                    <input type="radio" name="jokers" value="off"> off
+                    <br><br>
+                    Joker value (between 0 and 10):
+                    <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
+                </form>
+
+                <button id="invite_button">send invite to ${name}</button>
+
+                `;
+                let invite_form = document.getElementById('invite_form');
+                let invite_button = document.getElementById('invite_button');
+                invite_button.addEventListener('click', () => {
+                    socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value]);
+                    invite_popup.style.display = "none";
+                });
+                invite_popup.style.display = "block";
+
+            };
 
             //checks if card is legal play, returns boolean
             const isLegal = (hand, i) => {
@@ -191,7 +260,13 @@
                 //adds event to send pair request when button is pushed
                 for(let i = 0; i< users[ID].length; i++) {
                     document.getElementById(i.toString()).addEventListener('click', () => {
-                        socket.emit('pair_request', users[ID][i]);
+                        //socket.emit('pair_request', users[ID][i]);
+
+
+                        //experiment
+                        sendInvite(users[name][i],users[ID][i])
+
+
                     });
                 }
                 document.getElementById('float_left').innerHTML = users[2];
