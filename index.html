@@ -278,7 +278,7 @@
 
             //gets pair request and confirms user
             socket.on('rePair', pair => {
-                if (pair[1] === pair[0]) alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
+                if (pair[1] === pair[0][0]) alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
                 else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
             });
 

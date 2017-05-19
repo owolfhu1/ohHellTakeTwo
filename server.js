@@ -192,36 +192,34 @@ io.on('connection', socket => {
 
     //when client tries to pair with another user this sends request to that user
     socket.on('pair_request', user => {
-        if (user[0] !== userId) {
-            io.to(userId).emit('message', 'request sent.');
-            io.to(user[0]).emit('rePair', [user[0], socket.id, userMap[userId].name]);
-        }
+        io.to(userId).emit('message', 'request sent.');
+        io.to(user[0]).emit('rePair', [user, socket.id, userMap[userId].name]);
     });
 
     //if user accepts 'pair_request' the 2 users are removed from lobby and put into a game object.
     socket.on('finalPair', userIds => {
-        // 0 = player1, 1 = player2
-        console.log(userMap[userIds[0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
-        removeFromLobby(userIds[0]);
+        // 0[0] = player1, 1 = player2
+        console.log(userMap[userIds[0][0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
+        removeFromLobby(userIds[0][0]);
         removeFromLobby(userIds[1]);
         updateLobby();
         let game = new emptyGame();
         let gameId = Math.random().toString(36).substr(2, 5);
-        userMap[userIds[0]].gameId = gameId;
+        userMap[userIds[0][0]].gameId = gameId;
         userMap[userIds[1]].gameId = gameId;
-        game[userIds[0]] = new blankPlayer();
+        game[userIds[0][0]] = new blankPlayer();
         game[userIds[1]] = new blankPlayer();
-        game.player1Id = userIds[0];
+        game.player1Id = userIds[0][0];
         game.player2Id = userIds[1];
-        game[userIds[0]].opponentId = userIds[1];
-        game[userIds[1]].opponentId = userIds[0];
-        game[userIds[0]].name = userMap[userIds[0]].name;
+        game[userIds[0][0]].opponentId = userIds[1];
+        game[userIds[1]].opponentId = userIds[0][0];
+        game[userIds[0][0]].name = userMap[userIds[0][0]].name;
         game[userIds[1]].name = userMap[userIds[1]].name;
         gameMap[gameId] = game;
-        namesPlaying[game[userIds[0]].name] = gameId;
+        namesPlaying[game[userIds[0][0]].name] = gameId;
         namesPlaying[game[userIds[1]].name] = gameId;
         client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-        io.to(userIds[0]).emit('setup_game');
+        io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
         deal(gameId);
     });
