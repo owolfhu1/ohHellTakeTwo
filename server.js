@@ -221,6 +221,11 @@ io.on('connection', socket => {
         client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
+    
+        game.aces = userIds[0][1];
+        game.jokers = userIds[0][2];
+        game.joker_value = userIds[0][3];
+        
         deal(gameId);
     });
 
