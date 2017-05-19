@@ -21,15 +21,15 @@ const userMap = {}; //holds online user information {userId: {name: ____ , gameI
 let gameMap = {}; //holds all games {gameId : game object}
 let namesPlaying = {}; //map of player names:gameID in active game, used to check if player is in an unfinished game on login
 let onlineNameArray = []; //array of active users, used to prevent double login
-let passwordMap = {};
+let passwordMap = {};// {userName : password} loads from DB each time a user connects
+let lobby = { names : [], ids : [] }; //holds info on users from lobby
 const SUIT = 1;
 const VALUE = 0;
 const CARD = 0;
 const GAME_ID = 1;
-let lobby = {
-    names : [],
-    ids : []
-};
+const USER_NAME = 0;
+const PASSWORD = 1;
+
 let userScores = {};
 
 client.query('SELECT * FROM userbank;').on('row', row => {
@@ -106,11 +106,6 @@ io.on('connection', socket => {
         if so, checks if is correct userName/password combo and logs in if correct
         if first check fails userName and password are added to passwordMap and user is logged in */
     socket.on('login_request', login => {
-        const USER_NAME = 0;
-        const PASSWORD = 1;
-    
-        console.log(JSON.stringify(passwordMap));
-        
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
@@ -738,6 +733,7 @@ const endRoundNow = game => {
     return false;
 };
 
+//takes value integer and returns value string ie: 3 -> 'Three'
 const cardValue = value => {
     /**/ if (value ===  1 ) value = 'low Ace';
     else if (value ===  2 ) value = 'Two';

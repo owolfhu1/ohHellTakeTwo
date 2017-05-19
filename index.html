@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, modal;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup;
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -61,8 +61,8 @@
             ::-webkit-scrollbar-track { display: none; }
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
-            .modal {  display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .modal-content {  text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
+            .tricks_popup {  display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .tricks_popup_content {  text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
         </style>
     </head>
     <body>
@@ -77,8 +77,8 @@
             </div>
             <div id="card_area" class="card_area"></div>
         </div>
-        <div id="myModal" class="modal">
-            <div class="modal-content">
+        <div id="tricks_popup" class="tricks_popup">
+            <div class="tricks_popup_content">
                 <div id="player1_tricks"></div>
                 <br>
                 <div id="player2_tricks"></div>
@@ -395,13 +395,11 @@
             socket.on('tricks', info => {
                 player1_tricks = document.getElementById('player1_tricks');
                 player2_tricks = document.getElementById('player2_tricks');
-                modal = document.getElementById('myModal');
+                tricks_popup = document.getElementById('tricks_popup');
 
                 //fill in trick divs
-
                 player1_tricks.innerHTML = info[0] + "'s tricks:<br>";
                 player2_tricks.innerHTML = info[1] + "'s tricks:<br>";
-
                 for (let i = 0; i < info[2].length; i++){
                     player1_tricks.innerHTML += cardImg(info[2][i]);
                 }
@@ -410,12 +408,12 @@
                 }
 
                 //display pop up
-                modal.style.display = "block";
+                tricks_popup.style.display = "block";
 
-                // When the user clicks anywhere outside of the modal, close it
+                // When the user clicks anywhere outside of the tricks_popup, close it
                 window.onclick = function(event) {
-                    if (event.target === modal) {
-                        modal.style.display = "none";
+                    if (event.target === tricks_popup) {
+                        tricks_popup.style.display = "none";
                     }
                 }
             });
