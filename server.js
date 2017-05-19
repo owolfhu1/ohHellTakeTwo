@@ -354,13 +354,16 @@ io.on('connection', socket => {
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
-            client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[opponentId].name}';`);
+            
+            
+            
+            client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${game[opponentId].name}';`);
             userScores[userMap[opponentId].name] = new stats(
                 userScores[userMap[opponentId].name].wins + 1,
                 userScores[userMap[opponentId].name].losses,
                 userScores[userMap[opponentId].name].ties
             );
-            client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[userId].name}';`);
+            client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${game[userId].name}';`);
             userScores[userMap[userId].name] = new stats(
                 userScores[userMap[userId].name].wins,
                 userScores[userMap[userId].name].losses + 1,
