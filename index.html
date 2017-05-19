@@ -147,7 +147,21 @@
                         invite_form.joker_value.value = 5;
                     }
                     invite_form.joker_value.value = Math.round(invite_form.joker_value.value);
-                    if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
+
+
+
+                    if (invite_form.lose_number.value === '') {
+                        invite_form.lose_number.value = 5;
+                    }
+                    invite_form.lose_number.value = Math.round(invite_form.lose_number.value);
+
+
+                    if (
+                        11 > invite_form.joker_value.value &&
+                        invite_form.joker_value.value > -1 &&
+                        11 > invite_form.lose_number.value &&
+                        invite_form.lose_number.value > 0
+                    ) {
                         socket.emit('pair_request', [
                             id,
                             invite_form.aces.value,
@@ -304,11 +318,10 @@
                         <br><br>
                         how many points?: ${pair[0][7]}
                         <br><br>
-                        <input title="lose_number" type="number" name="lose_number" min="1" max="10" value="5">
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
 
-                `;
+                    `;
                     let accept_button = document.getElementById('accept_button');
                     let decline_button = document.getElementById('decline_button');
                     accept_button.addEventListener('click', () => {
