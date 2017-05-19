@@ -279,7 +279,36 @@
             //gets pair request and confirms user
             socket.on('rePair', pair => {
                 if (pair[1] === pair[0][0]) alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
-                else if (confirm(`do you want to play with ${pair[2]}?`)) socket.emit('finalPair', pair);
+                else {
+                    let invite_popup_content = document.getElementById('invite_popup_content');
+                    let invite_popup = document.getElementById('invite_popup');
+
+                    invite_popup_content.innerHTML = `
+
+                        ${pair[2]} would like to play.
+                        <br><br>
+                        Aces: ${pair[0][1]}
+                        <br><br>
+                        Jokers: ${pair[0][2]}
+                        <br><br>
+                        Joker value: ${pair[0][2]}
+                        <br><br>
+
+                        <button id="accept_button">accept</button>
+                        <button id="decline_button">decline</button>
+
+                `;
+                    let accept_button = document.getElementById('accept_button');
+                    let decline_button = document.getElementById('decline_button');
+                    accept_button.addEventListener('click', () => {
+                        socket.emit('finalPair', pair);
+                        invite_popup.style.display = "none";
+                    });
+                    decline_button.addEventListener('click', () => {
+                        invite_popup.style.display = "none";
+                    });
+                    invite_popup.style.display = "block";
+                }
             });
 
             //prints chat received by server in chat window
