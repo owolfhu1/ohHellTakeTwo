@@ -363,7 +363,15 @@
                 let showPicker = '';
                 if (info[TURN]) {
                     for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
-                        if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE] || !agreement) showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                        if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]){
+
+                            if (agreement){
+                                showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                            } else {
+                                showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                            }
+
+                        }
                         else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
                     }
                 }
