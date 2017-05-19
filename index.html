@@ -514,9 +514,7 @@
                     aces_button.innerHTML = 'Aces high';
                 }
                 if (style === 'high' || style === 'low'){
-                    aces_button.addEventListener('click', function () {
-                        //do nothing
-                    });
+                    aces_button.removeEventListener();
                 }
             });
 
