@@ -135,6 +135,10 @@ io.on('connection', socket => {
                     
                     io.to(userId).emit('ace_style', game.aces);
                     
+                    if(game.aces === 'both') {
+                        if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
+                        else if (game.aceValue === 1) io.to(userId).emit('set_ace_button', 'Aces low');
+                    }
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
                 } else {
                     lobby.names.push(user.name);
@@ -316,6 +320,7 @@ io.on('connection', socket => {
         game.aceValue = 1;
         if (game.player1Id in userMap) io.to(game.player1Id).emit('lowAce');
         if (game.player2Id in userMap) io.to(game.player2Id).emit('lowAce');
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     });
     socket.on('aces_high', () => {
         let gameId = userMap[socket.id].gameId;
@@ -323,6 +328,7 @@ io.on('connection', socket => {
         game.aceValue = 16;
         if (game.player1Id in userMap) io.to(game.player1Id).emit('highAce');
         if (game.player2Id in userMap) io.to(game.player2Id).emit('highAce');
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     });
     
     //if user types '$resign' user is resigned and opponent wins, both are placed in lobby
