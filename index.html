@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup, aceStyle = 'both', agreement = false;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup, aceStyle = 'both', agreement, follow_suit;
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -119,11 +119,11 @@
                     Joker value (between 0 and 10):
                     <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
                     <br><br>
-                    Agreement(inactive):
+                    Goal agreement:
                     <input title="agree" type="radio" name="agree" value="on"> on
                     <input type="radio" name="agree" value="off" checked> off
                     <br><br>
-                    Following suit required(inactive):
+                    Following suit required:
                     <input title="follow_suit" type="radio" name="follow_suit" value="on" checked> on
                     <input type="radio" name="follow_suit" value="off"> off
                 </form>
@@ -153,6 +153,9 @@
 
             //checks if card is legal play, returns boolean
             const isLegal = (hand, i) => {
+
+                //if rules say you don't need to follow suit, all moves are legal
+                if (!follow_suit) return true;
 
                 //if there is no card in play, all moves are legal
                 if (inPlay[SUIT] === 20) return true;
@@ -540,6 +543,11 @@
             socket.on('set_agreement', onOff => {
                 if (onOff === 'on') agreement = true;
                 if (onOff === 'off') agreement = false;
+            });
+
+            socket.on('set_follow_suit', onOff => {
+                if (onOff === 'on') follow_suit = true;
+                if (onOff === 'off') follow_suit = false;
             });
 
         </script>

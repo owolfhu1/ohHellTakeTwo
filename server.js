@@ -136,6 +136,7 @@ io.on('connection', socket => {
                     io.to(userId).emit('setup_game');
                     io.to(userId).emit('ace_style', game.aces);
                     io.to(userId).emit('set_agreement', game.agreement);
+                    io.to(userId).emit('set_follow_suit', game.follow_suit);
                     
                     if(game.aces === 'both') {
                         if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
@@ -235,7 +236,7 @@ io.on('connection', socket => {
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
         game.joker_value = userIds[0][3];//working
-        game.agreement = userIds[0][4];//TODO: agreement
+        game.agreement = userIds[0][4];//working
         game.follow_suit = userIds[0][5];//TODO: follow_suit
         //TODO: MAKE MORE RULES!
         
@@ -247,6 +248,10 @@ io.on('connection', socket => {
         //set agreement boolean client side
         io.to(userIds[0][0]).emit('set_agreement', game.agreement);
         io.to(userIds[1]).emit('set_agreement', game.agreement);
+    
+        //set follow_suit boolean client side
+        io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
+        io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
         
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
         deal(gameId);
