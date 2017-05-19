@@ -260,6 +260,7 @@
             socket.on('rePair', pair => {
                 if (pair[1] === pair[0][0]) alert(`You can't play yourself! If you would like to try a solo version of this game, go to: owolfhu1.x10host.com/Oh_Hell_solo enjoy!`);
                 else {
+                    secretSound.play();
                     let invite_popup_content = document.getElementById('invite_popup_content');
                     let invite_popup = document.getElementById('invite_popup');
 
@@ -331,16 +332,6 @@
                 `;
                 document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
 
-                /*
-                aces_button = document.getElementById('aces_button');
-
-                aces_button.addEventListener('click', function () {
-                    if (aces_button.innerHTML === 'Aces low') socket.emit('aces_high');
-                    if (aces_button.innerHTML === 'Aces high') socket.emit('aces_low');
-                });
-                socket.on('lowAce', function () { aces_button.innerHTML = 'Aces low'; smallSound.play();});
-                socket.on('highAce', function () { aces_button.innerHTML = 'Aces high'; smallSound.play();});
-*/
                 player_hand = document.getElementById('player_hand');
                 opponent_hand = document.getElementById('opponent_hand');
                 trump_box = document.getElementById('trump_box');
