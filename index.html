@@ -138,7 +138,8 @@
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
                     }
-                    invite_form.joker_value.value = invite_form.joker_value.value.toFixed(0);
+                    let j_v = invite_form.joker_value.value;
+                    invite_form.joker_value.value = j_v.toFixed(0);
                     if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
                         socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
                         invite_popup.style.display = "none";
