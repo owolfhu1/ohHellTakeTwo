@@ -466,7 +466,7 @@ const removeFromLobby = id => {
 };
 
 //builds a deck of cards and shuffles it
-const deck = () => {
+const deck = (jokers) => {
     let deckReturn = [];
     const vAnds =[
         [1,2,3,4,5,6,7,8,9,10,13,14,15],
@@ -477,8 +477,10 @@ const deck = () => {
             deckReturn.push(card(vAnds[0][v],vAnds[1][s]));
         }
     }
-    deckReturn.push(card(11,'joker'));
-    deckReturn.push(card(12,'joker'));
+    if (jokers === 'on') {
+        deckReturn.push(card(11, 'joker'));
+        deckReturn.push(card(12, 'joker'));
+    }
     shuffle(deckReturn);
     return deckReturn;
 };
@@ -510,7 +512,7 @@ const deal = gameId => {
             game[game.player1Id].turn = false;
             game[game.player2Id].turn = true;
         }
-        game.gameDeck = deck();
+        game.gameDeck = deck(game.joker_value);
         game[game.player1Id].picked = false;
         game[game.player2Id].picked = false;
         game[game.player1Id].tricksWon = [];
