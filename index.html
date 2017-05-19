@@ -135,6 +135,9 @@
                 let invite_button = document.getElementById('invite_button');
                 let cancel_button = document.getElementById('cancel_button');
                 invite_button.addEventListener('click', () => {
+                    if (invite_form.joker_value.value === '') {
+                        invite_form.joker_value.value = 5;
+                    }
 
                     if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
                         socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
