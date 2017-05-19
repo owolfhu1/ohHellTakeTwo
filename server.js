@@ -202,7 +202,7 @@ io.on('connection', socket => {
 
     //when client tries to pair with another user this sends request to that user
     socket.on('pair_request', user => {
-        io.to(userId).emit('receive_message', 'request sent.');
+        io.to(userId).emit('receive_message', 'Request sent.');
         io.to(user[0]).emit('rePair', [user, socket.id, userMap[userId].name]);
     });
 
