@@ -310,6 +310,7 @@
                         invite_popup.style.display = "none";
                     });
                     decline_button.addEventListener('click', () => {
+                        socket.emit('decline', pair[1]);
                         invite_popup.style.display = "none";
                     });
                     invite_popup.style.display = "block";
