@@ -152,20 +152,20 @@
                 </form>
 
                 <button id="invite_button">send invite to ${name}</button>
+                <button id="cancel_button">cancel</button>
 
                 `;
                 let invite_form = document.getElementById('invite_form');
                 let invite_button = document.getElementById('invite_button');
+                let cancel_button = document.getElementById('cancel_button');
                 invite_button.addEventListener('click', () => {
                     socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value]);
                     invite_popup.style.display = "none";
                 });
+                cancel_button.addEventListener('click', () => {
+                    invite_popup.style.display = "none";
+                });
                 invite_popup.style.display = "block";
-                window.onclick = function(event) {
-                    if (event.target === tricks_popup) {
-                        invite_popup.style.display = "none";
-                    }
-                }
             };
 
             //checks if card is legal play, returns boolean
