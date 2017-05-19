@@ -64,7 +64,7 @@
             .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .invite_popup_content { text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 240px }
+            .invite_popup_content { text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 300px }
 
         </style>
     </head>
@@ -127,6 +127,13 @@
                     <input title="follow_suit" type="radio" name="follow_suit" value="on" checked> on
                     <input type="radio" name="follow_suit" value="off"> off
                     <br><br>
+                    Failing loses points:
+                    <input title="lose_points" type="radio" name="lose_points" value="on"> on
+                    <input type="radio" name="lose_points" value="off" checked> off
+                    <br><br>
+                    <br><br>
+                    how many points? (between 1 and 10):
+                    <input title="lose_number" type="number" name="lose_number" min="1" max="10" value="5">
                 </form>
 
                 <button id="invite_button">send invite to ${name}</button>
@@ -142,7 +149,16 @@
                     }
                     invite_form.joker_value.value = Math.round(invite_form.joker_value.value);
                     if (11 > invite_form.joker_value.value && invite_form.joker_value.value > -1) {
-                        socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value, invite_form.follow_suit.value]);
+                        socket.emit('pair_request', [
+                            id,
+                            invite_form.aces.value,
+                            invite_form.jokers.value,
+                            invite_form.joker_value.value,
+                            invite_form.agree.value,
+                            invite_form.follow_suit.value,
+                            invite_form.lose_points.value,
+                            invite_form.lose_number.value
+                        ]);
                         invite_popup.style.display = "none";
                     }
                 });
@@ -285,6 +301,11 @@
                         <br><br>
                         Following suit required: ${pair[0][5]}
                         <br><br>
+                        Failing loses points: ${pair[0][6]}
+                        <br><br>
+                        how many points?: ${pair[0][7]}
+                        <br><br>
+                        <input title="lose_number" type="number" name="lose_number" min="1" max="10" value="5">
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
 
