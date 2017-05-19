@@ -63,8 +63,8 @@
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
             .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
-            .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .invite_popup_content { text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 355px }
+            .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 150px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .invite_popup_content { text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 500px }
 
         </style>
     </head>
@@ -116,7 +116,7 @@
                     <input title="jokers" type="radio" name="jokers" value="on" checked> on
                     <input type="radio" name="jokers" value="off"> off
                     <br><br>
-                    Joker value (between 0 and 10):
+                    Joker value (0 to 10):
                     <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
                     <br><br>
                     Goal agreement:
@@ -131,12 +131,28 @@
                     <input title="lose_points" type="radio" name="lose_points" value="on"> on
                     <input type="radio" name="lose_points" value="off" checked> off
                     <br><br>
-                    how many points? (between 1 and 10):
+                    how many points? (1 to 10):
                     <input title="lose_number" type="number" name="lose_number" min="1" max="10" value="5">
                     <br><br>
                     Only for point leader?:
                     <input title="leader_only" type="radio" name="leader_only" value="on"> on
                     <input type="radio" name="leader_only" value="off" checked> off
+                    <br><br>
+                    Game progression:
+                    <input type="checkbox" title="loop" name="loop"> loop <br>
+                    <input title="progression" type="radio" name="progression" value="high to low"> high to low
+                    <input type="radio" name="progression" value="low to high" checked> low to high
+                    <input type="radio" name="progression" value="constant"> constant
+                    <br><br>
+                    Starting round (1 to 10):
+                    <input title="start" type="number" name="start" min="1" max="10" value="1">
+                    <br>
+                    Last round(# of rounds for constant)(1 to 10):
+                    <input title="end" type="number" name="end" min="1" max="10" value="1">
+                    <br><br>
+                    Score tricks only on goal:
+                    <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
+                    <input type="radio" name="goal_only" value="off"> off
                 </form>
                 <br>
                 <button id="invite_button">send invite to ${name}</button>
