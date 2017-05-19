@@ -236,9 +236,11 @@ io.on('connection', socket => {
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
         game.joker_value = userIds[0][3];//working
-        game.agreement = userIds[0][4];//working
-        game.follow_suit = userIds[0][5];//TODO: follow_suit
-        //TODO: MAKE MORE RULES!
+        game.agreement = userIds[0][4];//working? TODO: check end round conditions
+        game.follow_suit = userIds[0][5];//working
+        game.lose_points = userIds[0][6];//TODO
+        game.lose_number = userIds[0][7];//TODO
+        //TODO: MAKE MORE RULES! so many more  >8~D
         
         //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
@@ -648,7 +650,9 @@ const endRound = gameId => {
         game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
         sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
     }
-    gameMap[gameId].round += gameMap[gameId].plusMinus;
+    game.round += game.plusMinus;
+    //undo here
+    client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 
 //used in various functions to send log information to player's logs.
