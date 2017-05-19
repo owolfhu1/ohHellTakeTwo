@@ -227,6 +227,10 @@ io.on('connection', socket => {
         game.joker_value = userIds[0][3];
         game.agreement = userIds[0][4];
         
+        if (game.aces === 'high') game.aceValue = 16;
+        io.to(userIds[0][0]).emit('ace_style', game.aces);
+        io.to(userIds[1]).emit('ace_style', game.aces);
+        
         deal(gameId);
     });
 

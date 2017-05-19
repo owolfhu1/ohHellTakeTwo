@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup, aceStyle = 'both';
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -99,9 +99,7 @@
             //connects to server
             let socket = io();
 
-            //tells the server your name
-            //socket.emit('setName', userName);
-
+            //prompts user to pick game rules and send and invite.
             const sendInvite = (name, id) => {
                 let invite_popup_content = document.getElementById('invite_popup_content');
                 let invite_popup = document.getElementById('invite_popup');
@@ -507,6 +505,18 @@
                     if (event.target === tricks_popup) {
                         tricks_popup.style.display = "none";
                     }
+                }
+            });
+
+            socket.on('ace_style', style => {
+                aceStyle = style;
+                if (style === 'high'){
+                    aces_button.innerHTML = 'Aces high';
+                }
+                if (style === 'high' || style === 'low'){
+                    aces_button.addEventListener('click', function () {
+                        //do nothing
+                    });
                 }
             });
 
