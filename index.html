@@ -63,9 +63,8 @@
             .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
             .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
-
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 240px }
+            .invite_popup_content { text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 240px }
 
         </style>
     </head>
@@ -107,7 +106,7 @@
                 invite_popup_content.innerHTML = `
 
                 <form id="invite_form">
-                    please choose rules for game below: (currently inactive) <br>
+                    please choose rules for game below: <br><br>
                     Aces:
                     <input title="aces" type="radio" name="aces" value="high"> high
                     <input type="radio" name="aces" value="low"> low
@@ -120,11 +119,11 @@
                     Joker value (between 0 and 10):
                     <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
                     <br><br>
-                    Agreement:
+                    Agreement(inactive):
                     <input title="agree" type="radio" name="agree" value="on"> on
                     <input type="radio" name="agree" value="off" checked> off
                     <br><br>
-                    Following suit required:
+                    Following suit required(inactive):
                     <input title="follow_suit" type="radio" name="follow_suit" value="on" checked> on
                     <input type="radio" name="follow_suit" value="off"> off
                 </form>
@@ -280,7 +279,7 @@
                         <br><br>
                         Agreement: ${pair[0][4]}
                         <br><br>
-                        Following suit required :${pair[0][5]}
+                        Following suit required: ${pair[0][5]}
                         <br><br>
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>

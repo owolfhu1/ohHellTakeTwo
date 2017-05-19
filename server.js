@@ -232,7 +232,7 @@ io.on('connection', socket => {
         //rule variations:
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
-        game.joker_value = userIds[0][3];//TODO: joker_value
+        game.joker_value = userIds[0][3];//working
         game.agreement = userIds[0][4];//TODO: agreement
         game.follow_suit = userIds[0][5]//TODO: follow_suit
         //TODO: MAKE MORE RULES!
