@@ -225,6 +225,7 @@ io.on('connection', socket => {
         game.aces = userIds[0][1];
         game.jokers = userIds[0][2];
         game.joker_value = userIds[0][3];
+        game.agreement = userIds[0][4];
         
         deal(gameId);
     });

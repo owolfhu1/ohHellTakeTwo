@@ -65,7 +65,7 @@
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
 
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 400px }
+            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 400px; height: 240px }
 
         </style>
     </head>
@@ -149,6 +149,10 @@
                     <br><br>
                     Joker value (between 0 and 10):
                     <input title="joker_value" type="number" name="joker_value" min="0" max="10" value="5">
+                    <br><br>
+                    Agreement:
+                    <input title="agree" type="radio" name="agree" value="off"> off
+                    <input type="radio" name="agree" value="on"> on
                 </form>
 
                 <button id="invite_button">send invite to ${name}</button>
@@ -159,7 +163,7 @@
                 let invite_button = document.getElementById('invite_button');
                 let cancel_button = document.getElementById('cancel_button');
                 invite_button.addEventListener('click', () => {
-                    socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value]);
+                    socket.emit('pair_request', [id, invite_form.aces.value, invite_form.jokers.value, invite_form.joker_value.value, invite_form.agree.value]);
                     invite_popup.style.display = "none";
                 });
                 cancel_button.addEventListener('click', () => {
@@ -293,7 +297,8 @@
                         <br><br>
                         Joker value: ${pair[0][3]}
                         <br><br>
-
+                        Agreement: ${pair[0][4]}
+                        <br><br>
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
 
