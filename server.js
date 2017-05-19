@@ -130,10 +130,12 @@ io.on('connection', socket => {
                         game[userId] = player2;
                         game.player2Id = userId;
                     }
+                    
+                    //set up DOM client side
                     io.to(userId).emit('set_user_name', user.name);
                     io.to(userId).emit('setup_game');
-                    
                     io.to(userId).emit('ace_style', game.aces);
+                    io.to(userId).emit('set_agreement', game.agreement);
                     
                     if(game.aces === 'both') {
                         if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
@@ -229,17 +231,22 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
     
-        //rule variations:
+        //rule variations: **in progress**
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
         game.joker_value = userIds[0][3];//working
         game.agreement = userIds[0][4];//TODO: agreement
-        game.follow_suit = userIds[0][5]//TODO: follow_suit
+        game.follow_suit = userIds[0][5];//TODO: follow_suit
         //TODO: MAKE MORE RULES!
         
+        //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
         io.to(userIds[0][0]).emit('ace_style', game.aces);
         io.to(userIds[1]).emit('ace_style', game.aces);
+    
+        //set agreement boolean client side
+        io.to(userIds[0][0]).emit('set_agreement', game.agreement);
+        io.to(userIds[1]).emit('set_agreement', game.agreement);
         
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
         deal(gameId);
@@ -254,7 +261,7 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        if (game.round - game[opponent].goal !== pick) {
+        if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
             sendLog(gameId, `${game[player].name}'s goal is ${pick}`);
             game[player].goal = pick;
             game[player].turn = false;
