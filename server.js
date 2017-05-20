@@ -620,6 +620,9 @@ const sendInfo = id => {
             else if (game.progression === 'high to low' && game.round === 1) gameMap[id].plusMinus = 1;
         }
     
+    
+        
+        
         
         endRound(id);
         deal(id);
