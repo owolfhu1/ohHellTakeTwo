@@ -981,7 +981,7 @@ const logGameRules = gameId => {
     text += `<p>Tricks add to score only on correct guess: ${game.goal_only}</p>`;
     
     if (game.progression === 'constant'){
-        text += `<p>Game progression: constant</p><p>Game will end after ${game.finish} rounds.</p>`;
+        text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
     } else {
         text += `<p>Game progression: ${game.progression}, loop ${game.loop}.</p>`;
         text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
