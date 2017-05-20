@@ -546,7 +546,7 @@ const deal = gameId => {
     
     else {
         let extraInfo = '';
-        if (game.plusMinus === 1) extraInfo = ' + ';
+        if (game.plusMinus === 1) extraInfo = '( + )';
         if (game.plusMinus === -1) extraInfo = '( - )';
         if (game.plusMinus === 0) extraInfo = '( = )';
         sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}. ${extraInfo}</span>`);
@@ -949,7 +949,7 @@ const logGameRules = gameId => {
     let game = gameMap[gameId];
     let player1Name = game[game.player1Id].name;
     let player2Name = game[game.player2Id].name;
-    let text = `<p> Welcome to game ${game}</p><p>${player1Name} vs ${player2Name}</p>`;
+    let text = `<p> Welcome to game ${gameId}</p><p>${player1Name} vs ${player2Name}</p>`;
     
     let aceText;
     if (game.aces === 'both'){
