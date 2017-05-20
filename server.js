@@ -236,17 +236,17 @@ io.on('connection', socket => {
         //rule variations: **in progress**
         game.aces = userIds[0][1];//working
         game.jokers = userIds[0][2];//working
-        game.joker_value = userIds[0][3];//working
+        game.joker_value = Number(userIds[0][3]);//working
         game.agreement = userIds[0][4];//working
         game.follow_suit = userIds[0][5];//working
         game.lose_points = userIds[0][6];//working
-        game.lose_number = userIds[0][7];//working
+        game.lose_number = Number(userIds[0][7]);//working
         game.leader_only = userIds[0][8];//working
         
         game.loop = userIds[0][9];//TODO
         game.progression = userIds[0][10];//TODO
-        game.start = userIds[0][11];//TODO
-        game.finish = userIds[0][12];//TODO
+        game.start = Number(userIds[0][11]);//TODO
+        game.finish = Number(userIds[0][12]);//TODO
         game.goal_only = userIds[0][13];//TODO
         
         //TODO: MAKE MORE RULES! so many more  >8~D
