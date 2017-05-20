@@ -232,7 +232,6 @@ io.on('connection', socket => {
         client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
-    
         
         if (userIds[0][1] === 'randomize') {
             randomize(gameId);
@@ -275,7 +274,9 @@ io.on('connection', socket => {
         //set follow_suit boolean client side
         io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
         io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
-        
+    
+        io.to(userIds[0][0]).emit('clear_log');
+        io.to(userIds[1]).emit('clear_log');
         logGameRules(gameId);
         deal(gameId);
     });
@@ -866,7 +867,6 @@ const cardValue = value => {
     return value;
 };
 
-
 const randomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -988,8 +988,6 @@ const logGameRules = gameId => {
     
     sendLog(gameId, text);
 };
-
-
 
 
 

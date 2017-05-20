@@ -101,9 +101,7 @@
             const sendInvite = (name, id) => {
                 let invite_popup_content = document.getElementById('invite_popup_content');
                 let invite_popup = document.getElementById('invite_popup');
-
                 invite_popup_content.innerHTML = `
-
                 <form id="invite_form">
                     please choose rules for game with ${name} below: <br><br>
                     Aces:
@@ -158,18 +156,15 @@
                 <button id="invite_button">send invite</button>
                 <button id="randomize_button">send randomized game invite</button>
                 <button id="cancel_button">cancel</button>
-
                 `;
                 let invite_form = document.getElementById('invite_form');
                 let invite_button = document.getElementById('invite_button');
                 let randomize_button = document.getElementById('randomize_button');
                 let cancel_button = document.getElementById('cancel_button');
-
                 randomize_button.addEventListener('click', () => {
                     socket.emit('pair_request', [id, 'randomize']);
                     invite_popup.style.display = "none";
                 });
-
                 invite_button.addEventListener('click', () => {
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
@@ -187,8 +182,6 @@
                         invite_form.finish.value = 5;
                     }
                     invite_form.finish.value = Math.round(invite_form.finish.value);
-
-
                     if (
                         11 > invite_form.joker_value.value &&
                         invite_form.joker_value.value > -1 &&
@@ -342,9 +335,6 @@
                     secretSound.play();
                     let invite_popup_content = document.getElementById('invite_popup_content');
                     let invite_popup = document.getElementById('invite_popup');
-
-
-
                     if (pair[0][1] === 'randomize'){
                         invite_popup_content.innerHTML = `
                         <b><u>${pair[2]}</u></b> would like to play a randomized game.<br><br>
@@ -385,12 +375,10 @@
                             <br><br>
                         `;
                     }
-
                     invite_popup_content.innerHTML += `
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
                     `;
-
                     let accept_button = document.getElementById('accept_button');
                     let decline_button = document.getElementById('decline_button');
                     accept_button.addEventListener('click', () => {
@@ -651,6 +639,10 @@
             socket.on('set_follow_suit', onOff => {
                 if (onOff === 'on') follow_suit = true;
                 if (onOff === 'off') follow_suit = false;
+            });
+
+            socket.on('clear_log', () => {
+                document.getElementById('log').innerHTML = '';
             });
 
         </script>
