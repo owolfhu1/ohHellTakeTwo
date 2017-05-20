@@ -242,14 +242,17 @@ io.on('connection', socket => {
         game.lose_points = userIds[0][6];//working
         game.lose_number = Number(userIds[0][7]);//working
         game.leader_only = userIds[0][8];//working
-        
         game.loop = userIds[0][9];//working
         game.progression = userIds[0][10];//working
         game.start = Number(userIds[0][11]);//working
         game.finish = Number(userIds[0][12]);//working
-        game.goal_only = userIds[0][13];//TODO
+        game.goal_only = userIds[0][13];//working
         
         //TODO: MAKE MORE RULES! so many more  >8~D
+        
+        
+        //TODO: if (game.randomize === 'on') randomize(gameId);
+        
         
         //set plusMinus acording to progression value
         if(game.progression === 'high to low'){
@@ -274,6 +277,7 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
         io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
         
+        logGameRules(gameId);
         deal(gameId);
     });
 
@@ -575,7 +579,6 @@ const deal = gameId => {
         game[game.player2Id].hand = sortHand(game[game.player2Id].hand);
         io.to(game.player1Id).emit('shuffle');
         io.to(game.player2Id).emit('shuffle');
-        //game.gameDeck = 'game deck deleted to save space';
         delete game.gameDeck;
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
@@ -612,15 +615,10 @@ const sendInfo = id => {
     let game = gameMap[id];
     if(endRoundNow(game)){
         
-        
         if (game.loop === 'on'){
             if (game.progression === 'low to high' && game.round === 10) gameMap[id].plusMinus = -1;
             else if (game.progression === 'high to low' && game.round === 1) gameMap[id].plusMinus = 1;
         }
-    
-    
-        
-        
         
         endRound(id);
         deal(id);
@@ -713,16 +711,6 @@ const endRound = gameId => {
         }
         
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     game.round += game.plusMinus;
     game.actualRound++;
@@ -843,14 +831,6 @@ const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
     else if (game.goal_only === 'off') return false;
     
-    
-    
-    
-    
-    
-    
-    
-    
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
     let player1CantWin = false;
@@ -886,3 +866,131 @@ const cardValue = value => {
     else if (value === 16 ) value = 'high Ace';
     return value;
 };
+
+
+const randomInt = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const onOrOff = () => {
+    if (Math.random() >= 0.5) return 'on';
+    else return 'off';
+};
+
+const randomize = gameId => {
+    let game = gameMap[gameId];
+    let aces, jokers, joker_value, agreement, follow_suit, lose_points,
+        lose_number, leader_only, loop, progression, start, finish, goal_only;
+    
+    leader_only = onOrOff();
+    lose_points = onOrOff();
+    follow_suit = onOrOff();
+    goal_only = onOrOff();
+    agreement = onOrOff();
+    jokers = onOrOff();
+    loop = onOrOff();
+    
+    lose_number = randomInt(1, 10);
+    joker_value = randomInt(0, 10);
+    
+    let aceRandom = Math.random();
+    if (aceRandom <= 0.33){
+        aces = 'high';
+    } else if (aceRandom <=.66){
+        aces = 'low';
+    } else {
+        aces = 'both';
+    }
+    
+    let progressionRandom = Math.random();
+    if (progressionRandom <= 0.33){
+        progression = 'low to high';
+    } else if (progressionRandom <=.66){
+        progression = 'high to low';
+    } else {
+        progression = 'constant';
+    }
+    
+    if (progression === 'low to high'){
+        start = 1;
+        if (loop === 'on'){
+            finish = 1;
+        } else {
+            finish = 10;
+        }
+    } else if (progression === 'high to low'){
+        start = 10;
+        if (loop === 'on'){
+            finish = 10;
+        } else {
+            finish = 1;
+        }
+    } else {
+        start = randomInt(1, 10);
+        finish = 10;
+    }
+    
+    game.aces = aces;
+    game.jokers = jokers;
+    game.joker_value = joker_value;
+    game.agreement = agreement;
+    game.follow_suit = follow_suit;
+    game.lose_points = lose_points;
+    game.lose_number = lose_number;
+    game.leader_only = leader_only;
+    game.loop = loop;
+    game.progression = progression;
+    game.start = start;
+    game.finish = finish;
+    game.goal_only = goal_only;
+};
+
+const logGameRules = gameId => {
+    let game = gameMap[gameId];
+    let player1Name = game[game.player1Id].name;
+    let player2Name = game[game.player2Id].name;
+    let text = `<p> Welcome to game ${game}</p><p>${player1Name} vs ${player2Name}</p>`;
+    
+    let aceText;
+    if (game.aces === both){
+        aceText = 'high and low';
+    } else {
+        aceText = game.aces;
+    }
+    
+    text += `<p>Aces are ${aceText}.</p>`;
+    
+    text += `<p>Jokers are ${game.jokers}.</p>`;
+    
+    if (game.jokers === 'on'){
+        text += `<p>Jokers are worth ${game.joker_value} when scoring.</p>`;
+    }
+    
+    text += `<p>Agreement when picking goal is ${game.agreement}</p>`;
+    
+    text += `<p>Following suit requirement is ${game.follow_suit}</p>`;
+    
+    if (game.lose_points === 'on'){
+        text += '<p>';
+        if (game.leader_only === 'on'){
+            text += 'If you are the point leader, ';
+        }
+        text += `you will lose ${game.lose_number} points for incorrect guesses</p>`;
+    }
+    
+    text += `<p>Tricks add to score only on correct guess: ${game.goal_only}</p>`;
+    
+    if (game.progression === 'constant'){
+        text += `<p>Game progression: constant</p><p>Game will end after ${game.finish} rounds.</p>`;
+    } else {
+        text += `<p>Game progression: ${game.progression}, loop ${game.loop}.</p>`;
+        text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
+    }
+    
+    sendLog(gameId, text);
+};
+
+
+
+
+
