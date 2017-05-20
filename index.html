@@ -162,7 +162,14 @@
                 `;
                 let invite_form = document.getElementById('invite_form');
                 let invite_button = document.getElementById('invite_button');
+                let randomize_button = document.getElementById('randomize_button');
                 let cancel_button = document.getElementById('cancel_button');
+
+                randomize_button.addEventListener('click', () => {
+                    socket.emit('pair_request', [id, 'randomize']);
+                    invite_popup.style.display = "none";
+                });
+
                 invite_button.addEventListener('click', () => {
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
@@ -180,7 +187,6 @@
                         invite_form.finish.value = 5;
                     }
                     invite_form.finish.value = Math.round(invite_form.finish.value);
-
 
 
                     if (
@@ -336,48 +342,55 @@
                     secretSound.play();
                     let invite_popup_content = document.getElementById('invite_popup_content');
                     let invite_popup = document.getElementById('invite_popup');
-                    let loop = '';
-                    if(pair[0][9] === 'on'){
-                        loop = ' loop';
+
+
+
+                    if (pair[0][1] === 'randomize'){
+                        invite_popup_content.innerHTML = `
+                        <b><u>${pair[2]}</u></b> would like to play a randomized game.<br><br>
+                        `;
                     } else {
-                        loop = ' no loop'
+                        let loop = '';
+                        if (pair[0][9] === 'on') {
+                            loop = ' loop';
+                        } else {
+                            loop = ' no loop'
+                        }
+                        invite_popup_content.innerHTML = `
+                            <b><u>${pair[2]}</u></b> would like to play.
+                            <br><br>
+                            Aces: ${pair[0][1]}
+                            <br><br>
+                            Jokers: ${pair[0][2]}
+                            <br><br>
+                            Joker value: ${pair[0][3]}
+                            <br><br>
+                            Goal Agreement: ${pair[0][4]}
+                            <br><br>
+                            Following suit required: ${pair[0][5]}
+                            <br><br>
+                            Failing loses points: ${pair[0][6]}
+                            <br><br>
+                            How many points: ${pair[0][7]}
+                            <br><br>
+                            Only for point leader: ${pair[0][8]}
+                            <br><br>
+                            Game progression: ${pair[0][10]} ${loop}
+                            <br><br>
+                            Start value: ${pair[0][11]}
+                            <br><br>
+                            end value(# of rounds for constant): ${pair[0][12]}
+                            <br><br>
+                            Score tricks only on goal: ${pair[0][13]}
+                            <br><br>
+                        `;
                     }
-                    invite_popup_content.innerHTML = `
 
-                        <b><u>${pair[2]}</u></b> would like to play.
-                        <br><br>
-                        Aces: ${pair[0][1]}
-                        <br><br>
-                        Jokers: ${pair[0][2]}
-                        <br><br>
-                        Joker value: ${pair[0][3]}
-                        <br><br>
-                        Goal Agreement: ${pair[0][4]}
-                        <br><br>
-                        Following suit required: ${pair[0][5]}
-                        <br><br>
-                        Failing loses points: ${pair[0][6]}
-                        <br><br>
-                        How many points: ${pair[0][7]}
-                        <br><br>
-                        Only for point leader: ${pair[0][8]}
-                        <br><br>
-
-
-                        Game progression: ${pair[0][10]} ${loop}
-                        <br><br>
-                        Start value: ${pair[0][11]}
-                        <br><br>
-                        end value(# of rounds for constant): ${pair[0][12]}
-                        <br><br>
-                        Score tricks only on goal: ${pair[0][13]}
-                        <br><br>
-
-
+                    invite_popup_content.innerHTML += `
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
-
                     `;
+
                     let accept_button = document.getElementById('accept_button');
                     let decline_button = document.getElementById('decline_button');
                     accept_button.addEventListener('click', () => {

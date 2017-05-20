@@ -233,26 +233,25 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
     
-        //rule variations: **in progress**
-        game.aces = userIds[0][1];//working
-        game.jokers = userIds[0][2];//working
-        game.joker_value = Number(userIds[0][3]);//working
-        game.agreement = userIds[0][4];//working
-        game.follow_suit = userIds[0][5];//working
-        game.lose_points = userIds[0][6];//working
-        game.lose_number = Number(userIds[0][7]);//working
-        game.leader_only = userIds[0][8];//working
-        game.loop = userIds[0][9];//working
-        game.progression = userIds[0][10];//working
-        game.start = Number(userIds[0][11]);//working
-        game.finish = Number(userIds[0][12]);//working
-        game.goal_only = userIds[0][13];//working
         
-        //TODO: MAKE MORE RULES! so many more  >8~D
-        
-        
-        //TODO: if (game.randomize === 'on') randomize(gameId);
-        
+        if (userIds[0][1] === 'randomize') {
+            randomize(gameId);
+        } else {
+            //rule variations: **in progress**
+            game.aces = userIds[0][1];//working
+            game.jokers = userIds[0][2];//working
+            game.joker_value = Number(userIds[0][3]);//working
+            game.agreement = userIds[0][4];//working
+            game.follow_suit = userIds[0][5];//working
+            game.lose_points = userIds[0][6];//working
+            game.lose_number = Number(userIds[0][7]);//working
+            game.leader_only = userIds[0][8];//working
+            game.loop = userIds[0][9];//working
+            game.progression = userIds[0][10];//working
+            game.start = Number(userIds[0][11]);//working
+            game.finish = Number(userIds[0][12]);//working
+            game.goal_only = userIds[0][13];//working
+        }
         
         //set plusMinus acording to progression value
         if(game.progression === 'high to low'){
