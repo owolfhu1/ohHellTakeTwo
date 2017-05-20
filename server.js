@@ -243,15 +243,13 @@ io.on('connection', socket => {
         game.lose_number = Number(userIds[0][7]);//working
         game.leader_only = userIds[0][8];//working
         
-        game.loop = userIds[0][9];//TODO
-        game.progression = userIds[0][10];//TODO
-        game.start = Number(userIds[0][11]);//TODO
-        game.finish = Number(userIds[0][12]);//TODO
+        game.loop = userIds[0][9];//working
+        game.progression = userIds[0][10];//working
+        game.start = Number(userIds[0][11]);//working
+        game.finish = Number(userIds[0][12]);//working
         game.goal_only = userIds[0][13];//TODO
         
         //TODO: MAKE MORE RULES! so many more  >8~D
-        
-        
         
         //set plusMinus acording to progression value
         if(game.progression === 'high to low'){
@@ -781,7 +779,7 @@ const endGame = gameId => {
   lobby.names.push(game[player1].name);
   lobby.names.push(game[player2].name);
   delete namesPlaying[game[player1].name];
-  delete namesPlaying[game[player1].name];
+  delete namesPlaying[game[player2].name];
   client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
   userMap[player1].gameId = 'none';
   userMap[player2].gameId = 'none';
