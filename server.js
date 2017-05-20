@@ -243,11 +243,11 @@ io.on('connection', socket => {
         game.lose_number = userIds[0][7];//working
         game.leader_only = userIds[0][8];//working
         
-        game.loop = userIds[0][8];//TODO
-        game.pregression = userIds[0][8];//TODO
-        game.start = userIds[0][8];//TODO
-        game.finish = userIds[0][8];//TODO
-        game.goal_only = userIds[0][8];//TODO
+        game.loop = userIds[0][9];//TODO
+        game.pregression = userIds[0][10];//TODO
+        game.start = userIds[0][11];//TODO
+        game.finish = userIds[0][12];//TODO
+        game.goal_only = userIds[0][13];//TODO
         
         //TODO: MAKE MORE RULES! so many more  >8~D
         

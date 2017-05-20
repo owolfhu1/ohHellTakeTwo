@@ -193,20 +193,20 @@
                     ) {
                         socket.emit('pair_request', [
                             id,
-                            invite_form.aces.value,
-                            invite_form.jokers.value,
-                            invite_form.joker_value.value,
-                            invite_form.agree.value,
-                            invite_form.follow_suit.value,
-                            invite_form.lose_points.value,
-                            invite_form.lose_number.value,
-                            invite_form.leader_only.value,
+                            invite_form.aces.value,         //1
+                            invite_form.jokers.value,       //2
+                            invite_form.joker_value.value,  //3
+                            invite_form.agree.value,        //4
+                            invite_form.follow_suit.value,  //5
+                            invite_form.lose_points.value,  //6
+                            invite_form.lose_number.value,  //7
+                            invite_form.leader_only.value,  //8
 
-                            invite_form.loop.value,
-                            invite_form.progression.value,
-                            invite_form.start.value,
-                            invite_form.finish.value,
-                            invite_form.goal_only.value,
+                            invite_form.loop.value,         //9
+                            invite_form.progression.value,  //10
+                            invite_form.start.value,        //11
+                            invite_form.finish.value,       //12
+                            invite_form.goal_only.value,    //13
                         ]);
                         invite_popup.style.display = "none";
                     }
