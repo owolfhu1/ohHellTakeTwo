@@ -952,7 +952,7 @@ const logGameRules = gameId => {
     let text = `<p> Welcome to game ${game}</p><p>${player1Name} vs ${player2Name}</p>`;
     
     let aceText;
-    if (game.aces === both){
+    if (game.aces === 'both'){
         aceText = 'high and low';
     } else {
         aceText = game.aces;
