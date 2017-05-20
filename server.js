@@ -244,7 +244,7 @@ io.on('connection', socket => {
         game.leader_only = userIds[0][8];//working
         
         game.loop = userIds[0][9];//TODO
-        game.pregression = userIds[0][10];//TODO
+        game.progression = userIds[0][10];//TODO
         game.start = userIds[0][11];//TODO
         game.finish = userIds[0][12];//TODO
         game.goal_only = userIds[0][13];//TODO
@@ -261,6 +261,7 @@ io.on('connection', socket => {
             game.plusMinus = 0;
         }
         
+        game.round = game.start;
         
         //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
@@ -533,9 +534,16 @@ const shuffle = a => {
 //resets game variables, deals (game.round) number of cards, exposes trump and prints to player's logs. if round is 0, ends game.
 const deal = gameId => {
     let game = gameMap[gameId];
-    if (game.round === 0) {
-        endGame(gameId)
-    } else {
+    
+    if (game.round === 0) endGame(gameId);
+    else if (game.round === 11) endGame(gameId);
+    else if (game.progression === 'constant' && game.actualRound === game.finish + 1) endGame(gameId);
+    else if (game.progression === 'low to high' && game.loop === 'off' && game.round === game.finish + 1 ) endGame(gameId);
+    else if (game.progression === 'low to high' && game.loop === 'on' && game.plusMinus === -1 && game.round === game.finish - 1 ) endGame(gameId);
+    else if (game.progression === 'high to low' && game.loop === 'off' && game.round === game.finish - 1 ) endGame(gameId);
+    else if (game.progression === 'high to low' && game.loop === 'on' && game.plusMinus === 1 && game.round === game.finish + 1 ) endGame(gameId);
+    
+    else {
         let extraInfo = '';
         if (game.plusMinus === 1) extraInfo = ' + ';
         if (game.plusMinus === -1) extraInfo = '( - )';
@@ -605,9 +613,14 @@ const sendPick = id => {
 const sendInfo = id => {
     let game = gameMap[id];
     if(endRoundNow(game)){
-        if (game.round === 10) {
-            gameMap[id].plusMinus = -1;
+        
+        
+        if (game.loop === 'on'){
+            if (game.progression === 'low to high' && game.round === 10) gameMap[id].plusMinus = -1;
+            else if (game.progression === 'high to low' && game.round === 1) gameMap[id].plusMinus = 1;
         }
+    
+        
         endRound(id);
         deal(id);
     } else {
@@ -686,6 +699,7 @@ const endRound = gameId => {
     }
     
     game.round += game.plusMinus;
+    game.actualRound++;
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 
