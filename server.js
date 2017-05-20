@@ -274,7 +274,6 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
         io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
         
-        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
         deal(gameId);
     });
 
@@ -580,6 +579,7 @@ const deal = gameId => {
         delete game.gameDeck;
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
+        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     }
 };
 
@@ -699,6 +699,31 @@ const endRound = gameId => {
         sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
     }
     
+    
+    if (game.goal_only === 'off') {
+        
+        if (game[firstId].tricks !== game[firstId].goal) {
+            game[firstId].score += game[firstId].tricks;
+            sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks} points (from tricks) and now has ${game[firstId].score} points.`);
+        }
+        
+        if (game[secondId].tricks !== game[secondId].goal) {
+            game[secondId].score += game[secondId].tricks;
+            sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks} points (from tricks) and now has ${game[secondId].score} points.`);
+        }
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     game.round += game.plusMinus;
     game.actualRound++;
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
@@ -816,6 +841,16 @@ const sortHand = unSortedHand => {
 //calculates if neither player can score.
 const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
+    else if (game.goal_only === 'off') return false;
+    
+    
+    
+    
+    
+    
+    
+    
+    
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
     let player1CantWin = false;
