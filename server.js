@@ -678,7 +678,7 @@ const endRound = gameId => {
     let player1leader = true;
     let player2leader = true;
     
-    if (game.leader_only = 'on'){
+    if (game.leader_only === 'on'){
         if (game[firstId].score <= game[secondId].score) player1leader = false;
         if (game[firstId].score >= game[secondId].score) player2leader = false;
     }
