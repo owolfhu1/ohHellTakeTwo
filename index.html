@@ -105,7 +105,7 @@
                 invite_popup_content.innerHTML = `
 
                 <form id="invite_form">
-                    please choose rules for game below: <br><br>
+                    please choose rules for game with ${name} below: <br><br>
                     Aces:
                     <input title="aces" type="radio" name="aces" value="high"> high
                     <input type="radio" name="aces" value="low"> low
@@ -155,7 +155,8 @@
                     <input type="radio" name="goal_only" value="off"> off
                 </form>
                 <br>
-                <button id="invite_button">send invite to ${name}</button>
+                <button id="invite_button">send invite</button>
+                <button id="randomize_button">send randomized game invite</button>
                 <button id="cancel_button">cancel</button>
 
                 `;
