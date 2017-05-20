@@ -138,7 +138,7 @@
                     <input type="radio" name="leader_only" value="off" checked> off
                     <br><br>
                     Game progression:
-                    <input type="checkbox" title="loop" name="loop" checked> loop <br>
+                    <input type="checkbox" title="loop" name="loop" value="on" checked> loop <br>
                     <input title="progression" type="radio" name="progression" value="high to low"> high to low
                     <input type="radio" name="progression" value="low to high" checked> low to high
                     <input type="radio" name="progression" value="constant"> constant
@@ -147,7 +147,7 @@
                     <input title="start" type="number" name="start" min="1" max="10" value="1">
                     <br>
                     Last round(# of rounds for constant)(1 to 10):
-                    <input title="end" type="number" name="end" min="1" max="10" value="1">
+                    <input title="finish" type="number" name="finish" min="1" max="10" value="1">
                     <br><br>
                     Score tricks only on goal:
                     <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
@@ -166,20 +166,30 @@
                         invite_form.joker_value.value = 5;
                     }
                     invite_form.joker_value.value = Math.round(invite_form.joker_value.value);
-
-
-
                     if (invite_form.lose_number.value === '') {
                         invite_form.lose_number.value = 5;
                     }
                     invite_form.lose_number.value = Math.round(invite_form.lose_number.value);
+                    if (invite_form.start.value === '') {
+                        invite_form.start.value = 5;
+                    }
+                    invite_form.start.value = Math.round(invite_form.start.value);
+                    if (invite_form.finish.value === '') {
+                        invite_form.finish.value = 5;
+                    }
+                    invite_form.finish.value = Math.round(invite_form.finish.value);
+
 
 
                     if (
                         11 > invite_form.joker_value.value &&
                         invite_form.joker_value.value > -1 &&
                         11 > invite_form.lose_number.value &&
-                        invite_form.lose_number.value > 0
+                        invite_form.lose_number.value > 0 &&
+                        11 > invite_form.start.value &&
+                        invite_form.start.value > 0 &&
+                        11 > invite_form.finish.value &&
+                        invite_form.finish.value > 0
                     ) {
                         socket.emit('pair_request', [
                             id,
@@ -190,7 +200,13 @@
                             invite_form.follow_suit.value,
                             invite_form.lose_points.value,
                             invite_form.lose_number.value,
-                            invite_form.leader_only.value
+                            invite_form.leader_only.value,
+
+                            invite_form.loop.value,
+                            invite_form.progression.value,
+                            invite_form.start.value,
+                            invite_form.finish.value,
+                            invite_form.goal_only.value,
                         ]);
                         invite_popup.style.display = "none";
                     }
@@ -319,7 +335,12 @@
                     secretSound.play();
                     let invite_popup_content = document.getElementById('invite_popup_content');
                     let invite_popup = document.getElementById('invite_popup');
-
+                    let loop = '';
+                    if(pair[0][9] === 'on'){
+                        loop = ' loop';
+                    } else {
+                        loop = ' no loop'
+                    }
                     invite_popup_content.innerHTML = `
 
                         <b><u>${pair[2]}</u></b> would like to play.
@@ -336,10 +357,22 @@
                         <br><br>
                         Failing loses points: ${pair[0][6]}
                         <br><br>
-                        How many points?: ${pair[0][7]}
+                        How many points: ${pair[0][7]}
                         <br><br>
-                        Only for point leader?: ${pair[0][8]}
+                        Only for point leader: ${pair[0][8]}
                         <br><br>
+
+
+                        Game progression: ${pair[0][10]} ${loop}
+                        <br><br>
+                        Start value: ${pair[0][11]}
+                        <br><br>
+                        end value(# of rounds for constant): ${pair[0][12]}
+                        <br><br>
+                        Score tricks only on goal: ${pair[0][13]}
+                        <br><br>
+
+
                         <button id="accept_button">accept</button>
                         <button id="decline_button">decline</button>
 
