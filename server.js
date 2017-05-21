@@ -23,14 +23,13 @@ let namesPlaying = {}; //map of player names:gameID in active game, used to chec
 let onlineNameArray = []; //array of active users, used to prevent double login
 let passwordMap = {};// {userName : password} loads from DB each time a user connects
 let lobby = { names : [], ids : [] }; //holds info on users from lobby
+let userScores = {};
 const SUIT = 1;
 const VALUE = 0;
 const CARD = 0;
 const GAME_ID = 1;
 const USER_NAME = 0;
 const PASSWORD = 1;
-
-let userScores = {};
 
 client.query('SELECT * FROM userbank;').on('row', row => {
     userScores[row.username] = new stats(row.wins, row.losses, row.ties);
@@ -947,6 +946,3 @@ const logGameRules = gameId => {
     }
     sendLog(gameId, text);
 };
-
-
-
