@@ -912,7 +912,7 @@ const randomize = gameId => {
     game.goal_only = goal_only;
 };
 
-const logGameRules = gameId => {
+const textGameRules = gameId => {
     let game = gameMap[gameId];
     let player1Name = game[game.player1Id].name;
     let player2Name = game[game.player2Id].name;
