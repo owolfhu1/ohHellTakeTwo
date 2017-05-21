@@ -489,12 +489,12 @@
                 let showPicker = '';
                 if (info[TURN]) {
                     showPicker = `
-                    <div style="border:6px dotted #2e2e2e; border-radius: 40px; background: #529848; width: 500px: height: 130px">
+                    <span style="border:6px dotted #2e2e2e; border-radius: 40px; background: #529848; width: 500px: height: 130px">
                         <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/carddiamondsplayer.png" id="diamonds" >
                         <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardclubsplayer.png" id="clubs" >
                         <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardheartsplayer.png" id="hearts" >
                         <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardspadesplayer.png" id="spades" >
-                    </div>
+                    </span>
                     `;
                 }
                 if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>Which trump would you like?</h1>';
