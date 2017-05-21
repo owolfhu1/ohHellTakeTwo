@@ -244,6 +244,7 @@ io.on('connection', socket => {
             game.start = Number(userIds[0][11]);//working
             game.finish = Number(userIds[0][12]);//working
             game.goal_only = userIds[0][13];//working
+            game.pick_opponents_goal = userIds[0][14];//TODO
         }
         game.round = game.start;
         
@@ -283,16 +284,36 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
-            sendLog(gameId, `${game[player].name}'s goal is ${pick}`);
-            game[player].goal = pick;
-            game[player].turn = false;
-            game[opponent].turn = true;
-            game[player].picked = true;
-            gameMap[gameId] = game;
-            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-            if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
+        
+        
+        
+        //TODO refactor this
+        if (game.pick_opponents_goal === 'off') {
+            if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
+                sendLog(gameId, `${game[player].name}'s goal is ${pick}`);
+                game[player].goal = pick;
+                game[player].turn = false;
+                game[opponent].turn = true;
+                game[player].picked = true;
+                gameMap[gameId] = game;
+                client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+                if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
+            }
+        } else if (game.pick_opponents_goal === 'on'){
+            if (game.round - game[player].goal !== pick || game.agreement === 'on') {
+                sendLog(gameId, `${game[opponent].name}'s goal is ${pick}`);
+                game[opponent].goal = pick;
+                game[player].turn = false;
+                game[opponent].turn = true;
+                game[player].picked = true;
+                gameMap[gameId] = game;
+                client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+                if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
+            }
         }
+        
+        
+        
     });
     
     /*  plays card at index i of player's hand. first checks if card is ace and changes value according to game.aceValue
@@ -853,7 +874,7 @@ const onOrOff = () => {
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points,
-        lose_number, leader_only, loop, progression, start, finish, goal_only;
+        lose_number, leader_only, loop, progression, start, finish, goal_only, pick_opponents_goal;
     leader_only = onOrOff();
     lose_points = onOrOff();
     follow_suit = onOrOff();
@@ -861,6 +882,7 @@ const randomize = gameId => {
     agreement = onOrOff();
     jokers = onOrOff();
     loop = onOrOff();
+    pick_opponents_goal = onOrOff();
     lose_number = randomInt(1, 10);
     joker_value = randomInt(0, 10);
     let aceRandom = Math.random();
@@ -910,6 +932,7 @@ const randomize = gameId => {
     game.start = start;
     game.finish = finish;
     game.goal_only = goal_only;
+    game.pick_opponents_goal = pick_opponents_goal;
 };
 
 const logGameRules = gameId => {
@@ -927,6 +950,11 @@ const logGameRules = gameId => {
     text += `<p>Jokers are ${game.jokers}.</p>`;
     if (game.jokers === 'on'){
         text += `<p>Jokers are worth ${game.joker_value} when scoring.</p>`;
+    }
+    if (game.pick_opponents_goal === 'on'){
+        text += `<p>You will pick your opponent's goals.</p>`;
+    } else {
+        text += `<p>You will pick your own goals.</p>`;
     }
     text += `<p>Agreement when picking goal: ${game.agreement}</p>`;
     text += `<p>Following suit required: ${game.follow_suit}</p>`;
