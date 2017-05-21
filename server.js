@@ -561,6 +561,7 @@ const deal = gameId => {
         if (game.plusMinus === 1) extraInfo = '( + )';
         if (game.plusMinus === -1) extraInfo = '( - )';
         if (game.plusMinus === 0) extraInfo = '( = )';
+        if (game.progression === 'random') extraInfo = '( R )';
         sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}. ${extraInfo}</span>`);
         extraInfo = ``;
         if (isEven(game.round)) {
@@ -912,7 +913,6 @@ const randomize = gameId => {
     } else {
         progression = 'random';
     }
-    
     if (progression === 'low to high'){
         start = 1;
         if (loop === 'on'){
@@ -931,9 +931,6 @@ const randomize = gameId => {
         start = randomInt(1, 10);
         finish = 10;
     }
-    
-    
-    
     game.aces = aces;
     game.jokers = jokers;
     game.joker_value = joker_value;
