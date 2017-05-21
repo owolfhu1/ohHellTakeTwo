@@ -82,8 +82,9 @@
             }
 
             .invite_buttons{
+                border: 3px dotted #b03f48;
                 background-color: #2e2e2e;
-                border-radius: 6px;
+                border-radius: 14px;
                 color: white;
             }
 
@@ -125,7 +126,7 @@
                 let invite_popup = document.getElementById('invite_popup');
                 invite_popup_content.innerHTML = `
                 <form id="invite_form">
-                    please choose rules for game with ${name} below: <br><br>
+                    please choose rules for game with ${name} below: <br>
                     <div class="invite_divs">Aces:
                     <input title="aces" type="radio" name="aces" value="high"> high
                     <input type="radio" name="aces" value="low"> low
