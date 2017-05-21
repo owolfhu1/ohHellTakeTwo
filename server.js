@@ -27,7 +27,7 @@ let userScores = {};
 const SUIT = 1, VALUE = 0, CARD = 0, GAME_ID = 1, USER_NAME = 0, PASSWORD = 1;
 
 client.query('SELECT * FROM userbank;').on('row', row => {
-    userScores[row.username] = new stats(row.wins, row.losses, row.ties);
+    userScores[row.username] = new stats(row.rating, row.total);
 });
 client.query('SELECT * FROM gameMap;').on('row', row => {
     if (row.thiskey === 'KEY') gameMap = row.gamemap;
@@ -64,18 +64,16 @@ let blankPlayer = function() {
     this.score = 0;
 };
 
-//holds user's stats
-let stats = function (w,l,t) {
-    this.wins = w;
-    this.losses = l;
-    this.ties = t;
-    this.stat;
-    if (w + l !== 0){
-        this.stat = (w-l)/(w+l);
-    } else {
-        this.stat = 0;
-    }
-    this.stat = (this.stat + 1)/2;
+//new user
+let stat = function () {
+    this.rating = 1500;
+    this.total = 0;
+};
+
+//old user with pre existing stats
+let stats = function (rating, total){
+    this.rating = rating;
+    this.total = total;
 };
 
 //all information from client is received in this function
@@ -148,8 +146,12 @@ io.on('connection', socket => {
             }
         } else {
             if (!onlineNameArray.includes(login[USER_NAME])) {
-                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}',0,0,0)`);
-                userScores[login[USER_NAME]] = new stats(0,0,0);
+                
+                
+                client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}',1500 ,0)`);
+                userScores[login[USER_NAME]] = new stat();
+                
+                
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 lobby.names.push(user.name);
@@ -410,7 +412,45 @@ io.on('connection', socket => {
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
-            client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${game[opponentId].name}';`);
+    
+            
+            
+            
+            
+            
+            
+            
+            //update total games
+            userScores[game[userId].name].total++;
+            userScores[game[opponentId].name].total++;
+            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
+            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[userId].name}';`);
+            
+            let oldUserRating = userScores[game[userId].name].rating;
+            let oldOpponentRating = userScores[game[opponentId].name].rating;
+            let newUserRating;
+            let newOpponentRating;
+            
+            let EUR = Math.pow(10, oldUserRating/400) / (Math.pow(10, oldUserRating/400) + Math.pow(10, oldOpponentRating/400));
+            let EOR = Math.pow(10, oldOpponentRating/400) / (Math.pow(10, oldUserRating/400) + Math.pow(10, oldOpponentRating/400));
+            
+            newUserRating = oldUserRating + 32*(0 - EUR);
+            newOpponentRating = oldOpponentRating + 32*(1 - EOR);
+    
+            client.query(`UPDATE userbank SET rating = ${newOpponentRating} WHERE username = '${game[opponentId].name}';`);
+            userScores[userMap[opponentId].name].rating = newOpponentRating;
+    
+            client.query(`UPDATE userbank SET rating = ${newUserRating} WHERE username = '${game[userId].name}';`);
+            userScores[userMap[userId].name].rating = newUserRating;
+            
+            
+            
+            
+            
+            
+            
+            /* TODO
+            //line removed, put this line back if you use this ...  client.query(`UPDATE...
             userScores[userMap[opponentId].name] = new stats(
                 userScores[userMap[opponentId].name].wins + 1,
                 userScores[userMap[opponentId].name].losses,
@@ -422,6 +462,8 @@ io.on('connection', socket => {
                 userScores[userMap[userId].name].losses + 1,
                 userScores[userMap[userId].name].ties
             );
+            */
+            
             delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
             updateLobby();
@@ -768,83 +810,129 @@ const sendLog = (gameId, msg) => {
 
 //called by deal() to end game when round === 0, calculates winner/tie, prints results to player's chats and puts players in lobby.
 const endGame = gameId => {
-  let game = gameMap[gameId];
-  let player1 = game.player1Id;
-  let player2 = game.player2Id;
-  let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
-  if (game[player1].score > game[player2].score) {
-      io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
-      client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player1].name}';`);
-      client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player2].name}';`);
-      userScores[userMap[player1].name] = new stats (
-          userScores[userMap[player1].name].wins + 1,
-          userScores[userMap[player1].name].losses,
-          userScores[userMap[player1].name].ties
-      );
-      userScores[userMap[player2].name] = new stats (
-          userScores[userMap[player2].name].wins,
-          userScores[userMap[player2].name].losses + 1,
-          userScores[userMap[player2].name].ties
-      );
-  } else if (game[player1].score < game[player2].score) {
-      io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
-      client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player1].name}';`);
-      client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player2].name}';`);
-      userScores[userMap[player1].name] = new stats (
-          userScores[userMap[player1].name].wins,
-          userScores[userMap[player1].name].losses + 1,
-          userScores[userMap[player1].name].ties
-      );
-      userScores[userMap[player2].name] = new stats (
-          userScores[userMap[player2].name].wins + 1,
-          userScores[userMap[player2].name].losses,
-          userScores[userMap[player2].name].ties
-      );
-  } else {
-      io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
-      client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player1].name}';`);
-      client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player2].name}';`);
-      userScores[userMap[player1].name] = new stats (
-          userScores[userMap[player1].name].wins,
-          userScores[userMap[player1].name].losses,
-          userScores[userMap[player1].name].ties + 1
-      );
-      userScores[userMap[player2].name] = new stats (
-          userScores[userMap[player2].name].wins,
-          userScores[userMap[player2].name].losses,
-          userScores[userMap[player2].name].ties + 1
-      );
-  }
-  if (player1 in userMap) {
-      io.to(player1).emit('setup_lobby');
-  }
-  if (player2 in userMap) {
-      io.to(player2).emit('setup_lobby');
-  }
-  lobby.ids.push(player1);
-  lobby.ids.push(player2);
-  lobby.names.push(game[player1].name);
-  lobby.names.push(game[player2].name);
-  delete namesPlaying[game[player1].name];
-  delete namesPlaying[game[player2].name];
-  client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-  userMap[player1].gameId = 'none';
-  userMap[player2].gameId = 'none';
-  delete gameMap[gameId];
-  client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-  updateLobby();
+    let game = gameMap[gameId];
+    let player1 = game.player1Id;
+    let player2 = game.player2Id;
+    let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
+    
+    //update both user's totals
+    userScores[game[player1].name].total++;
+    userScores[game[player2].name].total++;
+    client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[player1].name}';`);
+    client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[player2].name}';`);
+    
+    
+    let oldPlayer1Rating = userScores[game[player1].name].rating;
+    let oldPlayer2Rating = userScores[game[player2].name].rating;
+    let E1R = Math.pow(10, oldPlayer1Rating / 400) / (Math.pow(10, oldPlayer1Rating / 400) + Math.pow(10, oldPlayer2Rating / 400));
+    let E2R = Math.pow(10, oldPlayer2Rating / 400) / (Math.pow(10, oldPlayer1Rating / 400) + Math.pow(10, oldPlayer2Rating / 400));
+    let newPlayer1Rating;
+    let newPlayer2Rating;
+    
+    
+    //TODO score system
+    
+    
+    if (game[player1].score > game[player2].score) {
+        io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
+        //player1 wins
+        newPlayer1Rating = oldPlayer1Rating + 32 * (1 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + 32 * (0 - E2R);
+        
+        
+        /*
+         client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player1].name}';`);
+         client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player2].name}';`);
+         userScores[userMap[player1].name] = new stats (
+         userScores[userMap[player1].name].wins + 1,
+         userScores[userMap[player1].name].losses,
+         userScores[userMap[player1].name].ties
+         );
+         userScores[userMap[player2].name] = new stats (
+         userScores[userMap[player2].name].wins,
+         userScores[userMap[player2].name].losses + 1,
+         userScores[userMap[player2].name].ties
+         );
+         */
+    } else if (game[player1].score < game[player2].score) {
+        io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
+        //player2 wins
+        newPlayer1Rating = oldPlayer1Rating + 32 * (0 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + 32 * (1 - E2R);
+        
+        
+        /*
+         client.query(`UPDATE userbank SET losses = losses + 1 WHERE username = '${userMap[player1].name}';`);
+         client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${userMap[player2].name}';`);
+         userScores[userMap[player1].name] = new stats (
+         userScores[userMap[player1].name].wins,
+         userScores[userMap[player1].name].losses + 1,
+         userScores[userMap[player1].name].ties
+         );
+         userScores[userMap[player2].name] = new stats (
+         userScores[userMap[player2].name].wins + 1,
+         userScores[userMap[player2].name].losses,
+         userScores[userMap[player2].name].ties
+         );
+         */
+    } else {
+        io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
+        //tie game
+        newPlayer1Rating = oldPlayer1Rating + 32 * (.5 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + 32 * (.5 - E2R);
+        
+        
+        /*
+         client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player1].name}';`);
+         client.query(`UPDATE userbank SET ties = ties + 1 WHERE username = '${userMap[player2].name}';`);
+         userScores[userMap[player1].name] = new stats (
+         userScores[userMap[player1].name].wins,
+         userScores[userMap[player1].name].losses,
+         userScores[userMap[player1].name].ties + 1
+         );
+         userScores[userMap[player2].name] = new stats (
+         userScores[userMap[player2].name].wins,
+         userScores[userMap[player2].name].losses,
+         userScores[userMap[player2].name].ties + 1
+         );
+         */
+    }
+    
+    client.query(`UPDATE userbank SET rating = ${newPlayer1Rating} WHERE username = '${userMap[player1].name}';`);
+    client.query(`UPDATE userbank SET rating = ${newPlayer2Rating} WHERE username = '${userMap[player2].name}';`);
+    userScores[userMap[player1].name].rating = newPlayer1Rating;
+    userScores[userMap[player2].name].rating = newPlayer2Rating;
+    
+    
+    if (player1 in userMap) {
+        io.to(player1).emit('setup_lobby');
+    }
+    if (player2 in userMap) {
+        io.to(player2).emit('setup_lobby');
+    }
+    lobby.ids.push(player1);
+    lobby.ids.push(player2);
+    lobby.names.push(game[player1].name);
+    lobby.names.push(game[player2].name);
+    delete namesPlaying[game[player1].name];
+    delete namesPlaying[game[player2].name];
+    client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
+    userMap[player1].gameId = 'none';
+    userMap[player2].gameId = 'none';
+    delete gameMap[gameId];
+    client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+    updateLobby();
 };
 
 const makeBoard = () => {
     //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
-    let order = Object.keys(userScores).sort(((a, b) => userScores[a].stat > userScores[b].stat));
+    let order = Object.keys(userScores).sort(((a, b) => userScores[a].rating > userScores[b].rating));
     console.log(order);
     let board = '';
     for (let i = 0; i< order.length; i++){
-        let total = userScores[order[i]].wins + userScores[order[i]].losses + userScores[order[i]].ties;
-        board = '<p><u>' + order[i] + '</u></p><p style="font-size: 14px">stat: ' + (userScores[order[i]].stat.toFixed(3) * 1000) + ' games: ' + total + '</p>' + board;
+        board = '<p><u>' + order[i] + '</u></p><p style="font-size: 14px">Rating: ' + userScores[order[i]].rating.toFixed(0) + ' games: ' + userScores[order[i]].total + '</p>' + board;
     }
-    board = '<h3><u>Player Stats:</u></h3>' + board;
+    board = '<h3><u>Player Ratings:</u></h3>' + board;
     return board;
 };
 
