@@ -81,6 +81,12 @@
                 color: white;
             }
 
+            .invite_buttons{
+                background-color: #2e2e2e;
+                border-radius: 6px;
+                color: white;
+            }
+
         </style>
     </head>
     <body>
@@ -148,7 +154,7 @@
                     <input type="radio" name="loop" value="off"> off<br>
                     <input title="progression" type="radio" name="progression" value="high to low"> high to low
                     <input type="radio" name="progression" value="low to high" checked> low to high
-                    <input type="radio" name="progression" value="constant"> constant
+                    <input type="radio" name="progression" value="constant"> constant <br>
                     Starting round (1 to 10):
                     <input title="start" type="number" class="invite_input" name="start" min="1" max="10" value="1">
                     <br>
@@ -158,10 +164,9 @@
                     <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
                     <input type="radio" name="goal_only" value="off"> off</div>
                 </form>
-                <br>
-                <button id="invite_button">send invite</button>
-                <button id="randomize_button">send randomized game invite</button>
-                <button id="cancel_button">cancel</button>
+                <button class="invite_buttons" id="invite_button">send invite</button>
+                <button class="invite_buttons" id="randomize_button">send randomized game invite</button>
+                <button class="invite_buttons" id="cancel_button">cancel</button>
                 `;
                 let invite_form = document.getElementById('invite_form');
                 let invite_button = document.getElementById('invite_button');
