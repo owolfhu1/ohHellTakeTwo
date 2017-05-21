@@ -87,9 +87,9 @@
                 border-radius: 14px;
                 color: white;
                 font-family: "Comic Sans MS";
-                padding-left: 16px;
-                padding-right: 16px;
-                margin: 4px;
+                padding-left: 17px;
+                padding-right: 17px;
+                margin: 5px;
             }
 
         </style>
@@ -146,6 +146,9 @@
                     <div class="invite_divs">Following suit required:
                     <input title="follow_suit" type="radio" name="follow_suit" value="on" checked> on
                     <input type="radio" name="follow_suit" value="off"> off</div>
+                    <div class="invite_divs">Score tricks only on goal:
+                    <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
+                    <input type="radio" name="goal_only" value="off"> off</div>
                     <div class="invite_divs">Failing loses points:
                     <input title="lose_points" type="radio" name="lose_points" value="on"> on
                     <input type="radio" name="lose_points" value="off" checked> off <br>
@@ -165,9 +168,6 @@
                     <br>
                     Last round(# of rounds for constant)(1 to 10):
                     <input title="finish" type="number" class="invite_input" name="finish" min="1" max="10" value="1"></div>
-                    <div class="invite_divs">Score tricks only on goal:
-                    <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
-                    <input type="radio" name="goal_only" value="off"> off</div>
                 </form>
                 <button class="invite_buttons" id="invite_button"><h3>send invite</h3></button>
                 <button class="invite_buttons" id="randomize_button"><h3>send randomized game invite</h3></button>
