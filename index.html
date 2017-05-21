@@ -482,8 +482,6 @@
             });
 
             socket.on('pick_trump', info => {
-                //trump = info[TRUMP];
-                //inPlay = info[IN_PLAY];
                 let showHand = '';
                 for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
                 let showPicker = '';
@@ -551,6 +549,7 @@
                             }
                             else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
                         }
+                        showPicker += '&nbsp;';
                     }
                 }
                 if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
