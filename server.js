@@ -287,6 +287,7 @@ io.on('connection', socket => {
         game.trump = ['player', trump];
         game[player].turn = false;
         game[opponent].turn = true;
+        sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
     });
     
@@ -296,9 +297,6 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        
-        
-        
         //TODO refactor this
         if (game.pick_opponents_goal === 'off') {
             if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
@@ -323,9 +321,6 @@ io.on('connection', socket => {
                 if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
             }
         }
-        
-        
-        
     });
     
     /*  plays card at index i of player's hand. first checks if card is ace and changes value according to game.aceValue
@@ -600,8 +595,9 @@ const deal = gameId => {
         io.to(game.player1Id).emit('shuffle');
         io.to(game.player2Id).emit('shuffle');
         delete game.gameDeck;
-        sendLog(gameId, `The trump is ${game.trump[1]}.`);
-        
+        if (game.dealer_picks_trump === 'off') {
+            sendLog(gameId, `The trump is ${game.trump[1]}.`);
+        }
         if (game.dealer_picks_trump === 'on'){
             sendTrumpPick(gameId);
         } else {
