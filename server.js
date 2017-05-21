@@ -24,7 +24,7 @@ let onlineNameArray = []; //array of active users, used to prevent double login
 let passwordMap = {};// {userName : password} loads from DB each time a user connects
 let lobby = { names : [], ids : [] }; //holds info on users from lobby
 let userScores = {};
-const SUIT = 1, VALUE = 0, CARD = 0, GAME_ID = 1, USER_NAME = 0, PASSWORD = 1;
+const SUIT = 1, VALUE = 0, CARD = 0, GAME_ID = 1, USER_NAME = 0, PASSWORD = 1, ELO_K_VALUE = 40;
 
 client.query('SELECT * FROM userbank;').on('row', row => {
     userScores[row.username] = new stats(row.rating, row.total);
@@ -434,8 +434,8 @@ io.on('connection', socket => {
             let EUR = Math.pow(10, oldUserRating/400) / (Math.pow(10, oldUserRating/400) + Math.pow(10, oldOpponentRating/400));
             let EOR = Math.pow(10, oldOpponentRating/400) / (Math.pow(10, oldUserRating/400) + Math.pow(10, oldOpponentRating/400));
             
-            newUserRating = oldUserRating + 32*(0 - EUR);
-            newOpponentRating = oldOpponentRating + 32*(1 - EOR);
+            newUserRating = oldUserRating + ELO_K_VALUE *(0 - EUR);
+            newOpponentRating = oldOpponentRating + ELO_K_VALUE *(1 - EOR);
     
             client.query(`UPDATE userbank SET rating = ${newOpponentRating} WHERE username = '${game[opponentId].name}';`);
             userScores[userMap[opponentId].name].rating = newOpponentRating;
@@ -836,8 +836,8 @@ const endGame = gameId => {
     if (game[player1].score > game[player2].score) {
         io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
         //player1 wins
-        newPlayer1Rating = oldPlayer1Rating + 32 * (1 - E1R);
-        newPlayer2Rating = oldPlayer2Rating + 32 * (0 - E2R);
+        newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (1 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (0 - E2R);
         
         
         /*
@@ -857,8 +857,8 @@ const endGame = gameId => {
     } else if (game[player1].score < game[player2].score) {
         io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
         //player2 wins
-        newPlayer1Rating = oldPlayer1Rating + 32 * (0 - E1R);
-        newPlayer2Rating = oldPlayer2Rating + 32 * (1 - E2R);
+        newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (0 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (1 - E2R);
         
         
         /*
@@ -878,8 +878,8 @@ const endGame = gameId => {
     } else {
         io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
         //tie game
-        newPlayer1Rating = oldPlayer1Rating + 32 * (.5 - E1R);
-        newPlayer2Rating = oldPlayer2Rating + 32 * (.5 - E2R);
+        newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (.5 - E1R);
+        newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (.5 - E2R);
         
         
         /*
