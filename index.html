@@ -215,20 +215,21 @@
                     ) {
                         socket.emit('pair_request', [
                             id,     //0
-                            invite_form.aces.value,              //1
-                            invite_form.jokers.value,            //2
-                            invite_form.joker_value.value,       //3
-                            invite_form.agree.value,             //4
-                            invite_form.follow_suit.value,       //5
-                            invite_form.lose_points.value,       //6
-                            invite_form.lose_number.value,       //7
-                            invite_form.leader_only.value,       //8
-                            invite_form.loop.value,              //9
-                            invite_form.progression.value,       //10
-                            invite_form.start.value,             //11
-                            invite_form.finish.value,            //12
-                            invite_form.goal_only.value,         //13
-                            invite_form.pick_opponents_goal.value//14
+                            invite_form.aces.value,               //1
+                            invite_form.jokers.value,             //2
+                            invite_form.joker_value.value,        //3
+                            invite_form.agree.value,              //4
+                            invite_form.follow_suit.value,        //5
+                            invite_form.lose_points.value,        //6
+                            invite_form.lose_number.value,        //7
+                            invite_form.leader_only.value,        //8
+                            invite_form.loop.value,               //9
+                            invite_form.progression.value,        //10
+                            invite_form.start.value,              //11
+                            invite_form.finish.value,             //12
+                            invite_form.goal_only.value,          //13
+                            invite_form.pick_opponents_goal.value,//14
+                            invite_form.dealer_picks_trump.value  //14
                         ]);
                         invite_popup.style.display = "none";
                     }
@@ -372,19 +373,42 @@
                         }
                         invite_popup_content.innerHTML = `
                             <b>${pair[2]}</b> would like to play.
-                            <div class="invite_divs">Aces: ${pair[0][1]}</div>
-                            <div class="invite_divs">Pick opponents goal: ${pair[0][14]}</div>
-                            <div class="invite_divs">Goal Agreement: ${pair[0][4]}</div>
-                            <div class="invite_divs">Following suit required: ${pair[0][5]}</div>
-                            <div class="invite_divs">Score tricks only on goal: ${pair[0][13]}</div>
-                            <div class="invite_divs">Jokers: ${pair[0][2]} &nbsp; &nbsp; &nbsp;
-                            Joker value: ${pair[0][3]}</div>
-                            <div class="invite_divs">Failing loses points: ${pair[0][6]}<br>
-                            How many points: ${pair[0][7]}<br>
-                            Only for point leader: ${pair[0][8]}</div>
-                            <div class="invite_divs">Game progression: ${pair[0][10]} ${loop}<br>
-                            Start value: ${pair[0][11]}<br>
-                            end value: ${pair[0][12]}</div>
+                            <div class="invite_divs">
+                                Aces: ${pair[0][1]}
+                            </div>
+                            <div class="invite_divs">
+                                Pick opponents goal: ${pair[0][14]}
+                            </div>
+                            <div class="invite_divs">
+                                Goal Agreement: ${pair[0][4]}
+                            </div>
+                            <div class="invite_divs">
+                                Following suit required: ${pair[0][5]}
+                            </div>
+                            <div class="invite_divs">
+                                Score tricks only on goal: ${pair[0][13]}
+                            </div>
+
+
+                            <div class="invite_divs">
+                                Dealer picks trump: ${pair[0][15]}
+                            </div>
+
+
+                            <div class="invite_divs">
+                                Jokers: ${pair[0][2]} &nbsp; &nbsp; &nbsp;
+                                Joker value: ${pair[0][3]}
+                            </div>
+                            <div class="invite_divs">
+                                Failing loses points: ${pair[0][6]}<br>
+                                How many points: ${pair[0][7]}<br>
+                                Only for point leader: ${pair[0][8]}
+                            </div>
+                            <div class="invite_divs">
+                            Game progression: ${pair[0][10]} ${loop}<br>
+                                Start value: ${pair[0][11]}<br>
+                                end value: ${pair[0][12]}
+                            </div>
                         `;
                     }
                     invite_popup_content.innerHTML += `

@@ -241,6 +241,7 @@ io.on('connection', socket => {
             game.finish = Number(userIds[0][12]);//working
             game.goal_only = userIds[0][13];//working
             game.pick_opponents_goal = userIds[0][14];//working
+            game.dealer_picks_trump = userIds[0][15];//TODO
         }
         game.round = game.start;
         
@@ -877,8 +878,8 @@ const onOrOff = () => {
 
 const randomize = gameId => {
     let game = gameMap[gameId];
-    let aces, jokers, joker_value, agreement, follow_suit, lose_points,
-        lose_number, leader_only, loop, progression, start, finish, goal_only, pick_opponents_goal;
+    let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
+        loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
     leader_only = onOrOff();
     lose_points = onOrOff();
     follow_suit = onOrOff();
@@ -887,23 +888,20 @@ const randomize = gameId => {
     jokers = onOrOff();
     loop = onOrOff();
     pick_opponents_goal = onOrOff();
+    dealer_picks_trump = onOrOff();
     lose_number = randomInt(1, 10);
     joker_value = randomInt(0, 10);
+    
     let aceRandom = Math.random();
-    if (aceRandom <= 0.33){
-        aces = 'high';
-    } else if (aceRandom <=.66){
-        aces = 'low';
-    } else {
-        aces = 'both';
-    }
+    if (aceRandom <= 0.33) aces = 'high';
+    else if (aceRandom <=.66) aces = 'low';
+    else aces = 'both';
     
     let progressionRandom = Math.random();
     if (progressionRandom <= 0.25) progression = 'low to high';
     else if (progressionRandom <=.5) progression = 'high to low';
     else if (progressionRandom <=.75) progression = 'constant';
     else progression = 'random';
-    
     if (progression === 'low to high'){
         start = 1;
         if (loop === 'on') finish = 1;
@@ -931,6 +929,7 @@ const randomize = gameId => {
     game.finish = finish;
     game.goal_only = goal_only;
     game.pick_opponents_goal = pick_opponents_goal;
+    game.dealer_picks_trump = dealer_picks_trump;
 };
 
 const logGameRules = gameId => {
@@ -954,6 +953,7 @@ const logGameRules = gameId => {
     } else {
         text += `<p>You will pick your own goals.</p>`;
     }
+    text += `<p>Dealer picks trump: ${game.dealer_picks_trump}</p>`;
     text += `<p>Agreement when picking goal: ${game.agreement}</p>`;
     text += `<p>Following suit required: ${game.follow_suit}</p>`;
     if (game.lose_points === 'on'){
