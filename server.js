@@ -279,6 +279,17 @@ io.on('connection', socket => {
     //sends decline message when an invite is declined.
     socket.on('decline', id => { io.to(id).emit('receive_message', 'Your invitation has been declined.'); });
     
+    socket.on('pick_trump', trump => {
+        let gameId = userMap[socket.id].gameId;
+        let game = gameMap[gameId];
+        let player = socket.id;
+        let opponent = game[player].opponentId;
+        game.trump = ['player', trump];
+        game[player].turn = false;
+        game[opponent].turn = true;
+        sendPick(gameId);
+    });
+    
     //revices information when player picks goal.
     socket.on('pick', pick => {
         let gameId = userMap[socket.id].gameId;
@@ -444,7 +455,7 @@ io.on('connection', socket => {
                io.to(userId).emit('setup_game');
                io.to(game.player1Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
                io.to(game.player2Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
-               if (game[game.player1Id].picked && game[game.player2Id].picked) sendInfo(gameId); else sendPick(gameId);
+               //if (game[game.player1Id].picked && game[game.player2Id].picked) sendInfo(gameId); else sendPick(gameId);
            }
        }
     });
@@ -590,7 +601,13 @@ const deal = gameId => {
         io.to(game.player2Id).emit('shuffle');
         delete game.gameDeck;
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
-        sendPick(gameId);
+        
+        if (game.dealer_picks_trump === 'on'){
+            sendTrumpPick(gameId);
+        } else {
+            sendPick(gameId);
+        }
+        
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     }
 };
@@ -611,6 +628,26 @@ const sendPick = id => {
     }
     if (game.player2Id in userMap) {
         io.to(game.player2Id).emit('picker', player2info);
+    }
+    for (let i = 0; i < game.spies.length; i++){
+        if (game.spies[i] in userMap) {
+            io.to(game.spies[i]).emit('spy_setup', [player1info, player2info]);
+        }
+    }
+};
+
+const sendTrumpPick = id => {
+    let game = gameMap[id];
+    let player1Stats = [game[game.player1Id].score, game[game.player1Id].goal, game[game.player1Id].tricks];
+    let player2Stats = [game[game.player2Id].score, game[game.player2Id].goal, game[game.player2Id].tricks];
+    // [[hand], [opponents hand length], [trump], [inPlay], [?¿turn?¿], [your stats], [opponent stats], [opponent's name]]
+    let player1info = [game[game.player1Id].hand, game[game.player2Id].hand.length, game.trump, game.inPlay, game[game.player1Id].turn, player1Stats, player2Stats, game[game.player2Id].name];
+    let player2info = [game[game.player2Id].hand, game[game.player1Id].hand.length, game.trump, game.inPlay, game[game.player2Id].turn, player2Stats, player1Stats, game[game.player1Id].name];
+    if (game.player1Id in userMap) {
+        io.to(game.player1Id).emit('pick_trump', player1info);
+    }
+    if (game.player2Id in userMap) {
+        io.to(game.player2Id).emit('pick_trump', player2info);
     }
     for (let i = 0; i < game.spies.length; i++){
         if (game.spies[i] in userMap) {

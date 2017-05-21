@@ -95,7 +95,7 @@
             </div>
         </div>
         <script>
-
+140
             //connects to server
             let socket = io();
 
@@ -288,7 +288,7 @@
             const legalCardImg = card => `<img class="legal" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
             //returns html for inPlay and trump cards
-            const bigCardImg = card => `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
+            const bigCardImg = card => `<img style="width: 140px; height: inherit" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${card[SUIT]}${card[VALUE]}.png" id="${card[SUIT]}${card[VALUE]}" >`;
 
             //what happens when you press enter in the chat input.
             $('form').submit( () => {
@@ -479,6 +479,50 @@
                 player_goal = document.getElementById('player_goal');
                 player_tricks = document.getElementById('player_tricks');
                 turn_indicator = document.getElementById('turn_indicator')
+            });
+
+            socket.on('pick_trump', info => {
+                //trump = info[TRUMP];
+                inPlay = info[IN_PLAY];
+                let showHand = '';
+                for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
+                let showPicker = '';
+                if (info[TURN]) {
+                    showpicker = `
+                    <div style="border:6px dotted #2e2e2e; border-radius: 40px; background: #529848;">
+                        <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/carddiamondsplayer.png" id="diamonds" >
+                        <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardclubsplayer.png" id="clubs" >
+                        <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardheartsplayer.png" id="hearts" >
+                        <img class="picker" style="width: 100px; height: 100px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/cardspadessplayer.png" id="spades" >
+                    </div>
+                    `;
+                }
+                if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>Which trump would you like?</h1>';
+                else document.getElementById('opponent_hand').innerHTML = '';
+                if (info[TURN]) {
+                    title.innerHTML = "(Your Turn!) Orion's Oh Hell";
+                    turn_indicator.innerHTML = "<h1>! ! YOUR TURN ! !</h1>";
+                } else {
+                    title.innerHTML = "Orion's Oh Hell";
+                    turn_indicator.innerHTML = '';
+                }
+                player_hand.innerHTML = showHand;
+                trump_box.innerHTML = '';
+                play_area.innerHTML = showPicker;
+                opponent_name.innerHTML = info[OPPONENT_NAME];
+                player_name.innerHTML = userName;
+                opponent_score.innerHTML = `Score: ${info[OPPONENT_STATS][SCORE]}`;
+                opponent_goal.innerHTML = `Goal: ${info[OPPONENT_STATS][GOAL]}`;
+                opponent_tricks.innerHTML = `Tricks: ${info[OPPONENT_STATS][TRICKS]}`;
+                player_score.innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
+                player_goal.innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
+                player_tricks.innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
+                if (info[TURN]) {
+                    document.getElementById('hearts').addEventListener('click', () => socket.emit('pick_trump', 'hearts'));
+                    document.getElementById('diamonds').addEventListener('click', () => socket.emit('pick_trump', 'diamonds'));
+                    document.getElementById('spades').addEventListener('click', () => socket.emit('pick_trump', 'spades'));
+                    document.getElementById('clubs').addEventListener('click', () => socket.emit('pick_trump', 'clubs'));
+                }
             });
 
             //receives information about the game and displays it along with a row of buttons for players to pick there goal with
