@@ -928,8 +928,8 @@ const logGameRules = gameId => {
     if (game.jokers === 'on'){
         text += `<p>Jokers are worth ${game.joker_value} when scoring.</p>`;
     }
-    text += `<p>Agreement when picking goal is ${game.agreement}</p>`;
-    text += `<p>Following suit requirement is ${game.follow_suit}</p>`;
+    text += `<p>Agreement when picking goal: ${game.agreement}</p>`;
+    text += `<p>Following suit required: ${game.follow_suit}</p>`;
     if (game.lose_points === 'on'){
         text += '<p>';
         if (game.leader_only === 'on'){
