@@ -715,11 +715,9 @@ const endRound = gameId => {
     }
     game.round += game.plusMinus;
     game.actualRound++;
-    
     if (game.progression === 'random') {
         game.round = randomInt(1, 10);
     }
-    
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 
