@@ -901,14 +901,18 @@ const randomize = gameId => {
     } else {
         aces = 'both';
     }
+    
     let progressionRandom = Math.random();
-    if (progressionRandom <= 0.33){
+    if (progressionRandom <= 0.25){
         progression = 'low to high';
-    } else if (progressionRandom <=.66){
+    } else if (progressionRandom <=.5){
         progression = 'high to low';
-    } else {
+    } else if (progressionRandom <=.75) {
         progression = 'constant';
+    } else {
+        progression = 'random';
     }
+    
     if (progression === 'low to high'){
         start = 1;
         if (loop === 'on'){
@@ -927,6 +931,9 @@ const randomize = gameId => {
         start = randomInt(1, 10);
         finish = 10;
     }
+    
+    
+    
     game.aces = aces;
     game.jokers = jokers;
     game.joker_value = joker_value;
@@ -976,6 +983,8 @@ const logGameRules = gameId => {
     text += `<p>Tricks add to score only on correct guess: ${game.goal_only}</p>`;
     if (game.progression === 'constant'){
         text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
+    } else if (game.progression === 'random') {
+        text += `<p>Game progression: random, starting at round ${game.start}.</p><p>Game will end after ${game.finish} rounds.</p>`;
     } else {
         text += `<p>Game progression: ${game.progression}, loop ${game.loop}.</p>`;
         text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
