@@ -551,7 +551,7 @@ const deal = gameId => {
     let game = gameMap[gameId];
     if (game.round === 0) endGame(gameId);
     else if (game.round === 11) endGame(gameId);
-    else if (game.progression === 'constant' && game.actualRound === game.finish + 1) endGame(gameId);
+    else if ((game.progression === 'constant' || game.progression === 'random')&& game.actualRound === game.finish + 1) endGame(gameId);
     else if (game.progression === 'low to high' && game.loop === 'off' && game.round === game.finish + 1 ) endGame(gameId);
     else if (game.progression === 'low to high' && game.loop === 'on' && game.plusMinus === -1 && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'off' && game.round === game.finish - 1 ) endGame(gameId);
@@ -715,6 +715,11 @@ const endRound = gameId => {
     }
     game.round += game.plusMinus;
     game.actualRound++;
+    
+    if (game.progression === 'random') {
+        game.round = randomInt(1, 10);
+    }
+    
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 

@@ -139,11 +139,12 @@
                     <input type="radio" name="loop" value="off"> off<br>
                     <input title="progression" type="radio" name="progression" value="high to low"> high to low
                     <input type="radio" name="progression" value="low to high" checked> low to high
-                    <input type="radio" name="progression" value="constant"> constant <br>
+                    <input type="radio" name="progression" value="constant"> constant
+                    <input type="radio" name="progression" value="random"> random <br>
                     Starting round (1 to 10):
                     <input title="start" type="number" class="invite_input" name="start" min="1" max="10" value="1">
                     <br>
-                    Last round(# of rounds for constant)(1 to 10):
+                    Last round(1 to 10):
                     <input title="finish" type="number" class="invite_input" name="finish" min="1" max="10" value="1"></div>
                 </form>
                 <button class="invite_buttons" id="invite_button"><h3>send invite</h3></button>
@@ -335,10 +336,12 @@
                     `;
                     } else {
                         let loop = '';
-                        if (pair[0][9] === 'on') {
+                        if (pair[0][10] === 'constant' || pair[0][10] === 'random') {
+                            loop = '';
+                        } else if (pair[0][9] === 'on') {
                             loop = ' loop';
                         } else {
-                            loop = ' no loop'
+                            loop = ' no loop';
                         }
                         invite_popup_content.innerHTML = `
                             <b>${pair[2]}</b> would like to play.
