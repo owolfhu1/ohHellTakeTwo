@@ -89,16 +89,13 @@ io.on('connection', socket => {
     
     //for testing
     socket.on('crash', () => { Program.restart() });
-    
     let userId = socket.id;
     userMap[userId] = { name: 'no input', gameId: 'none' };
     let user = userMap[userId];
     //gets client ready for login
     io.to(userId).emit('setup_lobby');
     io.to(userId).emit('setup_login');
-    
     io.sockets.emit('receive_message', 'A guest has joined the server.');
-    
     client.query('SELECT * FROM userbank;').on('row', function(row) {
         passwordMap[row.username] = row.password;
     });
@@ -138,7 +135,6 @@ io.on('connection', socket => {
                     io.to(userId).emit('ace_style', game.aces);
                     io.to(userId).emit('set_agreement', game.agreement);
                     io.to(userId).emit('set_follow_suit', game.follow_suit);
-                    
                     if(game.aces === 'both') {
                         if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
                         else if (game.aceValue === 1) io.to(userId).emit('set_ace_button', 'Aces low');
@@ -232,7 +228,6 @@ io.on('connection', socket => {
         client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
         io.to(userIds[0][0]).emit('setup_game');
         io.to(userIds[1]).emit('setup_game');
-        
         if (userIds[0][1] === 'randomize') {
             randomize(gameId);
         } else {
@@ -251,6 +246,7 @@ io.on('connection', socket => {
             game.finish = Number(userIds[0][12]);//working
             game.goal_only = userIds[0][13];//working
         }
+        game.round = game.start;
         
         //set plusMinus acording to progression value
         if(game.progression === 'high to low'){
@@ -259,8 +255,6 @@ io.on('connection', socket => {
         else if(game.progression === 'constant'){
             game.plusMinus = 0;
         }
-        
-        game.round = game.start;
         
         //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
@@ -297,9 +291,7 @@ io.on('connection', socket => {
             game[opponent].turn = true;
             game[player].picked = true;
             gameMap[gameId] = game;
-    
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-            
             if (game[player].picked && game[opponent].picked) sendInfo(gameId); else sendPick(gameId);
         }
     });
@@ -345,9 +337,7 @@ io.on('connection', socket => {
             game[player].hand.splice(i, 1);
             game.inPlay = card(20, 20);
         }
-        
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-    
         sendInfo(gameId);
     });
     
@@ -393,7 +383,6 @@ io.on('connection', socket => {
             io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
             if (opponentId in userMap) userMap[opponentId].gameId = 'none';
             userMap[userId].gameId = 'none';
-            
             client.query(`UPDATE userbank SET wins = wins + 1 WHERE username = '${game[opponentId].name}';`);
             userScores[userMap[opponentId].name] = new stats(
                 userScores[userMap[opponentId].name].wins + 1,
@@ -535,7 +524,6 @@ const shuffle = a => {
 //resets game variables, deals (game.round) number of cards, exposes trump and prints to player's logs. if round is 0, ends game.
 const deal = gameId => {
     let game = gameMap[gameId];
-    
     if (game.round === 0) endGame(gameId);
     else if (game.round === 11) endGame(gameId);
     else if (game.progression === 'constant' && game.actualRound === game.finish + 1) endGame(gameId);
@@ -543,7 +531,6 @@ const deal = gameId => {
     else if (game.progression === 'low to high' && game.loop === 'on' && game.plusMinus === -1 && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'off' && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'on' && game.plusMinus === 1 && game.round === game.finish + 1 ) endGame(gameId);
-    
     else {
         let extraInfo = '';
         if (game.plusMinus === 1) extraInfo = '( + )';
@@ -614,12 +601,10 @@ const sendPick = id => {
 const sendInfo = id => {
     let game = gameMap[id];
     if(endRoundNow(game)){
-        
         if (game.loop === 'on'){
             if (game.progression === 'low to high' && game.round === 10) gameMap[id].plusMinus = -1;
             else if (game.progression === 'high to low' && game.round === 1) gameMap[id].plusMinus = 1;
         }
-        
         endRound(id);
         deal(id);
     } else {
@@ -675,12 +660,10 @@ const endRound = gameId => {
     let secondId = game.player2Id;
     let player1leader = true;
     let player2leader = true;
-    
     if (game.leader_only === 'on'){
         if (game[firstId].score <= game[secondId].score) player1leader = false;
         if (game[firstId].score >= game[secondId].score) player2leader = false;
     }
-    
     if (game[firstId].tricks === game[firstId].goal) {
         game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
         sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
@@ -688,7 +671,6 @@ const endRound = gameId => {
         game[firstId].score -= game.lose_number;
         sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points and now has ${game[firstId].score} points.`);
     }
-    
     if (game[secondId].tricks === game[secondId].goal) {
         game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
         sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
@@ -696,22 +678,16 @@ const endRound = gameId => {
         game[secondId].score -= game.lose_number;
         sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
     }
-    
-    
     if (game.goal_only === 'off') {
-        
         if (game[firstId].tricks !== game[firstId].goal) {
             game[firstId].score += game[firstId].tricks;
             sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks} points (from tricks) and now has ${game[firstId].score} points.`);
         }
-        
         if (game[secondId].tricks !== game[secondId].goal) {
             game[secondId].score += game[secondId].tricks;
             sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks} points (from tricks) and now has ${game[secondId].score} points.`);
         }
-        
     }
-    
     game.round += game.plusMinus;
     game.actualRound++;
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
@@ -830,7 +806,6 @@ const sortHand = unSortedHand => {
 const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
     else if (game.goal_only === 'off') return false;
-    
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
     let player1CantWin = false;
@@ -880,7 +855,6 @@ const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points,
         lose_number, leader_only, loop, progression, start, finish, goal_only;
-    
     leader_only = onOrOff();
     lose_points = onOrOff();
     follow_suit = onOrOff();
@@ -888,10 +862,8 @@ const randomize = gameId => {
     agreement = onOrOff();
     jokers = onOrOff();
     loop = onOrOff();
-    
     lose_number = randomInt(1, 10);
     joker_value = randomInt(0, 10);
-    
     let aceRandom = Math.random();
     if (aceRandom <= 0.33){
         aces = 'high';
@@ -900,7 +872,6 @@ const randomize = gameId => {
     } else {
         aces = 'both';
     }
-    
     let progressionRandom = Math.random();
     if (progressionRandom <= 0.33){
         progression = 'low to high';
@@ -909,7 +880,6 @@ const randomize = gameId => {
     } else {
         progression = 'constant';
     }
-    
     if (progression === 'low to high'){
         start = 1;
         if (loop === 'on'){
@@ -928,7 +898,6 @@ const randomize = gameId => {
         start = randomInt(1, 10);
         finish = 10;
     }
-    
     game.aces = aces;
     game.jokers = jokers;
     game.joker_value = joker_value;
@@ -949,26 +918,19 @@ const logGameRules = gameId => {
     let player1Name = game[game.player1Id].name;
     let player2Name = game[game.player2Id].name;
     let text = `<p> Welcome to game ${gameId}</p><p>${player1Name} vs ${player2Name}</p>`;
-    
     let aceText;
     if (game.aces === 'both'){
         aceText = 'high and low';
     } else {
         aceText = game.aces;
     }
-    
     text += `<p>Aces are ${aceText}.</p>`;
-    
     text += `<p>Jokers are ${game.jokers}.</p>`;
-    
     if (game.jokers === 'on'){
         text += `<p>Jokers are worth ${game.joker_value} when scoring.</p>`;
     }
-    
     text += `<p>Agreement when picking goal is ${game.agreement}</p>`;
-    
     text += `<p>Following suit requirement is ${game.follow_suit}</p>`;
-    
     if (game.lose_points === 'on'){
         text += '<p>';
         if (game.leader_only === 'on'){
@@ -976,16 +938,13 @@ const logGameRules = gameId => {
         }
         text += `you will lose ${game.lose_number} points for incorrect guesses</p>`;
     }
-    
     text += `<p>Tricks add to score only on correct guess: ${game.goal_only}</p>`;
-    
     if (game.progression === 'constant'){
         text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
     } else {
         text += `<p>Game progression: ${game.progression}, loop ${game.loop}.</p>`;
         text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
     }
-    
     sendLog(gameId, text);
 };
 

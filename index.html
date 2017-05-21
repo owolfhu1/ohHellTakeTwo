@@ -10,12 +10,10 @@
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
-
             const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
             const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
             const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
             const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
-
             const HELP_TEXT = `
                 <p><b>$instructions: </b>Prints the rules in the chat screen.</p>
                 <p><b>$tricks: </b>Displays a list of tricks each player has won.</p>
@@ -65,34 +63,9 @@
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 110px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 510px; height: 550px }
-
-            .invite_divs{
-                border: dotted #b03f48;
-                background-color: #2e2e2e;
-                border-radius: 10px;
-                margin-top: 8px;
-                margin-bottom: 8px;
-                padding: 8px;
-                line-height: 20px;
-            }
-
-            .invite_input{
-                background-color: #b03f48;
-                border-radius: 4px;
-                color: white;
-            }
-
-            .invite_buttons{
-                border: 3px dotted #b03f48;
-                background-color: #2e2e2e;
-                border-radius: 14px;
-                color: white;
-                font-family: "Comic Sans MS";
-                padding-left: 16px;
-                padding-right: 16px;
-                margin: 6px;
-            }
-
+            .invite_divs{ border: dotted #b03f48; background-color: #2e2e2e; border-radius: 10px; margin-top: 8px; margin-bottom: 8px; padding: 8px; line-height: 20px; }
+            .invite_input{ background-color: #b03f48; border-radius: 4px; color: white; }
+            .invite_buttons{ border: 3px dotted #b03f48; background-color: #2e2e2e; border-radius: 14px; color: white; font-family: "Comic Sans MS"; padding-left: 16px; padding-right: 16px;  margin: 6px; }
         </style>
     </head>
     <body>
@@ -318,7 +291,6 @@
                     } else {
                         socket.emit('login_request', [userName, password]);
                     }
-
                 });
             });
 
@@ -338,13 +310,7 @@
                 //adds event to send pair request when button is pushed
                 for(let i = 0; i< users[ID].length; i++) {
                     document.getElementById(i.toString()).addEventListener('click', () => {
-                        //socket.emit('pair_request', users[ID][i]);
-
-
-                        //experiment
                         sendInvite(users[NAME][i],users[ID][i])
-
-
                     });
                 }
                 document.getElementById('float_left').innerHTML = users[2];
@@ -452,7 +418,6 @@
                     <div id="trump_box" class="trump_box"></div>
                 `;
                 document.getElementById('aces').innerHTML = `<button id="aces_button" class="aces_button">Aces low</button>`;
-
                 player_hand = document.getElementById('player_hand');
                 opponent_hand = document.getElementById('opponent_hand');
                 trump_box = document.getElementById('trump_box');
@@ -472,30 +437,23 @@
             socket.on('picker', info => {
                 trump = info[TRUMP];
                 inPlay = info[IN_PLAY];
-
                 let showHand = '';
                 for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
-
                 let showPicker = '';
                 if (info[TURN]) {
                     for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
                         if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]){
-
                             if (agreement){
                                 showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
                             } else {
                                 showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
                             }
-
                         }
                         else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
                     }
                 }
-
                 if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
                 else document.getElementById('opponent_hand').innerHTML = '';
-
-
                 if (info[TURN]) {
                     title.innerHTML = "(Your Turn!) Orion's Oh Hell";
                     turn_indicator.innerHTML = "<h1>! ! YOUR TURN ! !</h1>";
@@ -503,7 +461,6 @@
                     title.innerHTML = "Orion's Oh Hell";
                     turn_indicator.innerHTML = '';
                 }
-
                 player_hand.innerHTML = showHand;
                 trump_box.innerHTML = bigCardImg(trump);
                 play_area.innerHTML = showPicker;
@@ -515,16 +472,13 @@
                 player_score.innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
                 player_goal.innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
                 player_tricks.innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
-
                 if (info[TURN]) for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) document.getElementById(`picker${i}`).addEventListener('click', () => socket.emit('pick', i));
-
             });
 
             //receives information about the game and displays it along with setting up cards to be clicked
             socket.on('info', info => {
                 trump = info[TRUMP];
                 inPlay = info[IN_PLAY];
-
                 let showHand = '';
                 if (info[TURN]){
                     for (let i = 0; i < info[HAND].length; i++){
@@ -532,10 +486,8 @@
                         else showHand += cardImg(info[HAND][i]);
                     }
                 } else for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
-
                 let showOpponentHand = '';
                 for (let i = 0; i < info[OPPONENT_HAND_SIZE]; i++) showOpponentHand += `<img class="cards" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card_back.png" >`;
-
                 if (info[TURN]) {
                     title.innerHTML = "(Your Turn!) Orion's Oh Hell";
                     turn_indicator.innerHTML = "<h1>! ! YOUR TURN ! !</h1>";
@@ -544,7 +496,6 @@
                     turn_indicator.innerHTML = '';
                     title.innerHTML = "Orion's Oh Hell";
                 }
-
                 player_hand.innerHTML = showHand;
                 opponent_hand.innerHTML = showOpponentHand;
                 trump_box.innerHTML = bigCardImg(trump);
@@ -557,7 +508,6 @@
                 player_score.innerHTML = `Score: ${info[PLAYER_STATS][SCORE]}`;
                 player_goal.innerHTML = `Goal: ${info[PLAYER_STATS][GOAL]}`;
                 player_tricks.innerHTML = `Tricks: ${info[PLAYER_STATS][TRICKS]}`;
-
                 if (info[TURN]) for (let i = 0; i < info[HAND].length; i++) {
                     document.getElementById(info[HAND][i][SUIT] + info[HAND][i][VALUE]).addEventListener('click', () => {
                         if (isLegal(info[HAND], i)) socket.emit('play_card', i);
