@@ -341,19 +341,19 @@
                             Joker value: ${pair[0][3]}</div>
                             <div class="invite_divs">Goal Agreement: ${pair[0][4]}</div>
                             <div class="invite_divs">Following suit required: ${pair[0][5]}</div>
-                            end value(# of rounds for constant): ${pair[0][12]}</div>
+                            <div class="invite_divs">Score tricks only on goal: ${pair[0][13]}</div>
                             <div class="invite_divs">Failing loses points: ${pair[0][6]}
                             How many points: ${pair[0][7]}
                             Only for point leader: ${pair[0][8]}</div>
                             <div class="invite_divs">Game progression: ${pair[0][10]} ${loop}
-                            Start value: ${pair[0][11]}
+                            Start value: ${pair[0][11]}<br>
                             end value(# of rounds for constant): ${pair[0][12]}</div>
-                            <div class="invite_divs">Score tricks only on goal: ${pair[0][13]}</div><br>
+                            <br>
                         `;
                     }
                     invite_popup_content.innerHTML += `
-                        <button class="invite_buttons" id="accept_button">accept</button>
-                        <button class="invite_buttons" id="decline_button">decline</button>
+                        <button class="invite_buttons" id="accept_button"><h2> accept </h2></button>
+                        <button class="invite_buttons" id="decline_button"><h2> decline </h2></button>
                     `;
                     let accept_button = document.getElementById('accept_button');
                     let decline_button = document.getElementById('decline_button');
