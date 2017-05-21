@@ -6,7 +6,7 @@
             let
                 title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
                 play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
-                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup, aceStyle = 'both', agreement, follow_suit;
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks, player2_tricks, tricks_popup, aceStyle = 'both', agreement, follow_suit, pick_opponents_goal;
             const
                 SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
                 PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
@@ -435,16 +435,46 @@
                 for (let i = 0; i < info[HAND].length; i++) showHand += cardImg(info[HAND][i]);
                 let showPicker = '';
                 if (info[TURN]) {
+
+
+
                     for (let i = 0; i < info[OPPONENT_HAND_SIZE]+1; i++) {
-                        if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]){
-                            if (agreement){
-                                showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
-                            } else {
-                                showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+
+
+
+                        if (pick_opponents_goal){
+
+
+                            if (i + info[PLAYER_STATS][GOAL] === info[OPPONENT_HAND_SIZE]) {
+                                if (agreement) {
+                                    showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                                } else {
+                                    showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                                }
                             }
+                            else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+
+
+                        } else {
+
+                            if (i + info[OPPONENT_STATS][GOAL] === info[OPPONENT_HAND_SIZE]) {
+                                if (agreement) {
+                                    showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                                } else {
+                                    showPicker += `<img src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+                                }
+                            }
+                            else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+
                         }
-                        else showPicker += `<img class="picker" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/die${i}.png" id="picker${i}" >`;
+
+
+
+
                     }
+
+
+
                 }
                 if(info[TURN]) document.getElementById('opponent_hand').innerHTML = '<h1>How many tricks will you win?</h1>';
                 else document.getElementById('opponent_hand').innerHTML = '';
@@ -605,6 +635,11 @@
             socket.on('set_follow_suit', onOff => {
                 if (onOff === 'on') follow_suit = true;
                 if (onOff === 'off') follow_suit = false;
+            });
+
+            socket.on('set_pick_opponents_goal', onOff => {
+                if (onOff === 'on') pick_opponents_goal = true;
+                if (onOff === 'off') pick_opponents_goal = false;
             });
 
             socket.on('clear_log', () => {

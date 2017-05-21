@@ -134,6 +134,7 @@ io.on('connection', socket => {
                     io.to(userId).emit('ace_style', game.aces);
                     io.to(userId).emit('set_agreement', game.agreement);
                     io.to(userId).emit('set_follow_suit', game.follow_suit);
+                    io.to(userId).emit('set_pick_opponents_goal', game.pick_opponents_goal);
                     if(game.aces === 'both') {
                         if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
                         else if (game.aceValue === 1) io.to(userId).emit('set_ace_button', 'Aces low');
@@ -269,6 +270,10 @@ io.on('connection', socket => {
         io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
         io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
     
+        //set pick_opponents_goal boolean client side
+        io.to(userIds[0][0]).emit('set_pick_opponents_goal', game.pick_opponents_goal);
+        io.to(userIds[1]).emit('set_pick_opponents_goal', game.pick_opponents_goal);
+        
         io.to(userIds[0][0]).emit('clear_log');
         io.to(userIds[1]).emit('clear_log');
         logGameRules(gameId);
