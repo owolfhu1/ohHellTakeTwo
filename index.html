@@ -64,7 +64,7 @@
             .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 110px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
-            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 510px; height: 550px }
+            .invite_popup_content {text-align: center; background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 510px; height: 550px }
 
             .invite_divs{
                 border: dotted #b03f48;
@@ -87,8 +87,9 @@
                 border-radius: 14px;
                 color: white;
                 font-family: "Comic Sans MS";
-                padding-left: 20px;
-                padding-right: 20px;
+                padding-left: 21px;
+                padding-right: 21px;
+                margin: 4px;
             }
 
         </style>
@@ -136,7 +137,7 @@
                     <input type="radio" name="aces" value="both" checked> both</div>
                     <div class="invite_divs">Jokers:
                     <input title="jokers" type="radio" name="jokers" value="on" checked> on
-                    <input type="radio" name="jokers" value="off"> off
+                    <input type="radio" name="jokers" value="off"> off &nbsp; &nbsp; &nbsp;
                     Joker value (0 to 10):
                     <input title="joker_value" type="number" class="invite_input" name="joker_value" min="0" max="10" value="5"></div>
                     <div class="invite_divs">Goal agreement:
@@ -153,7 +154,7 @@
                     Only for point leader?:
                     <input title="leader_only" type="radio" name="leader_only" value="on"> on
                     <input type="radio" name="leader_only" value="off" checked> off</div>
-                    <div class="invite_divs">Game progression:
+                    <div class="invite_divs">Game progression: &nbsp; &nbsp; &nbsp;
                     loop: <input type="radio" title="loop" name="loop" value="on" checked> on
                     <input type="radio" name="loop" value="off"> off<br>
                     <input title="progression" type="radio" name="progression" value="high to low"> high to low
