@@ -313,7 +313,12 @@
                 document.getElementById('login').addEventListener('click', () => {
                     let userName = document.getElementById('userName').value;
                     let password = document.getElementById('password').value;
-                    socket.emit('login_request', [userName, password]);
+                    if (userName.length > 10) {
+                        userName = 'username too long (10 char max)'
+                    } else {
+                        socket.emit('login_request', [userName, password]);
+                    }
+
                 });
             });
 
