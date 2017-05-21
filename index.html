@@ -314,7 +314,7 @@
                     let userName = document.getElementById('userName').value;
                     let password = document.getElementById('password').value;
                     if (userName.length > 10) {
-                        document.getElementById('userName').innerHTML = 'username too long (10 char max)'
+                        alert('username too long (10 char max)');
                     } else {
                         socket.emit('login_request', [userName, password]);
                     }
