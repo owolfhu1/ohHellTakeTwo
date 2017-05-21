@@ -24,12 +24,7 @@ let onlineNameArray = []; //array of active users, used to prevent double login
 let passwordMap = {};// {userName : password} loads from DB each time a user connects
 let lobby = { names : [], ids : [] }; //holds info on users from lobby
 let userScores = {};
-const SUIT = 1;
-const VALUE = 0;
-const CARD = 0;
-const GAME_ID = 1;
-const USER_NAME = 0;
-const PASSWORD = 1;
+const SUIT = 1, VALUE = 0, CARD = 0, GAME_ID = 1, USER_NAME = 0, PASSWORD = 1;
 
 client.query('SELECT * FROM userbank;').on('row', row => {
     userScores[row.username] = new stats(row.wins, row.losses, row.ties);
@@ -245,7 +240,7 @@ io.on('connection', socket => {
             game.start = Number(userIds[0][11]);//working
             game.finish = Number(userIds[0][12]);//working
             game.goal_only = userIds[0][13];//working
-            game.pick_opponents_goal = userIds[0][14];//TODO
+            game.pick_opponents_goal = userIds[0][14];//working
         }
         game.round = game.start;
         
@@ -551,7 +546,7 @@ const deal = gameId => {
     let game = gameMap[gameId];
     if (game.round === 0) endGame(gameId);
     else if (game.round === 11) endGame(gameId);
-    else if ((game.progression === 'constant' || game.progression === 'random')&& game.actualRound === game.finish + 1) endGame(gameId);
+    else if ((game.progression === 'constant' || game.progression === 'random') && game.actualRound === game.finish + 1) endGame(gameId);
     else if (game.progression === 'low to high' && game.loop === 'off' && game.round === game.finish + 1 ) endGame(gameId);
     else if (game.progression === 'low to high' && game.loop === 'on' && game.plusMinus === -1 && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'off' && game.round === game.finish - 1 ) endGame(gameId);
@@ -904,33 +899,24 @@ const randomize = gameId => {
     }
     
     let progressionRandom = Math.random();
-    if (progressionRandom <= 0.25){
-        progression = 'low to high';
-    } else if (progressionRandom <=.5){
-        progression = 'high to low';
-    } else if (progressionRandom <=.75) {
-        progression = 'constant';
-    } else {
-        progression = 'random';
-    }
+    if (progressionRandom <= 0.25) progression = 'low to high';
+    else if (progressionRandom <=.5) progression = 'high to low';
+    else if (progressionRandom <=.75) progression = 'constant';
+    else progression = 'random';
+    
     if (progression === 'low to high'){
         start = 1;
-        if (loop === 'on'){
-            finish = 1;
-        } else {
-            finish = 10;
-        }
+        if (loop === 'on') finish = 1;
+        else finish = 10;
     } else if (progression === 'high to low'){
         start = 10;
-        if (loop === 'on'){
-            finish = 10;
-        } else {
-            finish = 1;
-        }
+        if (loop === 'on') finish = 10;
+        else finish = 1;
     } else {
         start = randomInt(1, 10);
         finish = 10;
     }
+    
     game.aces = aces;
     game.jokers = jokers;
     game.joker_value = joker_value;
