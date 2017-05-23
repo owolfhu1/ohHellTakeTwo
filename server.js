@@ -379,18 +379,25 @@ io.on('connection', socket => {
     socket.on('aces_low', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
+        
+        
+        if (game[userId].turn){
         game.aceValue = 1;
         if (game.player1Id in userMap) io.to(game.player1Id).emit('lowAce');
         if (game.player2Id in userMap) io.to(game.player2Id).emit('lowAce');
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+    }
+        
     });
     socket.on('aces_high', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
-        game.aceValue = 16;
-        if (game.player1Id in userMap) io.to(game.player1Id).emit('highAce');
-        if (game.player2Id in userMap) io.to(game.player2Id).emit('highAce');
-        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+        if (game[userId].turn) {
+            game.aceValue = 16;
+            if (game.player1Id in userMap) io.to(game.player1Id).emit('highAce');
+            if (game.player2Id in userMap) io.to(game.player2Id).emit('highAce');
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+        }
     });
     
     //if user types '$resign' user is resigned and opponent wins, both are placed in lobby
