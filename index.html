@@ -44,8 +44,8 @@
             .legal:hover { transform: scale(1.05) rotate(1deg); }
             .picker:active { transform: scale(.94) rotate(-1deg); }
             .legal:active { transform: scale(.94) rotate(-1deg); }
-            .cards{ padding: 1px; width: 94px; height: 130px; }
-            .legal{ padding: 1px; width: 94px; height: 130px; }
+            .cards { padding: 1px; width: 94px; height: 130px; }
+            .legal { padding: 1px; width: 94px; height: 130px; }
             .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; line-height: .7; }
             .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; }
             .play_area { text-align: center; height: 190px; }
@@ -55,18 +55,27 @@
             .card_area { height: 440px; padding: 115px 0; text-align: center; }
             .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 20px; font-family: "Comic Sans MS"; line-height: 1px; }
             .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding-left: 10px; }
-            .chat{ overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
+            .chat { overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
             ::-webkit-scrollbar { width: 12px; }
             ::-webkit-scrollbar-track { display: none; }
             ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
-            .chat_input{ background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
+            .chat_input { background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
             .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
             .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 50px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
             .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 520px; height: 640px }
-            .invite_divs{ border: dotted #b03f48; background-color: #2e2e2e; border-radius: 10px; margin-top: 8px; margin-bottom: 8px; padding: 8px; line-height: 20px; }
-            .invite_input{ background-color: #b03f48; border-radius: 6px; color: white; padding-left: 10px; width: 30px }
-            .invite_buttons{ border: 5px dotted #b03f48; background-color: #2e2e2e; border-radius: 14px; color: white; font-family: "Comic Sans MS"; padding-left: 16px; padding-right: 16px;  margin: 6px; }
+            .invite_divs { border: dotted #b03f48; background-color: #2e2e2e; border-radius: 10px; margin-top: 8px; margin-bottom: 8px; padding: 8px; line-height: 20px; }
+            .invite_input { background-color: #b03f48; border-radius: 6px; color: white; padding-left: 10px; width: 30px }
+            .invite_buttons { border: 5px dotted #b03f48; background-color: #2e2e2e; border-radius: 14px; color: white; font-family: "Comic Sans MS"; padding-left: 16px; padding-right: 16px;  margin: 6px; }
+
+            .last_turn_cards {
+                display: block;
+                z-index: 1;
+                position: absolute;
+                top: 300px;
+            }
+
+
         </style>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -94,8 +103,13 @@
             <div id="invite_popup_content" class="invite_popup_content">
             </div>
         </div>
+
+        <div id="last_turn">
+
+        </div>
+
         <script>
-140
+
             //connects to server
             let socket = io();
 
@@ -442,6 +456,22 @@
                 let body = document.getElementById('log');
                 body.innerHTML += `<p>${msg}</p>`;
                 body.scrollTop = body.scrollHeight;
+            });
+
+            socket.on('last_turn_cards', cards => {
+                let last_turn = document.getElementById('last_turn');
+
+                last_turn.innerHTML = `
+
+                    <img class="last_turn_cards" style="left: 300px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${cards[0][1]}${cards[0][0]}.png" id="last1">
+                    <img class="last_turn_cards" style="left: 340px;" src= "http://owolfhu1.x10host.com/Oh_Hell_solo/img/card${cards[1][1]}${cards[1][0]}.png" id="last2">
+
+                `;
+
+                document.getElementById('last1').addEventListener('click', () => { last_turn.innerHTML = ''});
+                document.getElementById('last2').addEventListener('click', () => { last_turn.innerHTML = ''});
+
+
             });
 
             //gets DOM ready for a game and sets id getElementById variables
