@@ -176,7 +176,7 @@ io.on('connection', socket => {
         delete userMap[userId];
     });
 
-    //sends info for client to display tricks to user with.
+    //sends info for client for displaying tricks to users.
     socket.on('tricks', () => {
         if (userMap[userId].gameId !== 'none'){
             if (userMap[userId].gameId !== 'none'){
@@ -201,52 +201,68 @@ io.on('connection', socket => {
 
     //if user accepts 'pair_request' the 2 users are removed from lobby and put into a game object.
     socket.on('finalPair', userIds => {
-        // 0[0] = player1, 1 = player2
-        console.log(userMap[userIds[0][0]].name + ' and ' + userMap[userIds[1]].name + ' want to play a game.');
-        removeFromLobby(userIds[0][0]);
-        removeFromLobby(userIds[1]);
+        let user1Id = userIds[0][0];
+        let user2Id = userIds[1];
+        removeFromLobby(user1Id);
+        removeFromLobby(user2Id);
         updateLobby();
+        
+        //create new game
         let game = new emptyGame();
+        
+        //generate random gameId and assign it to players
         let gameId = Math.random().toString(36).substr(2, 5);
-        userMap[userIds[0][0]].gameId = gameId;
-        userMap[userIds[1]].gameId = gameId;
-        game[userIds[0][0]] = new blankPlayer();
-        game[userIds[1]] = new blankPlayer();
-        game.player1Id = userIds[0][0];
-        game.player2Id = userIds[1];
-        game[userIds[0][0]].opponentId = userIds[1];
-        game[userIds[1]].opponentId = userIds[0][0];
-        game[userIds[0][0]].name = userMap[userIds[0][0]].name;
-        game[userIds[1]].name = userMap[userIds[1]].name;
+        userMap[user1Id].gameId = gameId;
+        userMap[user2Id].gameId = gameId;
+        
+        //make new players and add them to the new game
+        game[user1Id] = new blankPlayer();
+        game[user2Id] = new blankPlayer();
+        game.player1Id = user1Id;
+        game.player2Id = user2Id;
+        game[user1Id].opponentId = user2Id;
+        game[user2Id].opponentId = user1Id;
+        game[user1Id].name = userMap[user1Id].name;
+        game[user2Id].name = userMap[user2Id].name;
+        
+        //put the game in the gameMap
         gameMap[gameId] = game;
-        namesPlaying[game[userIds[0][0]].name] = gameId;
-        namesPlaying[game[userIds[1]].name] = gameId;
+        
+        //put the players in namesPlaying in case they reconnect at some point during the game and need to be put back into the game
+        namesPlaying[game[user1Id].name] = gameId;
+        namesPlaying[game[user2Id].name] = gameId;
         client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-        io.to(userIds[0][0]).emit('setup_game');
-        io.to(userIds[1]).emit('setup_game');
+        
+        //emit command to set up player's clients DOM for a game
+        io.to(user1Id).emit('setup_game');
+        io.to(user2Id).emit('setup_game');
+        
+        //if users choose to play a randomized game, generate random game rules
         if (userIds[0][1] === 'randomize') {
             randomize(gameId);
         } else {
-            //rule variations: **in progress**
-            game.aces = userIds[0][1];//working
-            game.jokers = userIds[0][2];//working
-            game.joker_value = Number(userIds[0][3]);//working
-            game.agreement = userIds[0][4];//working
-            game.follow_suit = userIds[0][5];//working
-            game.lose_points = userIds[0][6];//working
-            game.lose_number = Number(userIds[0][7]);//working
-            game.leader_only = userIds[0][8];//working
-            game.loop = userIds[0][9];//working
-            game.progression = userIds[0][10];//working
-            game.start = Number(userIds[0][11]);//working
-            game.finish = Number(userIds[0][12]);//working
-            game.goal_only = userIds[0][13];//working
-            game.pick_opponents_goal = userIds[0][14];//working
-            game.dealer_picks_trump = userIds[0][15];//working
+            //else get the game rules from the invite form
+            game.aces = userIds[0][1];
+            game.jokers = userIds[0][2];
+            game.joker_value = Number(userIds[0][3]);
+            game.agreement = userIds[0][4];
+            game.follow_suit = userIds[0][5];
+            game.lose_points = userIds[0][6];
+            game.lose_number = Number(userIds[0][7]);
+            game.leader_only = userIds[0][8];
+            game.loop = userIds[0][9];
+            game.progression = userIds[0][10];
+            game.start = Number(userIds[0][11]);
+            game.finish = Number(userIds[0][12]);
+            game.goal_only = userIds[0][13];
+            game.pick_opponents_goal = userIds[0][14];
+            game.dealer_picks_trump = userIds[0][15];
         }
+        
+        //start the game at the new game rules start point
         game.round = game.start;
         
-        //set plusMinus acording to progression value
+        //set plusMinus according to progression value
         if(game.progression === 'high to low'){
             game.plusMinus = -1;
         }
@@ -256,38 +272,49 @@ io.on('connection', socket => {
         
         //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
-        io.to(userIds[0][0]).emit('ace_style', game.aces);
-        io.to(userIds[1]).emit('ace_style', game.aces);
+        io.to(user1Id).emit('ace_style', game.aces);
+        io.to(user2Id).emit('ace_style', game.aces);
     
         //set agreement boolean client side
-        io.to(userIds[0][0]).emit('set_agreement', game.agreement);
-        io.to(userIds[1]).emit('set_agreement', game.agreement);
+        io.to(user1Id).emit('set_agreement', game.agreement);
+        io.to(user2Id).emit('set_agreement', game.agreement);
     
         //set follow_suit boolean client side
-        io.to(userIds[0][0]).emit('set_follow_suit', game.follow_suit);
-        io.to(userIds[1]).emit('set_follow_suit', game.follow_suit);
+        io.to(user1Id).emit('set_follow_suit', game.follow_suit);
+        io.to(user2Id).emit('set_follow_suit', game.follow_suit);
     
         //set pick_opponents_goal boolean client side
-        io.to(userIds[0][0]).emit('set_pick_opponents_goal', game.pick_opponents_goal);
-        io.to(userIds[1]).emit('set_pick_opponents_goal', game.pick_opponents_goal);
+        io.to(user1Id).emit('set_pick_opponents_goal', game.pick_opponents_goal);
+        io.to(user2Id).emit('set_pick_opponents_goal', game.pick_opponents_goal);
         
-        io.to(userIds[0][0]).emit('clear_log');
-        io.to(userIds[1]).emit('clear_log');
+        //start a new log for both players
+        io.to(user1Id).emit('clear_log');
+        io.to(user2Id).emit('clear_log');
+        
+        //sends the game rules to the players new logs
         logGameRules(gameId);
+        
+        //start the game!
         deal(gameId);
     });
 
     //sends decline message when an invite is declined.
     socket.on('decline', id => { io.to(id).emit('receive_message', 'Your invitation has been declined.'); });
     
+    //gets trump pick from player
     socket.on('pick_trump', trump => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
+        
+        //assigns trump to game.trump
         game.trump = ['player', trump];
+        
+        //switches turns
         game[player].turn = false;
         game[opponent].turn = true;
+        
         sendLog(gameId, `The trump is ${game.trump[1]}.`);
         sendPick(gameId);
     });
@@ -298,9 +325,8 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
-        //TODO refactor this
         
-        
+        //if game.pick_opponents_goal is off, pick will be assigned to player, else assigned to opponent
         if (game.pick_opponents_goal === 'off') {
             if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
                 sendLog(gameId, `${game[player].name}'s goal is ${pick}`);
@@ -554,7 +580,7 @@ io.on('connection', socket => {
     });
     
     //for testing
-    socket.on('crash', () => { Program.restart() });
+    socket.on('crash', () => { let brokenVariable = userMap['broken'].name });
 });
 
 //sends data to client to build lobby with.
