@@ -185,16 +185,24 @@ io.on('connection', socket => {
         user has logged out, if user is in lobby they are removed from nameArray and idArray. */
     socket.on('disconnect', () => {
         let name = userMap[userId].name;
+        
+        //remove user from onlineNameArray
         for (let i = onlineNameArray.length-1; i >= 0; i--) { if (onlineNameArray[i] === name) onlineNameArray.splice(i, 1); }
+        
+        //if the user is in the lobby, remove them and update
         if (lobby.ids.indexOf(userId) > -1){
             removeFromLobby(userId);
             updateLobby();
         }
-        io.sockets.emit('receive_message', userMap[userId].name + ' has left the server');
+        
+        //tell everyone user has logged out
+        io.sockets.emit('receive_message', userMap[userId].name + ' has logged off');
+        
+        //remove user from userMap
         delete userMap[userId];
     });
 
-    //sends info for client for displaying tricks to users.
+    //sends info for client for displaying tricks to users when user types $tricks
     socket.on('tricks', () => {
         if (userMap[userId].gameId !== 'none'){
             if (userMap[userId].gameId !== 'none'){
@@ -281,12 +289,8 @@ io.on('connection', socket => {
         game.round = game.start;
         
         //set plusMinus according to progression value
-        if(game.progression === 'high to low'){
-            game.plusMinus = -1;
-        }
-        else if(game.progression === 'constant'){
-            game.plusMinus = 0;
-        }
+        if (game.progression === 'high to low') game.plusMinus = -1;
+        else if (game.progression === 'constant') game.plusMinus = 0;
         
         //set ace_style client side
         if (game.aces === 'high') game.aceValue = 16;
@@ -477,8 +481,6 @@ io.on('connection', socket => {
             newUserRating = oldUserRating + ELO_K_VALUE *(0 - EUR);
             newOpponentRating = oldOpponentRating + ELO_K_VALUE *(1 - EOR);
             
-            
-            //test this
             //set new ratings & total games
             userScores[game[opponentId].name].rating = newOpponentRating;
             userScores[game[userId].name].rating = newUserRating;
@@ -548,7 +550,11 @@ io.on('connection', socket => {
     socket.on('unlock', () => {
         if (userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
+            
+            //unlock that game
             game.locked = false;
+            
+            //tell players game is unlocked
             io.to(game.player1Id).emit('receive_message', 'The game has been unlocked');
             io.to(game.player2Id).emit('receive_message', 'The game has been unlocked');
         }
@@ -601,7 +607,7 @@ io.on('connection', socket => {
     socket.on('restart', () => { let brokenVariable = userMap['broken'].name });
 });
 
-//sends data to client to build lobby with.
+//sends data to client to build lobby, to all users in lobby.
 const updateLobby = () => {
     let board = makeBoard();
     for (let i = 0; i < lobby.ids.length; i++){
@@ -620,6 +626,8 @@ const removeFromLobby = id => {
 const card = (value, suit) =>  [value, suit];
 const deck = (jokers) => {
     let deckReturn = [];
+    
+    //iterate through this array to build a deck of cards
     const vAnds =[
         [1,2,3,4,5,6,7,8,9,10,13,14,15],
         ["clubs", "spades", "hearts", "diamonds"]
@@ -629,10 +637,13 @@ const deck = (jokers) => {
             deckReturn.push(card(vAnds[0][v],vAnds[1][s]));
         }
     }
+    
+    //add jokers if jokers are turned on
     if (jokers === 'on') {
         deckReturn.push(card(11, 'joker'));
         deckReturn.push(card(12, 'joker'));
     }
+    
     shuffle(deckReturn);
     return deckReturn;
 };
@@ -643,9 +654,11 @@ const shuffle = a => {
     }
 };
 
-//resets game variables, deals (game.round) number of cards, exposes trump and prints to player's logs. if round is 0, ends game.
+//resets game variables, deals (game.round) number of cards, exposes trump and prints to player's logs. if round is 0 (or other end game conditions are met), ends game.
 const deal = gameId => {
     let game = gameMap[gameId];
+    
+    //if a game ending contition is met, end game
     if (game.round === 0) endGame(gameId);
     else if (game.round === 11) endGame(gameId);
     else if ((game.progression === 'constant' || game.progression === 'random') && game.actualRound === game.finish + 1) endGame(gameId);
@@ -653,14 +666,17 @@ const deal = gameId => {
     else if (game.progression === 'low to high' && game.loop === 'on' && game.plusMinus === -1 && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'off' && game.round === game.finish - 1 ) endGame(gameId);
     else if (game.progression === 'high to low' && game.loop === 'on' && game.plusMinus === 1 && game.round === game.finish + 1 ) endGame(gameId);
-    else {
+    else {//else deal cards to players
         let extraInfo = '';
+        //tells the players if the rounds are assending, decending, constant or random
         if (game.plusMinus === 1) extraInfo = '( + )';
         if (game.plusMinus === -1) extraInfo = '( - )';
         if (game.plusMinus === 0) extraInfo = '( = )';
         if (game.progression === 'random') extraInfo = '( R )';
         sendLog(gameId, `<span style="text-decoration: overline underline;">Dealing new hand for round ${game.round}. ${extraInfo}</span>`);
         extraInfo = ``;
+        
+        //alternates who starts each round
         if (isEven(game.actualRound)) {//<--from round
             game[game.player1Id].turn = true;
             game[game.player2Id].turn = false;
@@ -668,6 +684,8 @@ const deal = gameId => {
             game[game.player1Id].turn = false;
             game[game.player2Id].turn = true;
         }
+        
+        //resets all relevant game variables
         game.gameDeck = deck(game.jokers);
         game[game.player1Id].picked = false;
         game[game.player2Id].picked = false;
@@ -681,24 +699,38 @@ const deal = gameId => {
         game[game.player2Id].hand = [];
         game.inPlay = card(20, 20);
         game.trump = gameMap[gameId].gameDeck.pop();
+       
+        //deal #round cards to both players
         for (let i = 0; i < game.round; i++) {
             game[game.player1Id].hand.push(game.gameDeck.pop());
             game[game.player2Id].hand.push(game.gameDeck.pop());
         }
+        
+        //sorts hands
         game[game.player1Id].hand = sortHand(game[game.player1Id].hand);
         game[game.player2Id].hand = sortHand(game[game.player2Id].hand);
+        
+        //tells client to make shuffle sound
         io.to(game.player1Id).emit('shuffle');
         io.to(game.player2Id).emit('shuffle');
+        
+        //delete deck, it's not needed after cards are delt and trump is assigned
         delete game.gameDeck;
+        
+        //if players are not picking trump, log trump to players
         if (game.dealer_picks_trump === 'off') {
             sendLog(gameId, `The trump is ${game.trump[1]}.`);
         }
+        
+        //if players are picking trump, start round at trump pick screen
         if (game.dealer_picks_trump === 'on'){
             sendTrumpPick(gameId);
         } else {
+            //else start round at goal pick screen
             sendPick(gameId);
         }
         
+        //update gameMap DB
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
     }
 };
@@ -793,7 +825,7 @@ const isTrick = data => {
     return false;
 };
 
-//counts jokers player has won in a round (if goal correct, 5 points awarded per joker)
+//counts jokers player has won in a round (if goal correct, x points awarded per joker)
 const jokerCount = hand => {
     let count = 0;
     for (let i = 0; i < hand.length; i++){
@@ -808,19 +840,26 @@ const endRound = gameId => {
     let joker_value = game.joker_value;
     let firstId = game.player1Id;
     let secondId = game.player2Id;
+    
+    //if rules say players lose points for failer, start with all players losing points
     let player1leader = true;
     let player2leader = true;
+    //if rules say only leader loses points on failer so that only the real leader will lose points
     if (game.leader_only === 'on'){
         if (game[firstId].score <= game[secondId].score) player1leader = false;
         if (game[firstId].score >= game[secondId].score) player2leader = false;
     }
+    
+    //if first player gets goal
     if (game[firstId].tricks === game[firstId].goal) {
         game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
         sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
     } else if (game.lose_points === 'on' && player1leader) {
+        //otherwise, if rules say tricks are lost, player loses tricks
         game[firstId].score -= game.lose_number;
         sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points and now has ${game[firstId].score} points.`);
     }
+    //if second player gets goal, invers of --^
     if (game[secondId].tricks === game[secondId].goal) {
         game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
         sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
@@ -828,6 +867,8 @@ const endRound = gameId => {
         game[secondId].score -= game.lose_number;
         sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
     }
+    
+    //if rules say tricks are scored regardless of goal, this will add tricks to goal
     if (game.goal_only === 'off') {
         if (game[firstId].tricks !== game[firstId].goal) {
             game[firstId].score += game[firstId].tricks;
@@ -838,22 +879,31 @@ const endRound = gameId => {
             sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks} points (from tricks) and now has ${game[secondId].score} points.`);
         }
     }
+    
+    //increment/decrement round according to game.plusMinus
     game.round += game.plusMinus;
     game.actualRound++;
+    
+    //if random rounds is on, generate random round
     if (game.progression === 'random') {
         game.round = randomInt(1, 10);
     }
+    
+    //update gameMap DB
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
 };
 
 //used in various functions to send log information to player's logs.
 const sendLog = (gameId, msg) => {
+    //if players are logged in, send log to players
     if (gameMap[gameId].player1Id in userMap) {
         io.to(gameMap[gameId].player1Id).emit('receive_log', msg);
     }
     if (gameMap[gameId].player2Id in userMap) {
         io.to(gameMap[gameId].player2Id).emit('receive_log', msg);
     }
+    
+    //sends log to spies if they are logged in
     for (let i = 0; i < gameMap[gameId].spies.length; i++){
         if (gameMap[gameId].spies[i] in userMap) {
             io.to(gameMap[gameId].spies[i]).emit('receive_log', msg);
@@ -868,12 +918,13 @@ const endGame = gameId => {
     let player2 = game.player2Id;
     let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
     
-    //update both user's totals
+    //update both user's total games and update userbank DB
     userScores[game[player1].name].total++;
     userScores[game[player2].name].total++;
     client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[player1].name}';`);
     client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[player2].name}';`);
     
+    //calculates estimated score with old ELO rating, for new ELO ratings
     let oldPlayer1Rating = userScores[game[player1].name].rating;
     let oldPlayer2Rating = userScores[game[player2].name].rating;
     let E1R = Math.pow(10, oldPlayer1Rating / 400) / (Math.pow(10, oldPlayer1Rating / 400) + Math.pow(10, oldPlayer2Rating / 400));
@@ -881,49 +932,61 @@ const endGame = gameId => {
     let newPlayer1Rating;
     let newPlayer2Rating;
     
+    //if player1 wins
     if (game[player1].score > game[player2].score) {
         io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
-        //player1 wins
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (1 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (0 - E2R);
+    
+    //if player2 wins
     } else if (game[player1].score < game[player2].score) {
         io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
-        //player2 wins
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (0 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (1 - E2R);
+    
+    //if tie game
     } else {
         io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
-        //tie game
+
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (.5 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (.5 - E2R);
     }
+    
     //update DB and userScores with new ratings
     client.query(`UPDATE userbank SET rating = ${newPlayer1Rating} WHERE username = '${userMap[player1].name}';`);
     client.query(`UPDATE userbank SET rating = ${newPlayer2Rating} WHERE username = '${userMap[player2].name}';`);
     userScores[userMap[player1].name].rating = newPlayer1Rating;
     userScores[userMap[player2].name].rating = newPlayer2Rating;
+    
+    //if players are logged in, put them in lobby
     if (player1 in userMap) {
         io.to(player1).emit('setup_lobby');
+        lobby.ids.push(player1);
+        lobby.names.push(game[player1].name);
     }
     if (player2 in userMap) {
         io.to(player2).emit('setup_lobby');
+        lobby.ids.push(player2);
+        lobby.names.push(game[player2].name);
     }
-    lobby.ids.push(player1);
-    lobby.ids.push(player2);
-    lobby.names.push(game[player1].name);
-    lobby.names.push(game[player2].name);
+    
+    //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
     delete namesPlaying[game[player2].name];
     client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
     userMap[player1].gameId = 'none';
     userMap[player2].gameId = 'none';
+    
+    //delete game and update gameMap DB
     delete gameMap[gameId];
     client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+    
     updateLobby();
 };
 
+//writes HTML to display leaderboard to client
 const makeBoard = () => {
-    //let order = Object.keys(userScores).map(key => userScores[key]).sort((a, b) => a.stat - b.stat);
+    //sorts highest to lowest ratings
     let order = Object.keys(userScores).sort(((a, b) => userScores[a].rating > userScores[b].rating));
     console.log(order);
     let board = '';
