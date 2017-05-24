@@ -292,13 +292,15 @@ io.on('connection', socket => {
         sendPick(gameId);
     });
     
-    //revices information when player picks goal.
+    //gets information when player picks goal.
     socket.on('pick', pick => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
         //TODO refactor this
+        
+        
         if (game.pick_opponents_goal === 'off') {
             if (game.round - game[opponent].goal !== pick || game.agreement === 'on') {
                 sendLog(gameId, `${game[player].name}'s goal is ${pick}`);
@@ -324,10 +326,7 @@ io.on('connection', socket => {
         }
     });
     
-    /*  plays card at index i of player's hand. first checks if card is ace and changes value according to game.aceValue
-        then writes the card to player's logs. then checks if there is a card in play, if not, plays card and flips turn booleans.
-        if not, plays card and checks if card is a trick, if is trick turn booleans are kept and player can go again,
-        else booleans are flipped. results are sent to player's logs. */
+    //  plays card at index i of player's hand.
     socket.on('play_card', i => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
@@ -466,13 +465,18 @@ io.on('connection', socket => {
     
     //if user types '$watch' followed by gameId, puts user in spectator mode for that game. Players are warned they are being watched.
     socket.on('watch_game', gameId => {
-       if (gameId in gameMap){
+        //if the game exists
+        if (gameId in gameMap){
            let game = gameMap[gameId];
+           //and it's not locked
            if (!game.locked) {
+               //remove them from lobby and put them in game.spies
                removeFromLobby(userId);
                updateLobby();
                game.spies.push(userId);
                io.to(userId).emit('setup_game');
+               
+               //alert players they are being watched
                io.to(game.player1Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
                io.to(game.player2Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
                //if (game[game.player1Id].picked && game[game.player2Id].picked) sendInfo(gameId); else sendPick(gameId);
@@ -482,9 +486,13 @@ io.on('connection', socket => {
     
     //if user types '$lock', game is locked to spectators.
     socket.on('lock', () => {
+        //if the player is in a game
         if (userMap[userId].gameId !== 'none') {
+            //lock that game
             let game = gameMap[userMap[userId].gameId];
             game.locked = true;
+            
+            //tell the players the game is locked
             io.to(game.player1Id).emit('receive_message', 'The game has been locked');
             io.to(game.player2Id).emit('receive_message', 'The game has been locked');
         }
@@ -502,11 +510,17 @@ io.on('connection', socket => {
     
     //if user types '$kick', kicks spectators from game.
     socket.on('kick', () => {
+        //if the player is in a game
         if (userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
+            
+            //tell the players, spectators are being kicked.
             io.to(game.player1Id).emit('receive_message', 'Kicking unwanted spectators');
             io.to(game.player2Id).emit('receive_message', 'Kicking unwanted spectators');
+            
+            //iterate through game.spies
             for (let i = 0; i < game.spies.length; i++){
+                //if the spy is logged in, tell them they were kicked & put them in lobby.
                 if (game.spies[i] in userMap) {
                     io.to(game.spies[i]).emit('receive_message', 'You have been kicked!');
                     lobby.names.push(userMap[game.spies[i]].name);
@@ -514,16 +528,24 @@ io.on('connection', socket => {
                     io.to(game.spies[i]).emit('setup_lobby');
                 }
             }
+            
+            //empty game.spies
             game.spies = [];
+            
+            //update gameMap DB
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            
             updateLobby();
         }
     });
     
     //if user types '$whisper' following text is sent as private message to opponent. (generally chat is global)
     socket.on('whisper', msg => {
+        //if user is in game
         if(userMap[userId].gameId !== 'none') {
             let game = gameMap[userMap[userId].gameId];
+            
+            //send message to players in game
             io.to(game.player1Id).emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
             io.to(game.player2Id).emit('receive_message', `${userMap[userId].name}(whisper): ${msg}`);
         }
