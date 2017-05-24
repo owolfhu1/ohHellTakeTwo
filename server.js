@@ -421,14 +421,12 @@ io.on('connection', socket => {
     socket.on('aces_low', () => {
         let gameId = userMap[socket.id].gameId;
         let game = gameMap[gameId];
-        
-        
         if (game[userId].turn){
-        game.aceValue = 1;
-        if (game.player1Id in userMap) io.to(game.player1Id).emit('lowAce');
-        if (game.player2Id in userMap) io.to(game.player2Id).emit('lowAce');
-        client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-    }
+            game.aceValue = 1;
+            if (game.player1Id in userMap) io.to(game.player1Id).emit('lowAce');
+            if (game.player2Id in userMap) io.to(game.player2Id).emit('lowAce');
+            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+        }
         
     });
     socket.on('aces_high', () => {
