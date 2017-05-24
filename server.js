@@ -433,9 +433,11 @@ io.on('connection', socket => {
             newUserRating = oldUserRating + ELO_K_VALUE *(0 - EUR);
             newOpponentRating = oldOpponentRating + ELO_K_VALUE *(1 - EOR);
             
+            
+            //test this
             //set new ratings & total games
-            userScores[userMap[opponentId].name].rating = newOpponentRating;
-            userScores[userMap[userId].name].rating = newUserRating;
+            userScores[game[opponentId].name].rating = newOpponentRating;
+            userScores[game[userId].name].rating = newUserRating;
             userScores[game[userId].name].total++;
             userScores[game[opponentId].name].total++;
             
