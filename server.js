@@ -79,8 +79,7 @@ let stats = function (rating, total){
 //all information from client is received in this function
 io.on('connection', socket => {
     
-    //for testing
-    socket.on('crash', () => { Program.restart() });
+    
     let userId = socket.id;
     userMap[userId] = { name: 'no input', gameId: 'none' };
     let user = userMap[userId];
@@ -243,7 +242,7 @@ io.on('connection', socket => {
             game.finish = Number(userIds[0][12]);//working
             game.goal_only = userIds[0][13];//working
             game.pick_opponents_goal = userIds[0][14];//working
-            game.dealer_picks_trump = userIds[0][15];//TODO
+            game.dealer_picks_trump = userIds[0][15];//working
         }
         game.round = game.start;
         
@@ -334,21 +333,31 @@ io.on('connection', socket => {
         let game = gameMap[gameId];
         let player = socket.id;
         let opponent = game[player].opponentId;
+        
+        //if the card is an ace, change the value to the game.aceValue variable
         if (game[player].hand[i][0] === 1) {
             let holderSuit = game[player].hand[i][1];
             game[player].hand[i] = card(game.aceValue, holderSuit);
         }
         let value = game[player].hand[i][0];
+        
+        //for sending log, distinguishes between 'plays a joker' and 'plays a $value of $suit'
         if (value === 12 || value === 11){
             sendLog(gameId, `${game[player].name} plays a Joker`);
         } else sendLog(gameId, `${game[player].name} plays ${cardValue(value)} of ${game[player].hand[i][SUIT]}`);
+        
+        //if there is no card in play, play the card
         if (game.inPlay[SUIT] === 20) {
             game.inPlay = game[player].hand[i];
             game[player].hand.splice(i, 1);
             game[player].turn = false;
             game[opponent].turn = true;
         } else {
+            //else give the trick to the right player
             if (isTrick([game[player].hand[i], gameId])) {
+                givePlayerTrick(gameId, player, opponent, game.inPlay, game[player].hand[i]);
+                
+                /*
                 game[player].tricks++;
                 game[opponent].turn = false;
                 game[player].turn = true;
@@ -357,7 +366,11 @@ io.on('connection', socket => {
                 game[player].tricksWon.push(game.inPlay);
                 game[player].tricksWon.push(game[player].hand[i]);
                 sendLog(gameId, `${game[player].name} got the trick`);
+                */
             } else {
+                givePlayerTrick(gameId, opponent, player, game.inPlay, game[player].hand[i]);
+                
+                /*
                 game[opponent].tricks++;
                 game[player].turn = false;
                 game[opponent].turn = true;
@@ -366,6 +379,7 @@ io.on('connection', socket => {
                 game[opponent].tricksWon.push(game.inPlay);
                 game[opponent].tricksWon.push(game[player].hand[i]);
                 sendLog(gameId, `${game[opponent].name} got the trick`);
+                */
             }
             game[player].hand.splice(i, 1);
             game.inPlay = card(20, 20);
@@ -521,6 +535,8 @@ io.on('connection', socket => {
         }
     });
     
+    //for testing
+    socket.on('crash', () => { Program.restart() });
 });
 
 //sends data to client to build lobby with.
@@ -1014,4 +1030,21 @@ const logGameRules = gameId => {
         text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
     }
     sendLog(gameId, text);
+};
+
+const givePlayerTrick = (gameId, winner, loser, card1, card2) => {
+    let game = gameMap[gameId];
+    game[winner].tricks++;
+    game[loser].turn = false;
+    game[winner].turn = true;
+    
+    //displays card for players after cards have been played
+    io.to(winner).emit('last_turn_cards', [card1, card2]);
+    io.to(loser).emit('last_turn_cards', [card1, card2]);
+    
+    //stores the card in that player's object
+    game[winner].tricksWon.push(card1);
+    game[winner].tricksWon.push(card2);
+    
+    sendLog(gameId, `${game[winner].name} got the trick`);
 };
