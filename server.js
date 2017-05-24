@@ -514,6 +514,7 @@ io.on('connection', socket => {
         //if the game exists
         if (gameId in gameMap){
            let game = gameMap[gameId];
+            
            //and it's not locked
            if (!game.locked) {
                //remove them from lobby and put them in game.spies
