@@ -579,8 +579,8 @@ io.on('connection', socket => {
         }
     });
     
-    //for testing
-    socket.on('crash', () => { let brokenVariable = userMap['broken'].name });
+    //I dont know why this works, but when called the server will restart rather then just crash
+    socket.on('restart', () => { let brokenVariable = userMap['broken'].name });
 });
 
 //sends data to client to build lobby with.

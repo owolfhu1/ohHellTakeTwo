@@ -317,7 +317,7 @@
                 else if (text === '$tricks')socket.emit('tricks');
                 else if (text === '$board') socket.emit('leaderboard');
                 else if (text === '$buzz') socket.emit('buzz');
-                else if (text === '$$CRASH') socket.emit('crash');
+                else if (text === '$$RESTART') socket.emit('restart');
                 else if (text.substring(0, 7) === '$watch ')socket.emit('watch_game', text.substring(7, text.length));
                 else { socket.emit('message', '<p>' + userName + ': ' + text + '</p>'); $('#text').val(''); }
                 return false;
