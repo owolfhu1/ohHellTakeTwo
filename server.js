@@ -78,15 +78,16 @@ let stats = function (rating, total){
 
 //all information from client is received in this function
 io.on('connection', socket => {
-    
-    
     let userId = socket.id;
     userMap[userId] = { name: 'no input', gameId: 'none' };
     let user = userMap[userId];
+    
     //gets client ready for login
     io.to(userId).emit('setup_lobby');
     io.to(userId).emit('setup_login');
     io.sockets.emit('receive_message', 'A guest has joined the server.');
+    
+    //loads the passwordMap from the userbank db
     client.query('SELECT * FROM userbank;').on('row', function(row) {
         passwordMap[row.username] = row.password;
     });
@@ -95,19 +96,25 @@ io.on('connection', socket => {
         if so, checks if is correct userName/password combo and logs in if correct
         if first check fails userName and password are added to passwordMap and user is logged in */
     socket.on('login_request', login => {
+        //if username is not already logged in.
         if (login[USER_NAME] in passwordMap && !onlineNameArray.includes(login[USER_NAME])) {
+            //if username and password are valid
             if (passwordMap[login[USER_NAME]] === login[PASSWORD]){
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
                 io.sockets.emit('receive_message', user.name + ' has logged in.');
                 
-                //if user is in a game, put them in game, otherwise put them in lobby
+                //if user is in a game, put them in game.
                 if (user.name in namesPlaying){
                     let gameId = namesPlaying[user.name];
                     let game = gameMap[gameId];
                     let player1 = game[game.player1Id];
                     let player2 = game[game.player2Id];
+                    
+                    //assine gameId to the user
                     userMap[userId].gameId = gameId;
+                    
+                    //determins which player you are (player1 or player2) and changes game object values accordingly.
                     if (player1.name === user.name){
                         delete game[player2.opponentId];
                         game[player1.opponentId].opponentId = userId;
@@ -119,45 +126,56 @@ io.on('connection', socket => {
                         game[userId] = player2;
                         game.player2Id = userId;
                     }
-                    
-                    //set up DOM client side
+           
+                    //set up special rules client side
                     io.to(userId).emit('set_user_name', user.name);
                     io.to(userId).emit('setup_game');
                     io.to(userId).emit('ace_style', game.aces);
                     io.to(userId).emit('set_agreement', game.agreement);
                     io.to(userId).emit('set_follow_suit', game.follow_suit);
                     io.to(userId).emit('set_pick_opponents_goal', game.pick_opponents_goal);
+                    
+                    //sets ace button on client.
                     if(game.aces === 'both') {
                         if (game.aceValue === 16) io.to(userId).emit('set_ace_button', 'Aces high');
                         else if (game.aceValue === 1) io.to(userId).emit('set_ace_button', 'Aces low');
                     }
+                    
+                    //starts game up at goal picker or main gaim according the game object
                     if (player1.picked && player2.picked) sendInfo(gameId); else sendPick(gameId);
                 } else {
+                    //otherwise put them in lobby
                     lobby.names.push(user.name);
                     lobby.ids.push(userId);
                     io.to(userId).emit('setup_lobby');
                     io.to(userId).emit('set_user_name', user.name);
                     updateLobby();
                 }
-                
             } else { //when username exists but wrong password is entered
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
+        //otherwise create user.    
         } else {
+            //if user isn't already logged in (somehow..?)
             if (!onlineNameArray.includes(login[USER_NAME])) {
                 
-                
+                //add user to userbank database, userScores, onlineNameArray
                 client.query(`INSERT INTO userbank values('${login[USER_NAME]}','${login[PASSWORD]}',1500 ,0)`);
                 userScores[login[USER_NAME]] = new stat();
-                
-                
                 onlineNameArray.push(login[USER_NAME]);
                 user.name = login[USER_NAME];
+                
+                //put user in lobby
                 lobby.names.push(user.name);
                 lobby.ids.push(userId);
+                
+                //tell everyone a new user has logged in
                 io.sockets.emit('receive_message', 'new user ' + user.name + ' has logged in.');
+                
+                //set up lobby client side
                 io.to(userId).emit('setup_lobby');
                 io.to(userId).emit('set_user_name', user.name);
+                
                 updateLobby();
             }
         }
