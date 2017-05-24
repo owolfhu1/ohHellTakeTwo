@@ -349,42 +349,23 @@ io.on('connection', socket => {
         //if there is no card in play, play the card
         if (game.inPlay[SUIT] === 20) {
             game.inPlay = game[player].hand[i];
-            game[player].hand.splice(i, 1);
             game[player].turn = false;
             game[opponent].turn = true;
         } else {
             //else give the trick to the right player
-            if (isTrick([game[player].hand[i], gameId])) {
-                givePlayerTrick(gameId, player, opponent, game.inPlay, game[player].hand[i]);
-                
-                /*
-                game[player].tricks++;
-                game[opponent].turn = false;
-                game[player].turn = true;
-                io.to(player).emit('last_turn_cards', [game.inPlay, game[player].hand[i]]);
-                io.to(opponent).emit('last_turn_cards', [game.inPlay, game[player].hand[i]]);
-                game[player].tricksWon.push(game.inPlay);
-                game[player].tricksWon.push(game[player].hand[i]);
-                sendLog(gameId, `${game[player].name} got the trick`);
-                */
-            } else {
-                givePlayerTrick(gameId, opponent, player, game.inPlay, game[player].hand[i]);
-                
-                /*
-                game[opponent].tricks++;
-                game[player].turn = false;
-                game[opponent].turn = true;
-                io.to(player).emit('last_turn_cards', [game.inPlay, game[player].hand[i]]);
-                io.to(opponent).emit('last_turn_cards', [game.inPlay, game[player].hand[i]]);
-                game[opponent].tricksWon.push(game.inPlay);
-                game[opponent].tricksWon.push(game[player].hand[i]);
-                sendLog(gameId, `${game[opponent].name} got the trick`);
-                */
-            }
-            game[player].hand.splice(i, 1);
+            if (isTrick([game[player].hand[i], gameId])) givePlayerTrick(gameId, player, opponent, game.inPlay, game[player].hand[i]);
+            else givePlayerTrick(gameId, opponent, player, game.inPlay, game[player].hand[i]);
+            
+            //remove card from inPlay
             game.inPlay = card(20, 20);
         }
+        //remove card from players hand
+        game[player].hand.splice(i, 1);
+    
+        //save game to DB
         client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+        
+        //start next turn
         sendInfo(gameId);
     });
     
@@ -416,31 +397,34 @@ io.on('connection', socket => {
     
     //if user types '$resign' user is resigned and opponent wins, both are placed in lobby
     socket.on('resign', () => {
+        //make sure the player the requested to resign is in a game
         if (userMap[userId].gameId !== 'none') {
             let gameId = userMap[userId].gameId;
             let game = gameMap[gameId];
             let opponentId = game[userId].opponentId;
+    
+            //make sure everyone on the server knows that the player is a quitter, shame!
+            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
+            
+            //put player in lobby
             lobby.names.push(userMap[userId].name);
             lobby.ids.push(userId);
+            io.to(userId).emit('setup_lobby');
+            userMap[userId].gameId = 'none';
+            
+            //if opponent is logged in, put them in lobby too
             if (opponentId in userMap) {
                 lobby.names.push(userMap[opponentId].name);
                 lobby.ids.push(opponentId);
-            }
-            io.to(userId).emit('setup_lobby');
-            if(opponentId in userMap) {
                 io.to(opponentId).emit('setup_lobby');
+                userMap[opponentId].gameId = 'none';
             }
+            
+            //remove both players from namesPlaying, and update DB with
             delete namesPlaying[game[userId].name];
             delete namesPlaying[game[opponentId].name];
-            client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
-            client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
-            io.sockets.emit('receive_message', `OH NO! ${game[userId].name} resigned, ${game[opponentId].name} has won by default.`);
-            if (opponentId in userMap) userMap[opponentId].gameId = 'none';
-            userMap[userId].gameId = 'none';
-            userScores[game[userId].name].total++;
-            userScores[game[opponentId].name].total++;
-            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
-            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[userId].name}';`);
+            
+            //calculate players' elo ratings
             let oldUserRating = userScores[game[userId].name].rating;
             let oldOpponentRating = userScores[game[opponentId].name].rating;
             let newUserRating;
@@ -449,12 +433,22 @@ io.on('connection', socket => {
             let EOR = Math.pow(10, oldOpponentRating/400) / (Math.pow(10, oldUserRating/400) + Math.pow(10, oldOpponentRating/400));
             newUserRating = oldUserRating + ELO_K_VALUE *(0 - EUR);
             newOpponentRating = oldOpponentRating + ELO_K_VALUE *(1 - EOR);
-            client.query(`UPDATE userbank SET rating = ${newOpponentRating} WHERE username = '${game[opponentId].name}';`);
+            
+            //set new ratings & total games
             userScores[userMap[opponentId].name].rating = newOpponentRating;
-            client.query(`UPDATE userbank SET rating = ${newUserRating} WHERE username = '${game[userId].name}';`);
             userScores[userMap[userId].name].rating = newUserRating;
+            userScores[game[userId].name].total++;
+            userScores[game[opponentId].name].total++;
+            
+            //update userBank DB and delete game, update gameDB
+            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
+            client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[userId].name}';`);
+            client.query(`UPDATE userbank SET rating = ${newOpponentRating} WHERE username = '${game[opponentId].name}';`);
+            client.query(`UPDATE userbank SET rating = ${newUserRating} WHERE username = '${game[userId].name}';`);
+            client.query(`UPDATE namesPlaying SET namesPlaying = '${JSON.stringify(namesPlaying)}' WHERE thiskey = 'KEY';`);
             delete gameMap[gameId];
             client.query(`UPDATE gameMap SET gameMap = '${JSON.stringify(gameMap)}' WHERE thiskey = 'KEY';`);
+            
             updateLobby();
         }
     });
