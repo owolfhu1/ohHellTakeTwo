@@ -885,7 +885,7 @@ const endRound = gameId => {
     
     //if random rounds is on, generate random round
     if (game.progression === 'random') {
-        game.round = randomInt(1, 10);
+        game.round = zeroToTen(1);
     }
     
     //update gameMap DB
@@ -916,6 +916,9 @@ const endGame = gameId => {
     let player1 = game.player1Id;
     let player2 = game.player2Id;
     let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
+    
+    //turn off previous tricks
+    io.to(player1).emit('last_turn_cards_off');
     
     //update both user's total games and update userbank DB
     userScores[game[player1].name].total++;
@@ -952,8 +955,8 @@ const endGame = gameId => {
     }
     
     //update DB and userScores with new ratings
-    client.query(`UPDATE userbank SET rating = ${newPlayer1Rating} WHERE username = '${userMap[player1].name}';`);
-    client.query(`UPDATE userbank SET rating = ${newPlayer2Rating} WHERE username = '${userMap[player2].name}';`);
+    client.query(`UPDATE userbank SET rating = ${newPlayer1Rating.toFixed(0)} WHERE username = '${userMap[player1].name.toFixed(0)}';`);
+    client.query(`UPDATE userbank SET rating = ${newPlayer2Rating.toFixed(0)} WHERE username = '${userMap[player2].name.toFixed(0)}';`);
     userScores[userMap[player1].name].rating = newPlayer1Rating;
     userScores[userMap[player2].name].rating = newPlayer2Rating;
     
@@ -969,6 +972,8 @@ const endGame = gameId => {
         lobby.names.push(game[player2].name);
     }
     
+    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating}`);
+    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating}`);
     //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
     delete namesPlaying[game[player2].name];
@@ -1057,6 +1062,12 @@ const onOrOff = percentOn => {
     else return 'off';
 };
 
+//leaning towards 5
+const zeroToTen = floor => {
+    let underSix = Math.ceil(Math.sqrt(Math.random()*25));
+    if (Math.random() <= .5) return 10 - underSix;
+    else return floor + underSix;
+};
 
 const randomize = gameId => {
     let game = gameMap[gameId];
@@ -1064,41 +1075,34 @@ const randomize = gameId => {
         loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
     
     
+    leader_only = onOrOff(75);
+    lose_points = onOrOff(35);
+    follow_suit = onOrOff(80);
+    goal_only = onOrOff(60);
+    agreement = onOrOff(50);
+    jokers = onOrOff(65);
+    loop = onOrOff(50);
+    pick_opponents_goal = onOrOff(25);
+    dealer_picks_trump = onOrOff(40);
     
     
+    lose_number = zeroToTen(1);
+    joker_value = zeroToTen(0);
     
-    
-    
-    
-    leader_only = onOrOff(75); //only leader loses points when on
-    lose_points = onOrOff(35); //losing points enabled when on
-    follow_suit = onOrOff(75); //following suit req when on
-    goal_only = onOrOff(65); //goal req to gain tricks when on
-    agreement = onOrOff(50); //goal agreement allowed when on
-    jokers = onOrOff(50); //jokers on when on
-    loop = onOrOff(50); //loop when on
-    pick_opponents_goal = onOrOff(25); //pick for opponent when on
-    dealer_picks_trump = onOrOff(40); //dealer picks trumps when on
-    
-    
-    
-    
-    
-    
-    
-    lose_number = randomInt(1, 10);
-    joker_value = randomInt(0, 10);
     
     let aceRandom = Math.random();
-    if (aceRandom <= .25) aces = 'high';
-    else if (aceRandom <=.5) aces = 'low';
+    if (aceRandom <= .2) aces = 'high';
+    else if (aceRandom <=.4) aces = 'low';
     else aces = 'both';
+    
     
     let progressionRandom = Math.random();
     if (progressionRandom <= 0.25) progression = 'low to high';
     else if (progressionRandom <=.5) progression = 'high to low';
     else if (progressionRandom <=.75) progression = 'constant';
     else progression = 'random';
+    
+    
     if (progression === 'low to high'){
         start = 1;
         if (loop === 'on') finish = 1;
@@ -1108,9 +1112,15 @@ const randomize = gameId => {
         if (loop === 'on') finish = 10;
         else finish = 1;
     } else {
-        start = randomInt(1, 10);
+        start = zeroToTen(1);
         finish = 10;
     }
+    
+    
+    
+    
+    
+    
     
     game.aces = aces;
     game.jokers = jokers;

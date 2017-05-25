@@ -460,6 +460,7 @@
                 body.scrollTop = body.scrollHeight;
             });
 
+            //display previous trick
             socket.on('last_turn_cards', cards => {
                 let last_turn = document.getElementById('last_turn');
 
@@ -474,6 +475,13 @@
                 document.getElementById('last2').addEventListener('click', () => { last_turn.innerHTML = ''});
 
 
+            });
+
+            //remove previous trick
+            socket.on('last_turn_cards_off', () => {
+                let last_turn = document.getElementById('last_turn');
+
+                last_turn.innerHTML = '';
             });
 
             //gets DOM ready for a game and sets id getElementById variables
