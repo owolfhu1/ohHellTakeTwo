@@ -485,6 +485,10 @@ io.on('connection', socket => {
             userScores[game[userId].name].total++;
             userScores[game[opponentId].name].total++;
             
+            //announces changes in ratings to all players
+            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating} ---> New rating: ${newUserRating}`);
+            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating} ---> New rating: ${newOpponentRating}`);
+            
             //update userBank DB and delete game, update gameDB
             client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
             client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[userId].name}';`);
@@ -972,8 +976,10 @@ const endGame = gameId => {
         lobby.names.push(game[player2].name);
     }
     
+    //announces changes in ratings to all players
     io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating}`);
     io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating}`);
+    
     //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
     delete namesPlaying[game[player2].name];
@@ -1053,22 +1059,20 @@ const cardValue = value => {
     return value;
 };
 
-const randomInt = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
+//returns 'on''percentOn' of the time, else returns 'off'
 const onOrOff = percentOn => {
     if (Math.random() * 100 >= percentOn) return 'on';
     else return 'off';
 };
 
-//leaning towards 5
+//returns a number floor to 10, leaning towards 5
 const zeroToTen = floor => {
     let underSix = Math.ceil(Math.sqrt(Math.random()*25));
     if (Math.random() <= .5) return 10 - underSix;
     else return floor + underSix;
 };
 
+//generates random game rules
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
@@ -1139,6 +1143,7 @@ const randomize = gameId => {
     game.dealer_picks_trump = dealer_picks_trump;
 };
 
+//sends a log of the game rules to players at the beginning fo the game
 const logGameRules = gameId => {
     let game = gameMap[gameId];
     let player1Name = game[game.player1Id].name;
