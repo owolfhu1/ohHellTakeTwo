@@ -126,11 +126,7 @@ io.on('connection', socket => {
                         game[userId] = player2;
                         game.player2Id = userId;
                     }
-<<<<<<< HEAD
                     
-=======
-           
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
                     //set up special rules client side
                     io.to(userId).emit('set_user_name', user.name);
                     io.to(userId).emit('setup_game');
@@ -158,11 +154,7 @@ io.on('connection', socket => {
             } else { //when username exists but wrong password is entered
                 io.to(userId).emit('receive_message', 'user name taken / incorrect password. please try again.');
             }
-<<<<<<< HEAD
             //otherwise create user.
-=======
-        //otherwise create user.    
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
         } else {
             //if user isn't already logged in (somehow..?)
             if (!onlineNameArray.includes(login[USER_NAME])) {
@@ -209,11 +201,7 @@ io.on('connection', socket => {
         //remove user from userMap
         delete userMap[userId];
     });
-<<<<<<< HEAD
     
-=======
-
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
     //sends info for client for displaying tricks to users when user types $tricks
     socket.on('tricks', () => {
         if (userMap[userId].gameId !== 'none'){
@@ -498,8 +486,8 @@ io.on('connection', socket => {
             userScores[game[opponentId].name].total++;
             
             //announces changes in ratings to all players
-            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating} ---> New rating: ${newUserRating}`);
-            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating} ---> New rating: ${newOpponentRating}`);
+            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating} ---> New rating: ${newUserRating.toFixed(0)}`);
+            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating} ---> New rating: ${newOpponentRating.toFixed(0)}`);
             
             //update userBank DB and delete game, update gameDB
             client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
@@ -529,7 +517,6 @@ io.on('connection', socket => {
     socket.on('watch_game', gameId => {
         //if the game exists
         if (gameId in gameMap){
-<<<<<<< HEAD
             let game = gameMap[gameId];
             
             //and it's not locked
@@ -546,24 +533,6 @@ io.on('connection', socket => {
                 //if (game[game.player1Id].picked && game[game.player2Id].picked) sendInfo(gameId); else sendPick(gameId);
             }
         }
-=======
-           let game = gameMap[gameId];
-            
-           //and it's not locked
-           if (!game.locked) {
-               //remove them from lobby and put them in game.spies
-               removeFromLobby(userId);
-               updateLobby();
-               game.spies.push(userId);
-               io.to(userId).emit('setup_game');
-               
-               //alert players they are being watched
-               io.to(game.player1Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
-               io.to(game.player2Id).emit('receive_message', `WARNING!! ${userMap[userId].name} is watching your game type '$kick' to kick them`);
-               //if (game[game.player1Id].picked && game[game.player2Id].picked) sendInfo(gameId); else sendPick(gameId);
-           }
-       }
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
     });
     
     //if user types '$lock', game is locked to spectators.
@@ -733,11 +702,7 @@ const deal = gameId => {
         game[game.player2Id].hand = [];
         game.inPlay = card(20, 20);
         game.trump = gameMap[gameId].gameDeck.pop();
-<<<<<<< HEAD
         
-=======
-       
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
         //deal #round cards to both players
         for (let i = 0; i < game.round; i++) {
             game[game.player1Id].hand.push(game.gameDeck.pop());
@@ -956,12 +921,9 @@ const endGame = gameId => {
     let player2 = game.player2Id;
     let gameText = `Game ${game[player1].name} vs ${game[player2].name} over: `;
     
-<<<<<<< HEAD
     //turn off previous tricks
     io.to(player1).emit('last_turn_cards_off');
     
-=======
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
     //update both user's total games and update userbank DB
     userScores[game[player1].name].total++;
     userScores[game[player2].name].total++;
@@ -981,30 +943,17 @@ const endGame = gameId => {
         io.sockets.emit('receive_message', `${gameText}${game[player1].name} won, ${game[player1].score} to ${game[player2].score}`);
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (1 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (0 - E2R);
-<<<<<<< HEAD
         
         //if player2 wins
-=======
-    
-    //if player2 wins
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
     } else if (game[player1].score < game[player2].score) {
         io.sockets.emit('receive_message', `${gameText}${game[player2].name} won, ${game[player1].score} to ${game[player2].score}`);
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (0 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (1 - E2R);
-<<<<<<< HEAD
         
         //if tie game
     } else {
         io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
         
-=======
-    
-    //if tie game
-    } else {
-        io.sockets.emit('receive_message', `${gameText}Tie game, ${game[player1].score} to ${game[player2].score}`);
-
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
         newPlayer1Rating = oldPlayer1Rating + ELO_K_VALUE * (.5 - E1R);
         newPlayer2Rating = oldPlayer2Rating + ELO_K_VALUE * (.5 - E2R);
     }
@@ -1027,13 +976,10 @@ const endGame = gameId => {
         lobby.names.push(game[player2].name);
     }
     
-<<<<<<< HEAD
     //announces changes in ratings to all players
-    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating}`);
-    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating}`);
+    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating.toFixed(0)}`);
+    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating.toFixed(0)}`);
     
-=======
->>>>>>> a14d1a6c5a5bbfa6614800c8f26f5523bd392a29
     //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
     delete namesPlaying[game[player2].name];
