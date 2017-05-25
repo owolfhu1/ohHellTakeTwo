@@ -486,8 +486,8 @@ io.on('connection', socket => {
             userScores[game[opponentId].name].total++;
             
             //announces changes in ratings to all players
-            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating} ---> New rating: ${newUserRating.toFixed(0)}`);
-            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating} ---> New rating: ${newOpponentRating.toFixed(0)}`);
+            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating.toFixed(0)} ---> New rating: ${newUserRating.toFixed(0)}`);
+            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating.toFixed(0)} ---> New rating: ${newOpponentRating.toFixed(0)}`);
             
             //update userBank DB and delete game, update gameDB
             client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
@@ -977,8 +977,8 @@ const endGame = gameId => {
     }
     
     //announces changes in ratings to all players
-    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating.toFixed(0)}`);
-    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating.toFixed(0)}`);
+    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating.toFixed(0)} ---> New rating: ${newPlayer1Rating.toFixed(0)}`);
+    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating.toFixed(0)} ---> New rating: ${newPlayer2Rating.toFixed(0)}`);
     
     //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
