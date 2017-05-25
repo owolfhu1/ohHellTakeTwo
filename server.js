@@ -1187,9 +1187,14 @@ const logGameRules = gameId => {
     sendLog(gameId, text);
 };
 
+//called when a player wins a trick, give them turn, increments tricks and gives them the cards won
 const givePlayerTrick = (gameId, winner, loser, card1, card2) => {
     let game = gameMap[gameId];
+    
+    //increment winner's tricks
     game[winner].tricks++;
+    
+    //give turn to trick winner
     game[loser].turn = false;
     game[winner].turn = true;
     
