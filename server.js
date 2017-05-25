@@ -1052,30 +1052,46 @@ const randomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const onOrOff = () => {
-    if (Math.random() >= 0.5) return 'on';
+const onOrOff = percentOn => {
+    if (Math.random() * 100 >= percentOn) return 'on';
     else return 'off';
 };
+
 
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
         loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
-    leader_only = onOrOff();
-    lose_points = onOrOff();
-    follow_suit = onOrOff();
-    goal_only = onOrOff();
-    agreement = onOrOff();
-    jokers = onOrOff();
-    loop = onOrOff();
-    pick_opponents_goal = onOrOff();
-    dealer_picks_trump = onOrOff();
+    
+    
+    
+    
+    
+    
+    
+    
+    leader_only = onOrOff(75); //only leader loses points when on
+    lose_points = onOrOff(35); //losing points enabled when on
+    follow_suit = onOrOff(75); //following suit req when on
+    goal_only = onOrOff(65); //goal req to gain tricks when on
+    agreement = onOrOff(50); //goal agreement allowed when on
+    jokers = onOrOff(50); //jokers on when on
+    loop = onOrOff(50); //loop when on
+    pick_opponents_goal = onOrOff(25); //pick for opponent when on
+    dealer_picks_trump = onOrOff(40); //dealer picks trumps when on
+    
+    
+    
+    
+    
+    
+    
     lose_number = randomInt(1, 10);
     joker_value = randomInt(0, 10);
     
     let aceRandom = Math.random();
-    if (aceRandom <= 0.33) aces = 'high';
-    else if (aceRandom <=.66) aces = 'low';
+    if (aceRandom <= .25) aces = 'high';
+    else if (aceRandom <=.5) aces = 'low';
     else aces = 'both';
     
     let progressionRandom = Math.random();
