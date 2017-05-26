@@ -31,9 +31,8 @@
             </div>
         </div>
         <div id="last_turn"></div>
-        <script src="client_functions.js"></script>
         <script>
-/*
+
             //connects to server
             let socket = io();
 
@@ -231,7 +230,7 @@
             //what happens when you press enter in the chat input.
             $('form').submit( () => {
                 let text = $('#text').val();
-                if (text === '$help') document.getElementById('messages').innerHTML += HELP_TEXT;
+                /*s*/if (text === '$help') document.getElementById('messages').innerHTML += HELP_TEXT;
                 else if (text === '$instructions') document.getElementById('messages').innerHTML += INSTRUCTIONS_TEXT;
                 else if (text.substring(0, 8) === '$whisper' && userName !== 'GUEST') socket.emit('whisper', text.substring(9, text.length));
                 else if (text === '$kick')socket.emit('kick');
@@ -246,7 +245,7 @@
                 else { socket.emit('message', '<p>' + userName + ': ' + text + '</p>'); $('#text').val(''); }
                 return false;
             });
-*/
+
             //creates form for logging in and user creation
             socket.on('setup_login', () => {
                 lobby.innerHTML = `<br><br>
@@ -266,7 +265,7 @@
                     }
                 });
             });
-
+*/
             //plays a shuffle sound to indicate a new hand has been dealt
             socket.on('shuffle', () => shuffleSound.play());
 
