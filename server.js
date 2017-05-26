@@ -1023,12 +1023,13 @@ const sortHand = unSortedHand => {
 const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
     else if (game.goal_only === 'off') return false;
+    
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
     let player1CantWin = false;
     let player2CantWin = false;
     let tricksLeft = player1.hand.length;
-    if (player2.hand.length > tricksLeft) { tricksLeft = player2.hand.length; }
+    if (player2.hand.length > tricksLeft) tricksLeft = player2.hand.length;
     if (player1.tricks > player1.goal || player1.tricks + tricksLeft < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + tricksLeft < player2.goal) player2CantWin = true;
     if (player1CantWin && player2CantWin) {
@@ -1119,12 +1120,6 @@ const randomize = gameId => {
         start = zeroToTen(1);
         finish = 10;
     }
-    
-    
-    
-    
-    
-    
     
     game.aces = aces;
     game.jokers = jokers;
