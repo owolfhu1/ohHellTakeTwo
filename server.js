@@ -486,8 +486,8 @@ io.on('connection', socket => {
             userScores[game[opponentId].name].total++;
             
             //announces changes in ratings to all players
-            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating.toFixed(0)} ---> New rating: ${newUserRating.toFixed(0)}`);
-            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating.toFixed(0)} ---> New rating: ${newOpponentRating.toFixed(0)}`);
+            io.sockets.emit('receive_message', `${game[userId].name}: Old rating: ${oldUserRating} ---> New rating: ${newUserRating.toFixed(0)}`);
+            io.sockets.emit('receive_message', `${game[opponentId].name}: Old rating: ${oldOpponentRating} ---> New rating: ${newOpponentRating.toFixed(0)}`);
             
             //update userBank DB and delete game, update gameDB
             client.query(`UPDATE userbank SET total = total + 1 WHERE username = '${game[opponentId].name}';`);
@@ -977,8 +977,8 @@ const endGame = gameId => {
     }
     
     //announces changes in ratings to all players
-    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating.toFixed(0)} ---> New rating: ${newPlayer1Rating.toFixed(0)}`);
-    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating.toFixed(0)} ---> New rating: ${newPlayer2Rating.toFixed(0)}`);
+    io.sockets.emit('receive_message', `${game[player1].name}: Old rating: ${oldPlayer1Rating} ---> New rating: ${newPlayer1Rating.toFixed(0)}`);
+    io.sockets.emit('receive_message', `${game[player2].name}: Old rating: ${oldPlayer2Rating} ---> New rating: ${newPlayer2Rating.toFixed(0)}`);
     
     //remove players from namesPlaying and update namesplaying DB
     delete namesPlaying[game[player1].name];
@@ -1021,21 +1021,31 @@ const sortHand = unSortedHand => {
 
 //calculates if neither player can score.
 const endRoundNow = game => {
-    if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
-    else if (game.goal_only === 'off') return false;
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
+    let tricksLeft;
     let player1CantWin = false;
     let player2CantWin = false;
-    let tricksLeft = player1.hand.length;
-    if (player2.hand.length > tricksLeft) { tricksLeft = player2.hand.length; }
+    //if no cards are left for ether player to play, end round.
+    if (palyer1.hand.length === 0 && player2.hand.length === 0) return true;
+
+    //if goal_only is off, return false
+    if (game.goal_only === 'off') return false;
+    //otherwise we check to see if anyone can still win, and flip the booleans to true if not.
+
+    //check how many tricks are left to be won, assign to tricksLeft.
+    if (player1.hand.length > player2.hand.length) tricksLeft = player1.hand.length;
+    else tricksLeft = player2.hand.length;
+
+    //check if each player has ether already exceeded their goal, or cant reach their goal with the tricksLeft.
     if (player1.tricks > player1.goal || player1.tricks + tricksLeft < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + tricksLeft < player2.goal) player2CantWin = true;
+
+    //if neither player can win, send log and return true.
     if (player1CantWin && player2CantWin) {
         sendLog(userMap[game.player1Id].gameId, `No one could win so the round has ended.`);
         return true;
-    }
-    return false;
+    } else return false;//otherwise return false and carry on with game
 };
 
 //takes value integer and returns value string ie: 3 -> 'Three'
@@ -1078,7 +1088,6 @@ const randomize = gameId => {
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
         loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
     
-    
     leader_only = onOrOff(75);
     lose_points = onOrOff(35);
     follow_suit = onOrOff(80);
@@ -1089,23 +1098,19 @@ const randomize = gameId => {
     pick_opponents_goal = onOrOff(25);
     dealer_picks_trump = onOrOff(40);
     
-    
     lose_number = zeroToTen(1);
     joker_value = zeroToTen(0);
-    
     
     let aceRandom = Math.random();
     if (aceRandom <= .2) aces = 'high';
     else if (aceRandom <=.4) aces = 'low';
     else aces = 'both';
     
-    
     let progressionRandom = Math.random();
     if (progressionRandom <= 0.25) progression = 'low to high';
     else if (progressionRandom <=.5) progression = 'high to low';
     else if (progressionRandom <=.75) progression = 'constant';
     else progression = 'random';
-    
     
     if (progression === 'low to high'){
         start = 1;
@@ -1119,12 +1124,6 @@ const randomize = gameId => {
         start = zeroToTen(1);
         finish = 10;
     }
-    
-    
-    
-    
-    
-    
     
     game.aces = aces;
     game.jokers = jokers;
