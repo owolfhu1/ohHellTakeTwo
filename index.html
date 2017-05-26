@@ -2,8 +2,81 @@
 <html>
     <head>
         <title id="title">Orion's Oh Hell</title>
-        <link rel="stylesheet" href="/css/styles.css">
-        <script src="variables.js"></script>
+        <script>    /* ---VARIABLES--- */
+            let
+                title = document.getElementById('title'), turn_indicator, player_hand, opponent_hand, trump_box,
+                play_area, opponent_name, player_name, opponent_score, opponent_goal, opponent_tricks, player_score,
+                player_goal, player_tricks, lobby, userName = 'GUEST', trump, inPlay, aces_button, player1_tricks,
+                player2_tricks, tricks_popup, aceStyle, agreement, follow_suit, pick_opponents_goal;
+            const
+                SUIT = 1, VALUE = 0, NAME = 0, ID = 1, HAND = 0, OPPONENT_HAND_SIZE = 1, TRUMP = 2, IN_PLAY = 3, TURN = 4,
+                PLAYER_STATS = 5, OPPONENT_STATS = 6, SCORE = 0, GOAL = 1, TRICKS = 2, OPPONENT_NAME = 7, PLAYER_1 = 0, PLAYER_2 = 1;
+            const alertSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/sound.mp3');
+            const smallSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/smallSound.mp3');
+            const shuffleSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/shuffle.mp3');
+            const secretSound = new Audio('http://owolfhu1.x10host.com/Oh_Hell_solo/img/secret.mp3');
+            const HELP_TEXT = `
+                <p><b>$instructions: </b>Prints the rules in the chat screen.</p>
+                <p><b>$tricks: </b>Displays a list of tricks each player has won.</p>
+                <p><b>$buzz: </b>Plays a sound to your opponent.</p>
+                <p><b>$resign: </b>Forfeits the game.</p>
+                <p><b>$watch: </b>Followed by a gameId lets you watch that game.</p>
+                <p><b>$kick: </b>Kicks all spectators.</p>
+                <p><b>$lock: </b>Locks the game from spectators (doesn't kick).</p>
+                <p><b>$unlock: </b>Unlocks the game to spectators.</p>
+                <p><b>$whisper: </b>Sends a private message to your opponent.</p>
+            `;
+            const INSTRUCTIONS_TEXT = `
+                <p><b>Objective:</b> Score the most points by correctly guessing how many tricks you will win each round.</p>
+                <p><b>Picking Your Goal:</b> At the beginning each round you will be prompted a row of buttons to pick your goal with. You cannot agree with your opponent, your goal's must not add up to the round # </p>
+                <p><b>Playing a Card:</b> If you are the first to play a card (there is no card in the middle of the card area), you may play any card. If not, you must follow the suit previously played. If you do not have the suit, you must play a joker, otherwise you can play any card.</p>
+                <p><b>Winning Tricks:</b> The first card played determines the strong suit, however a trump suit will beat the strong suit. If the second card is the same suit, it will win only if it is a higher card, otherwise the first card wins the trick. If the second card is a different suit, it wins the trick if it is a trump, otherwise loses. If ether card is a joker, the suit is irrelevant, the higher card wins the trick with jokers being between ten and jack. If both cards are jokers, the first card wins the trick.</p>
+                <p><b>Scoring:</b> If you guess the correct number of tricks, you will score the number of tricks you won, plus the number of cards you started with, plus 5 for any joker in your tricks.</p>
+                <p><b>Game Play:</b> Start each round by picking your goal, then players take turns playing cards until each player is out of cards or neither player can reach their goal. Then a new round is dealt with an increasing or decreasing number of cards. Starting at 1 card each, working your way up to ten cards then back down to one card</p>
+            `;
+        </script>
+        <style>
+            html { background: #b03f48; color: #f0f0f0; font-size: 1.2em; line-height: 1; font-family: "Comic Sans MS" }
+            .lobby {overflow-y: scroll; margin-left: 500px; height: 500px; width: 400px; background-color: #529848; border:6px dotted #2e2e2e; border-radius: 40px; }
+            .chat_input { color: white; }
+            .turn_indicator { padding: 20px; text-align: center; }
+            .picker:hover { transform: scale(1.05) rotate(1deg); }
+            .legal:hover { transform: scale(1.05) rotate(1deg); }
+            .picker:active { transform: scale(.94) rotate(-1deg); }
+            .legal:active { transform: scale(.94) rotate(-1deg); }
+            .cards { padding: 1px; width: 94px; height: 130px; }
+            .legal { padding: 1px; width: 94px; height: 130px; }
+            .float_left {overflow-y: scroll; float:left; width: 180px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; line-height: .7; }
+            .float_right { float:right; width: 300px; height: 650px; text-align:center; border:6px dotted #2e2e2e; border-radius: 40px; margin: 20px; padding: 10px; background: #529848; }
+            .play_area { text-align: center; height: 190px; }
+            .player_hand{ text-align:center; }
+            .opponent_hand { height: 135px; text-align:center; }
+            .back_drop { height: 720px; width: 1620px; margin: 30px; border:6px dotted #b03f48; border-radius: 70px; background: #2e2e2e; }
+            .card_area { height: 440px; padding: 115px 0; text-align: center; }
+            .aces_button { background-color: #2e2e2e; border: 6px dotted #529848; border-radius: 20px; color: white; margin-top: 10px; padding: 20px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 20px; font-family: "Comic Sans MS"; line-height: 1px; }
+            .log { overflow-y: scroll; overflow-wrap: normal; height: 250px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding-left: 10px; }
+            .chat { overflow-y: scroll; overflow-wrap: normal; height: 300px; width: 280px; border: 6px dotted #529848; background: #2e2e2e; border-radius: 20px; font-size: 12px; text-align: left; padding: 1px; }
+            ::-webkit-scrollbar { width: 12px; }
+            ::-webkit-scrollbar-track { display: none; }
+            ::-webkit-scrollbar-thumb { width: 12px; background-color: #529848; border-radius: 7px; }
+            .chat_input { background-color: #2e2e2e; width: 280px; border: 6px dotted #529848; border-radius: 20px; }
+            .tricks_popup { display: none; position: fixed; z-index: 1; padding-top: 200px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .tricks_popup_content { text-align: center;  background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 60%; }
+            .invite_popup { display: none; position: absolute; z-index: 1; padding-top: 50px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; }
+            .invite_popup_content { background-color: #b03f48; margin: auto; padding: 20px; border: 6px dotted #2e2e2e; border-radius: 40px; width: 520px; height: 640px }
+            .invite_divs { border: dotted #b03f48; background-color: #2e2e2e; border-radius: 10px; margin-top: 8px; margin-bottom: 8px; padding: 8px; line-height: 20px; }
+            .invite_input { background-color: #b03f48; border-radius: 6px; color: white; padding-left: 10px; width: 30px }
+            .invite_buttons { border: 5px dotted #b03f48; background-color: #2e2e2e; border-radius: 14px; color: white; font-family: "Comic Sans MS"; padding-left: 16px; padding-right: 16px;  margin: 6px; }
+
+            .last_turn_cards {
+                display: block;
+                z-index: 1;
+                position: absolute;
+                top: 285px;
+            }
+
+
+        </style>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     </head>
@@ -30,7 +103,11 @@
             <div id="invite_popup_content" class="invite_popup_content">
             </div>
         </div>
-        <div id="last_turn"></div>
+
+        <div id="last_turn">
+
+        </div>
+
         <script>
 
             //connects to server
@@ -265,7 +342,7 @@
                     }
                 });
             });
-*/
+
             //plays a shuffle sound to indicate a new hand has been dealt
             socket.on('shuffle', () => shuffleSound.play());
 
