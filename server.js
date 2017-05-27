@@ -268,21 +268,27 @@ io.on('connection', socket => {
             randomize(gameId);
         } else {
             //else get the game rules from the invite form
-            game.aces = userIds[0][1];
-            game.jokers = userIds[0][2];
-            game.joker_value = Number(userIds[0][3]);
-            game.agreement = userIds[0][4];
-            game.follow_suit = userIds[0][5];
-            game.lose_points = userIds[0][6];
-            game.lose_number = Number(userIds[0][7]);
-            game.leader_only = userIds[0][8];
-            game.loop = userIds[0][9];
-            game.progression = userIds[0][10];
-            game.start = Number(userIds[0][11]);
-            game.finish = Number(userIds[0][12]);
-            game.who_scores_tricks = userIds[0][13];
-            game.pick_opponents_goal = userIds[0][14];
-            game.dealer_picks_trump = userIds[0][15];
+            let INVITE_FORM = 0;
+            game.aces =                              userIds[INVITE_FORM][1];
+            game.jokers =                            userIds[INVITE_FORM][2];
+            game.joker_value =                Number(userIds[INVITE_FORM][3]);
+            game.agreement =                         userIds[INVITE_FORM][4];
+            game.follow_suit =                       userIds[INVITE_FORM][5];
+            game.lose_points =                       userIds[INVITE_FORM][6];
+            game.lose_number =                Number(userIds[INVITE_FORM][7]);
+            game.leader_only =                       userIds[INVITE_FORM][8];
+            game.loop =                              userIds[INVITE_FORM][9];
+            game.progression =                       userIds[INVITE_FORM][10];
+            game.start =                      Number(userIds[INVITE_FORM][11]);
+            game.finish =                     Number(userIds[INVITE_FORM][12]);
+            game.who_scores_tricks =                 userIds[INVITE_FORM][13];
+            game.pick_opponents_goal =               userIds[INVITE_FORM][14];
+            game.dealer_picks_trump =                userIds[INVITE_FORM][15];
+            game.trick_multiplier =           Number(userIds[INVITE_FORM][16]);
+            game.bonus_goal_only =                   userIds[INVITE_FORM][17];
+            game.bonus =                             userIds[INVITE_FORM][18];
+            game.user_bonus =                 Number(userIds[INVITE_FORM][19]);
+            game.jokers_goal_only =           Number(userIds[INVITE_FORM][20]);
         }
         
         //start the game at the new game rules start point
@@ -855,6 +861,8 @@ const endRound = gameId => {
     let firstId = game.player1Id;
     let secondId = game.player2Id;
     
+    
+    /*
     //if rules say players lose points for failer, start with all players losing points
     let player1leader = true;
     let player2leader = true;
@@ -863,6 +871,123 @@ const endRound = gameId => {
         if (game[firstId].score <= game[secondId].score) player1leader = false;
         if (game[firstId].score >= game[secondId].score) player2leader = false;
     }
+    */
+    
+    
+    
+    
+    //tricks
+    let trickMultiplier = game.trick_multiplier;
+    if (game.who_scores_tricks === 'goal') {
+        if (game[firstId].tricks === game[firstId].goal) {
+            game[firstId].score += game[firstId].tricks * trickMultiplier;
+            sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks * trickMultiplier} points from their tricks and now has ${game[firstId].score} points.`);
+        }
+        if (game[secondId].tricks === game[secondId].goal) {
+            game[secondId].score += game[secondId].tricks * trickMultiplier;
+            sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks * trickMultiplier} points from their tricks and now has ${game[secondId].score} points.`);
+        }
+    }
+    else if (game.who_scores_tricks === 'both') {
+        game[firstId].score += game[firstId].tricks * trickMultiplier;
+        sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks * trickMultiplier} points from their tricks and now has ${game[firstId].score} points.`);
+        game[secondId].score += game[secondId].tricks * trickMultiplier;
+        sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks * trickMultiplier} points from their tricks and now has ${game[secondId].score} points.`);
+    }
+    else if (game.who_scores_tricks === 'fail') {
+        if (game[firstId].tricks !== game[firstId].goal) {
+            game[firstId].score += game[firstId].tricks * trickMultiplier;
+            sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks * trickMultiplier} points from their tricks and now has ${game[firstId].score} points.`);
+        }
+        if (game[secondId].tricks !== game[secondId].goal) {
+            game[secondId].score += game[secondId].tricks * trickMultiplier;
+            sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks * trickMultiplier} points from their tricks and now has ${game[secondId].score} points.`);
+        }
+    }
+    
+    //bonus
+        //bonus_goal_only
+        //bonus off, round, user : user_bonus (-10 to 10)
+    if (game.bonus !== 'off') {
+        let bonus;
+        if (game.bonus === 'round') bonus = game.round;
+        if (game.bonus === 'user') bonus = game.user_bonus;
+        if (game.bonus_goal_only === 'on') {
+            if (game[firstId].tricks === game[firstId].goal) {
+                game[firstId].score += bonus;
+                sendLog(gameId, `${game[firstId].name} gained ${bonus} bonus points and now has ${game[firstId].score} points.`);
+            }
+            if (game[secondId].tricks === game[secondId].goal) {
+                game[secondId].score += bonus;
+                sendLog(gameId, `${game[secondId].name} gained ${bonus} bonus points and now has ${game[secondId].score} points.`);
+            }
+        } else{
+            game[firstId].score += bonus;
+            game[secondId].score += bonus;
+            sendLog(gameId, `${game[firstId].name} gained ${bonus} bonus points and now has ${game[firstId].score} points.`);
+            sendLog(gameId, `${game[secondId].name} gained ${bonus} bonus points and now has ${game[secondId].score} points.`);
+        }
+    }
+    
+    //bid_dif
+    
+    
+    //jokers
+    if (game.jokers === 'on' && game.joker_value !== 0){
+        let joker_value = game.joker_value;
+        if (game.jokers_goal_only === 'on'){
+            if (game[firstId].tricks === game[firstId].goal && jokerCount(game[firstId].tricksWon !== 0)) {
+                game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
+                sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value)} joker bonus points and now has ${game[firstId].score} points.`);
+            }
+            if (game[secondId].tricks === game[secondId].goal && jokerCount(game[secondId].tricksWon !== 0)) {
+                game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
+                sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value)} joker bonus points and now has ${game[secondId].score} points.`);
+            }
+        } else {
+            if (jokerCount(game[firstId].tricksWon !== 0)) {
+                game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
+                sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value)} joker bonus points and now has ${game[firstId].score} points.`);
+            }
+            if (jokerCount(game[secondId].tricksWon !== 0)) {
+                game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
+                sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value)} joker bonus points and now has ${game[secondId].score} points.`);
+            }
+        }
+    }
+    
+    //lost points from failing
+    if (game.lose_points === 'on'){
+        if (game.leader_only === 'on'){
+            let player1IsLeader = game[firstId].score > game[firstId].score;
+            let player2IsLeader = game[firstId].score < game[firstId].score;
+            if (game[firstId].tricks !== game[firstId].goal && player1IsLeader){
+                game[firstId].score += game.lose_number;
+                sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points from guessing wrong and now has ${game[firstId].score} points.`);
+            }
+            if (game[secondId].tricks !== game[secondId].goal && player2IsLeader){
+                game[secondId].score += game.lose_number;
+                sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points from guessing wrong and now has ${game[secondId].score} points.`);
+            }
+        } else {
+            if (game[firstId].tricks !== game[firstId].goal){
+                game[firstId].score += game.lose_number;
+                sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points from guessing wrong and now has ${game[firstId].score} points.`);
+            }
+            if (game[secondId].tricks !== game[secondId].goal){
+                game[secondId].score += game.lose_number;
+                sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points from guessing wrong and now has ${game[secondId].score} points.`);
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    /*
+    
     
     //if first player gets goal
     if (game[firstId].tricks === game[firstId].goal) {
@@ -893,6 +1018,9 @@ const endRound = gameId => {
             sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks} points (from tricks) and now has ${game[secondId].score} points.`);
         }
     }
+    
+    */
+    
     
     //increment/decrement round according to game.plusMinus
     game.round += game.plusMinus;
@@ -1105,6 +1233,17 @@ const randomize = gameId => {
     joker_value = zeroToTen(0);
     
     //who_scores_tricks = onOrOff(60);
+    
+    let whoScoresRandom = Math.random();
+    if (whoScoresRandom <= .5){
+        who_scores_tricks = 'goal';
+    } else if (whoScoresRandom <= .85) {
+        who_scores_tricks = 'both';
+    } else {
+        who_scores_tricks = 'fail';
+    }
+    
+    
     let aceRandom = Math.random();
     if (aceRandom <= .2) aces = 'high';
     else if (aceRandom <=.4) aces = 'low';
