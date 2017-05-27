@@ -1085,7 +1085,7 @@ const randomize = gameId => {
     follow_suit = onOrOff(80);
     goal_only = onOrOff(60);
     agreement = onOrOff(50);
-    jokers = onOrOff(65);
+    jokers = onOrOff(95);
     loop = onOrOff(50);
     pick_opponents_goal = onOrOff(95);
     dealer_picks_trump = onOrOff(40);
