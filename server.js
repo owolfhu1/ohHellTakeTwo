@@ -280,7 +280,7 @@ io.on('connection', socket => {
             game.progression = userIds[0][10];
             game.start = Number(userIds[0][11]);
             game.finish = Number(userIds[0][12]);
-            game.goal_only = userIds[0][13];
+            game.who_scores_tricks = userIds[0][13];
             game.pick_opponents_goal = userIds[0][14];
             game.dealer_picks_trump = userIds[0][15];
         }
@@ -883,7 +883,7 @@ const endRound = gameId => {
     }
     
     //if rules say tricks are scored regardless of goal, this will add tricks to goal
-    if (game.goal_only === 'off') {
+    if (game.who_scores_tricks === 'off') {
         if (game[firstId].tricks !== game[firstId].goal) {
             game[firstId].score += game[firstId].tricks;
             sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks} points (from tricks) and now has ${game[firstId].score} points.`);
@@ -1033,7 +1033,7 @@ const sortHand = unSortedHand => {
 //calculates if neither player can score.
 const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
-    else if (game.goal_only === 'off') return false;
+    else if (game.who_scores_tricks === 'off') return false;
     
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
@@ -1088,13 +1088,12 @@ const zeroToTen = floor => {
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
-        loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
+        loop, progression, start, finish, who_scores_tricks, pick_opponents_goal, dealer_picks_trump;
     
     
     leader_only = onOrOff(75);
     lose_points = onOrOff(50);
     follow_suit = onOrOff(80);
-    goal_only = onOrOff(60);
     agreement = onOrOff(50);
     jokers = onOrOff(70);
     loop = onOrOff(50);
@@ -1105,7 +1104,7 @@ const randomize = gameId => {
     lose_number = zeroToTen(1);
     joker_value = zeroToTen(0);
     
-    
+    //who_scores_tricks = onOrOff(60);
     let aceRandom = Math.random();
     if (aceRandom <= .2) aces = 'high';
     else if (aceRandom <=.4) aces = 'low';
@@ -1144,7 +1143,7 @@ const randomize = gameId => {
     game.progression = progression;
     game.start = start;
     game.finish = finish;
-    game.goal_only = goal_only;
+    game.who_scores_tricks = who_scores_tricks;
     game.pick_opponents_goal = pick_opponents_goal;
     game.dealer_picks_trump = dealer_picks_trump;
 };
@@ -1181,7 +1180,7 @@ const logGameRules = gameId => {
         }
         text += `you will lose ${game.lose_number} points for incorrect guesses</p>`;
     }
-    text += `<p>Tricks add to score only on correct guess: ${game.goal_only}</p>`;
+    text += `<p>Tricks add to score only on correct guess: ${game.who_scores_tricks}</p>`;
     if (game.progression === 'constant'){
         text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
     } else if (game.progression === 'random') {

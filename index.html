@@ -145,16 +145,6 @@
                         <input title="dealer_picks_trump" type="radio" name="dealer_picks_trump" value="on"> on
                         <input type="radio" name="dealer_picks_trump" value="off" checked> off
                     </div>
-
-
-
-
-
-
-
-
-
-
                     <div class="invite_divs">
                         Jokers:
                         <input title="jokers" type="radio" name="jokers" value="on" checked> on
@@ -163,6 +153,11 @@
                         <input title="joker_value" type="number" class="invite_input" name="joker_value" min="0" max="10" value="5">
                     </div>
 
+
+
+
+
+
                     <div class="invite_divs">
                         <input type="radio" title="who_gets_bid_dif" name="who_gets_bid_dif" value="goal" checked> on goal
                         <input type="radio" name="who_gets_bid_dif" value="fail"> on fail
@@ -170,6 +165,10 @@
                         <input title="bid_dif_multiplier" type="number" class="invite_input" name="bid_dif_multiplier" min="-10" max="10" value="0">
                         x bid difference
                     </div>
+
+
+
+
 
 
                     <div class="invite_divs">
@@ -203,16 +202,21 @@
                         Bonus points on goal only:
                         <input title="bonus_goal_only" type="radio" name="bonus_goal_only" value="on" checked> on
                         <input type="radio" name="bonus_goal_only" value="off"> off<br>
-                        Bonus: <input title="bonus" type="radio" name="bonus" value="off"> off
-                        <input title="bonus" type="radio" name="bonus" value="round" checked> round#
-                        <input title="bonus" type="radio" name="bonus" value="user"> (1 to 10)
+                        Bonus:
+                        <input title="bonus" type="radio" name="bonus" value="off"> off
+                        <input type="radio" name="bonus" value="round" checked> round#
+                        <input type="radio" name="bonus" value="user"> (1 to 10)
                         <input title="user_bonus" type="number" class="invite_input" name="user_bonus" min="1" max="10" value="5">
                     </div>
 
+
+
+
                     <div class="invite_divs">
                         Score tricks when:
-                        <input title="who_scores_tricks" type="radio" name="who_scores_tricks" value="on" checked> goal
-                        <input type="radio" name="who_scores_tricks" value="fail"> fail<br>
+                        <input title="who_scores_tricks" type="radio" name="who_scores_tricks" value="goal" checked> goal
+                        <input type="radio" name="who_scores_tricks" value="fail"> fail
+                        <input type="radio" name="who_scores_tricks" value="both"> both<br>
                         Trick multiplier (-5 to 5):
                         <input title="trick_multiplier" type="number" class="invite_input" name="trick_multiplier" min="-5" max="5" value="1">
                     </div>
@@ -235,6 +239,7 @@
                     invite_popup.style.display = "none";
                 });
                 invite_button.addEventListener('click', () => {
+                    //BIG TODO: fix variable name change 'goal_only' -->> who_scores_tricks in server.js
                     //TODO add validation for user_bonus && trick_multiplier && bid_dif_multiplier here and in if(){emit('p_r',[])}
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
