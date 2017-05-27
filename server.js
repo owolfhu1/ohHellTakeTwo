@@ -1062,7 +1062,7 @@ const cardValue = value => {
 
 //returns 'on''percentOn' of the time, else returns 'off'
 const onOrOff = percentOn => {
-    if (Math.random() * 100 >= percentOn) return 'on';
+    if (Math.random() * 100 <= percentOn) return 'on';
     else return 'off';
 };
 
@@ -1081,13 +1081,13 @@ const randomize = gameId => {
     
     
     leader_only = onOrOff(75);
-    lose_points = onOrOff(35);
+    lose_points = onOrOff(50);
     follow_suit = onOrOff(80);
     goal_only = onOrOff(60);
     agreement = onOrOff(50);
-    jokers = onOrOff(95);
+    jokers = onOrOff(70);
     loop = onOrOff(50);
-    pick_opponents_goal = onOrOff(95);
+    pick_opponents_goal = onOrOff(10);
     dealer_picks_trump = onOrOff(40);
     
     
