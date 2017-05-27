@@ -149,13 +149,7 @@
 
 
 
-                    <div class="invite_divs">
-                        <input type="radio" title="who_gets_bid_dif" name="who_gets_bid_dif" value="goal" checked> on goal
-                        <input type="radio" name="who_gets_bid_dif" value="fail"> on fail
-                        <input type="radio" name="who_gets_bid_dif" value="both"> both: <br>Score(-10 to 10)
-                        <input title="bid_dif_multiplier" type="number" class="invite_input" name="bid_dif_multiplier" min="-10" max="10" value="0">
-                        x bid difference
-                    </div>
+
 
 
 
@@ -168,6 +162,16 @@
                         Joker value (0 to 10):
                         <input title="joker_value" type="number" class="invite_input" name="joker_value" min="0" max="10" value="5">
                     </div>
+
+                    <div class="invite_divs">
+                        <input type="radio" title="who_gets_bid_dif" name="who_gets_bid_dif" value="goal" checked> on goal
+                        <input type="radio" name="who_gets_bid_dif" value="fail"> on fail
+                        <input type="radio" name="who_gets_bid_dif" value="both"> both: <br>Score(-10 to 10)
+                        <input title="bid_dif_multiplier" type="number" class="invite_input" name="bid_dif_multiplier" min="-10" max="10" value="0">
+                        x bid difference
+                    </div>
+
+
                     <div class="invite_divs">
                         Failing loses points:
                         <input title="lose_points" type="radio" name="lose_points" value="on"> on
@@ -231,7 +235,7 @@
                     invite_popup.style.display = "none";
                 });
                 invite_button.addEventListener('click', () => {
-                    //TODO add validation for user_bonus && trick_multiplier here and in if(){emit('p_r',[])}
+                    //TODO add validation for user_bonus && trick_multiplier && bid_dif_multiplier here and in if(){emit('p_r',[])}
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
                     }
