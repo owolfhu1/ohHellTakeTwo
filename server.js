@@ -959,8 +959,8 @@ const endGame = gameId => {
     }
     
     //update DB and userScores with new ratings
-    client.query(`UPDATE userbank SET rating = ${newPlayer1Rating.toFixed(0)} WHERE username = '${userMap[player1].name.toFixed(0)}';`);
-    client.query(`UPDATE userbank SET rating = ${newPlayer2Rating.toFixed(0)} WHERE username = '${userMap[player2].name.toFixed(0)}';`);
+    client.query(`UPDATE userbank SET rating = ${newPlayer1Rating.toFixed(0)} WHERE username = '${userMap[player1].name}';`);
+    client.query(`UPDATE userbank SET rating = ${newPlayer2Rating.toFixed(0)} WHERE username = '${userMap[player2].name}';`);
     userScores[userMap[player1].name].rating = newPlayer1Rating;
     userScores[userMap[player2].name].rating = newPlayer2Rating;
     
