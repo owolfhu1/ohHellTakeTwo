@@ -242,7 +242,6 @@
                     invite_popup.style.display = "none";
                 });
                 invite_button.addEventListener('click', () => {
-                    //BIG TODO: fix variable name change 'goal_only' -->> who_scores_tricks in server.js
                     //TODO add validation for user_bonus && trick_multiplier && bid_dif_multiplier here and in if(){emit('p_r',[])}
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
@@ -291,7 +290,9 @@
                             invite_form.bonus_goal_only.value,    //17..
                             invite_form.bonus.value,              //18..
                             invite_form.user_bonus.value,         //19..
-                            invite_form.jokers_goal_only.value    //20
+                            invite_form.jokers_goal_only.value,   //20
+                            invite_form.who_gets_bid_dif.value,   //21
+                            invite_form.bid_dif_multiplier.value             //22
                         ]);
                         invite_popup.style.display = "none";
                     }

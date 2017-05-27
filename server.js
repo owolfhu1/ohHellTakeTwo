@@ -269,26 +269,28 @@ io.on('connection', socket => {
         } else {
             //else get the game rules from the invite form
             let INVITE_FORM = 0;
-            game.aces =                              userIds[INVITE_FORM][1];
-            game.jokers =                            userIds[INVITE_FORM][2];
-            game.joker_value =                Number(userIds[INVITE_FORM][3]);
-            game.agreement =                         userIds[INVITE_FORM][4];
-            game.follow_suit =                       userIds[INVITE_FORM][5];
-            game.lose_points =                       userIds[INVITE_FORM][6];
-            game.lose_number =                Number(userIds[INVITE_FORM][7]);
-            game.leader_only =                       userIds[INVITE_FORM][8];
-            game.loop =                              userIds[INVITE_FORM][9];
-            game.progression =                       userIds[INVITE_FORM][10];
-            game.start =                      Number(userIds[INVITE_FORM][11]);
-            game.finish =                     Number(userIds[INVITE_FORM][12]);
-            game.who_scores_tricks =                 userIds[INVITE_FORM][13];
-            game.pick_opponents_goal =               userIds[INVITE_FORM][14];
-            game.dealer_picks_trump =                userIds[INVITE_FORM][15];
-            game.trick_multiplier =           Number(userIds[INVITE_FORM][16]);
-            game.bonus_goal_only =                   userIds[INVITE_FORM][17];
-            game.bonus =                             userIds[INVITE_FORM][18];
-            game.user_bonus =                 Number(userIds[INVITE_FORM][19]);
-            game.jokers_goal_only =           Number(userIds[INVITE_FORM][20]);
+            game.aces                  =         userIds[INVITE_FORM] [1]   ;
+            game.jokers                =         userIds[INVITE_FORM] [2]   ;
+            game.joker_value           =  Number(userIds[INVITE_FORM] [3])  ;
+            game.agreement             =         userIds[INVITE_FORM] [4]   ;
+            game.follow_suit           =         userIds[INVITE_FORM] [5]   ;
+            game.lose_points           =         userIds[INVITE_FORM] [6]   ;
+            game.lose_number           =  Number(userIds[INVITE_FORM] [7])  ;
+            game.leader_only           =         userIds[INVITE_FORM] [8]   ;
+            game.loop                  =         userIds[INVITE_FORM] [9]   ;
+            game.progression           =         userIds[INVITE_FORM] [10]  ;
+            game.start                 =  Number(userIds[INVITE_FORM] [11]) ;
+            game.finish                =  Number(userIds[INVITE_FORM] [12]) ;
+            game.who_scores_tricks     =         userIds[INVITE_FORM] [13]  ;
+            game.pick_opponents_goal   =         userIds[INVITE_FORM] [14]  ;
+            game.dealer_picks_trump    =         userIds[INVITE_FORM] [15]  ;
+            game.trick_multiplier      =  Number(userIds[INVITE_FORM] [16]) ;
+            game.bonus_goal_only       =         userIds[INVITE_FORM] [17]  ;
+            game.bonus                 =         userIds[INVITE_FORM] [18]  ;
+            game.user_bonus            =  Number(userIds[INVITE_FORM] [19]) ;
+            game.jokers_goal_only      =         userIds[INVITE_FORM] [20]  ;
+            game.who_gets_bid_dif      =         userIds[INVITE_FORM] [21]  ;
+            game.bid_dif_multiplier    =  Number(userIds[INVITE_FORM] [22]) ;
         }
         
         //start the game at the new game rules start point
@@ -906,8 +908,6 @@ const endRound = gameId => {
     }
     
     //bonus
-        //bonus_goal_only
-        //bonus off, round, user : user_bonus (-10 to 10)
     if (game.bonus !== 'off') {
         let bonus;
         if (game.bonus === 'round') bonus = game.round;
@@ -930,7 +930,38 @@ const endRound = gameId => {
     }
     
     //bid_dif
-    
+    if (game.bid_dif_multiplier !== 0) {
+        let multiplier = 0;
+        if (game[firstId].goal > game[secondId].goal)  multiplier = game[firstId].goal - game[secondId].goal;
+        if (game[firstId].goal < game[secondId].goal)  multiplier = game[secondId].goal - game[firstId].goal;
+        multiplier = multiplier * game.bid_dif_multiplier;
+        if (multiplier !== 0) {
+            if (game.who_gets_bid_dif === 'both') {
+                game[firstId].score += multiplier;
+                game[secondId].score += multiplier;
+                sendLog(gameId, `${game[firstId].name} gained ${multiplier} points for the bid difference and now has ${game[firstId].score} points.`);
+                sendLog(gameId, `${game[secondId].name} gained ${multiplier} points for the bid difference and now has ${game[secondId].score} points.`);
+            } else if (game.who_gets_bid_dif === 'goal') {
+                if (game[firstId].tricks === game[firstId].goal) {
+                    game[firstId].score += multiplier;
+                    sendLog(gameId, `${game[firstId].name} gained ${multiplier} points for the bid difference and now has ${game[firstId].score} points.`);
+                }
+                if (game[secondId].tricks === game[secondId].goal) {
+                    game[secondId].score += multiplier;
+                    sendLog(gameId, `${game[secondId].name} gained ${multiplier} points for the bid difference and now has ${game[secondId].score} points.`);
+                }
+            } else if (game.who_gets_bid_dif === 'fail') {
+                if (game[firstId].tricks !== game[firstId].goal) {
+                    game[firstId].score += multiplier;
+                    sendLog(gameId, `${game[firstId].name} gained ${multiplier} points for the bid difference and now has ${game[firstId].score} points.`);
+                }
+                if (game[secondId].tricks !== game[secondId].goal) {
+                    game[secondId].score += multiplier;
+                    sendLog(gameId, `${game[secondId].name} gained ${multiplier} points for the bid difference and now has ${game[secondId].score} points.`);
+                }
+            }
+        }
+    }
     
     //jokers
     if (game.jokers === 'on' && game.joker_value !== 0){
@@ -981,11 +1012,6 @@ const endRound = gameId => {
         }
     }
     
-    
-    
-    
-    
-    
     /*
     
     
@@ -1020,7 +1046,6 @@ const endRound = gameId => {
     }
     
     */
-    
     
     //increment/decrement round according to game.plusMinus
     game.round += game.plusMinus;
