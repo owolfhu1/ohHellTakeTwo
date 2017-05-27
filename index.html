@@ -210,10 +210,9 @@
                     </div>
 
                     <div class="invite_divs">
-                        Score tricks only on goal:
-                        <input title="goal_only" type="radio" name="goal_only" value="on" checked> on
-                        <input type="radio" name="goal_only" value="off"> off
-                        <input type="radio" name="goal_only" value="fail"> fail only<br>
+                        Score tricks when:
+                        <input title="who_scores_tricks" type="radio" name="who_scores_tricks" value="on" checked> goal
+                        <input type="radio" name="who_scores_tricks" value="fail"> fail<br>
                         Trick multiplier (-5 to 5):
                         <input title="trick_multiplier" type="number" class="invite_input" name="trick_multiplier" min="-5" max="5" value="1">
                     </div>
@@ -277,7 +276,7 @@
                             invite_form.progression.value,        //10
                             invite_form.start.value,              //11
                             invite_form.finish.value,             //12
-                            invite_form.goal_only.value,          //13
+                            invite_form.who_scores_tricks.value,          //13
                             invite_form.pick_opponents_goal.value,//14
                             invite_form.dealer_picks_trump.value  //14
                         ]);
