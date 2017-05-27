@@ -187,6 +187,23 @@
                         End value: (1 to 10):
                         <input title="finish" type="number" class="invite_input" name="finish" min="1" max="10" value="1">
                     </div>
+
+
+
+
+                    <div class="invite_divs">
+                        Bonus points: &nbsp;&nbsp;&nbsp; On goal only:
+                        <input title="bonus_goal_only" type="radio" name="bonus_goal_only" value="on" checked> on
+                        <input type="radio" name="bonus_goal_only" value="off"> off<br>
+                        Bonus: <input title="bonus" type="radio" name="bonus" value="off"> off
+                        <input title="bonus" type="radio" name="bonus" value="round" checked> round#
+                        <input title="bonus" type="radio" name="bonus" value="user"> (1 to 10)
+                        <input title="user_bonus" type="number" class="invite_input" name="user_bonus" min="1" max="10" value="5">
+                    </div>
+
+
+
+
                 </form>
                 <button class="invite_buttons" id="invite_button"><h3>send invite</h3></button>
                 <button class="invite_buttons" id="randomize_button"><h3>send randomized game invite</h3></button>
@@ -201,6 +218,7 @@
                     invite_popup.style.display = "none";
                 });
                 invite_button.addEventListener('click', () => {
+                    //TODO add validation for user_bonus here and in if(){emit('p_r',[])}
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
                     }
@@ -312,6 +330,7 @@
                 else if (text.substring(0, 8) === '$whisper' && userName !== 'GUEST') socket.emit('whisper', text.substring(9, text.length));
                 else if (text === '$kick')socket.emit('kick');
                 else if (text === '$lock') socket.emit('lock');
+                else if (text === '$round') socket.emit('round_check');
                 else if (text === '$unlock') socket.emit('unlock');
                 else if (text === '$resign')socket.emit('resign');
                 else if (text === '$tricks')socket.emit('tricks');

@@ -606,8 +606,19 @@ io.on('connection', socket => {
         }
     });
     
-    //I dont know why this works, but when called the server will restart rather then just crash
-    socket.on('restart', () => { let brokenVariable = userMap['broken'].name });
+    //break game for testing
+    socket.on('restart', () => { brokenVariable = userMap['broken'].this + /*/b/r/e/a/k/s*/ the (G + A, M + E) });
+    
+    //command for client user to check game.actualRound
+    socket.on('round_check', () => {
+        if (userMap[userId].gameId !== 'none') {
+            let game = gameMap[userMap[userId].gameId];
+            let extra = '';
+            if (game.progression === 'random' || game.progression === 'constant') extra = ` Ending round: ${game.finish}`;
+            io.to(userId).emit('receive_message', `Current round: ${game.actualRound}${extra}`);
+        }
+    });
+    
 });
 
 //sends data to client to build lobby, to all users in lobby.
