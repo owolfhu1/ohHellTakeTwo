@@ -386,17 +386,12 @@ io.on('connection', socket => {
         if (game[player].picked && game[opponent].picked) {
             let overUnder = game.round - game[player].goal - game[opponent].goal;
             let logTex;
-            if (overUnder > 0) {
-                logTex = `Round over bid by ${overUnder}`;
-            } else if (overUnder < 0) {
-                logTex = `Round under bid by ${overUnder * -1}`;
-            } else {
-                logTex = 'Goals are in agreement (no over/under bid)';
-            }
+            if (overUnder > 0) logTex = `Round under bid by ${overUnder}`;
+            else if (overUnder < 0) logTex = `Round over bid by ${overUnder * -1}`;
+            else logTex = 'Goals are in agreement (no over/under bid)';
             sendLog(gameId, logTex);
             sendInfo(gameId);
         } else sendPick(gameId);
-        
     });
     
     //  plays card at index i of player's hand.
