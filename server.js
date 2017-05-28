@@ -1270,7 +1270,7 @@ const randomize = gameId => {
     joker_value = zeroToTen(0);
     user_bonus = zeroToTen(1);
     trick_multiplier = zeroToTen(0) -5;
-    bid_dif_multiplier = - zeroToTen(0) -5;
+    bid_dif_multiplier = zeroToTen(0) -5;
     
     let bidRandom = Math.random();
     if (bidRandom <= .5) who_gets_bid_dif = 'goal';
