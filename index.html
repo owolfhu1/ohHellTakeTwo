@@ -407,52 +407,119 @@
                         <br><br>
                     `;
                     } else {
-                        let loop = '';
-                        if (pair[0][10] === 'constant' || pair[0][10] === 'random') {
-                            loop = '';
-                        } else if (pair[0][9] === 'on') {
-                            loop = ' loop';
+
+                        let INVITE_FORM = 0;
+
+
+                        let game ={};
+                        game.aces                  = pair [INVITE_FORM] [1]  ;
+                        game.jokers                = pair [INVITE_FORM] [2]  ;
+                        game.joker_value           = pair [INVITE_FORM] [3]  ;
+                        game.agreement             = pair [INVITE_FORM] [4]  ;
+                        game.follow_suit           = pair [INVITE_FORM] [5]  ;
+                        game.lose_points           = pair [INVITE_FORM] [6]  ;
+                        game.lose_number           = pair [INVITE_FORM] [7]  ;
+                        game.leader_only           = pair [INVITE_FORM] [8]  ;
+                        game.loop                  = pair [INVITE_FORM] [9]  ;
+                        game.progression           = pair [INVITE_FORM] [10] ;
+                        game.start                 = pair [INVITE_FORM] [11] ;
+                        game.finish                = pair [INVITE_FORM] [12] ;
+                        game.who_scores_tricks     = pair [INVITE_FORM] [13] ;
+                        game.pick_opponents_goal   = pair [INVITE_FORM] [14] ;
+                        game.dealer_picks_trump    = pair [INVITE_FORM] [15] ;
+                        game.trick_multiplier      = pair [INVITE_FORM] [16] ;
+                        game.bonus_goal_only       = pair [INVITE_FORM] [17] ;
+                        game.bonus                 = pair [INVITE_FORM] [18] ;
+                        game.user_bonus            = pair [INVITE_FORM] [19] ;
+                        game.jokers_goal_only      = pair [INVITE_FORM] [20] ;
+                        game.who_gets_bid_dif      = pair [INVITE_FORM] [21] ;
+                        game.bid_dif_multiplier    = pair [INVITE_FORM] [22] ;
+
+
+
+
+                        let text = '';
+
+
+                        let aceText;
+                        if (game.aces === 'both'){
+                            aceText = 'high and low';
                         } else {
-                            loop = ' no loop';
+                            aceText = game.aces;
                         }
+                        text += `<p>Aces are ${aceText}.</p>`;
+                        text += `<p>Jokers are ${game.jokers}.</p>`;
+                        if (game.jokers === 'on' && game.joker_value !== 0){
+                            if (game.jokers_goal_only === 'off/Inverted') {
+                                text += `<p>You will get ${game.joker_value} bonus points for jokers you have won on goal and ${game.joker_value * -1} per joker when you fail.</p>`;
+                            } else if (game.jokers_goal_only === 'off') {
+                                text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, always.</p>`;
+                            } else if (game.jokers_goal_only === 'on') {
+                                text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, on goal.</p>`;
+                            }
+                        }
+                        if (game.pick_opponents_goal === 'on'){
+                            text += `<p>You will pick your opponent's goals.</p>`;
+                        } else {
+                            text += `<p>You will pick your own goals.</p>`;
+                        }
+                        text += `<p>Dealer picks trump: ${game.dealer_picks_trump}</p>`;
+                        text += `<p>Agreement when picking goal: ${game.agreement}</p>`;
+                        text += `<p>Following suit required: ${game.follow_suit}</p>`;
+                        if (game.lose_points === 'on'){
+                            text += '<p>';
+                            if (game.leader_only === 'on'){
+                                text += 'If you are the point leader, ';
+                            }
+                            text += `you will lose ${game.lose_number} points for incorrect guesses</p>`;
+                        }
+                        if (game.trick_multiplier !== 0) {
+                            if (game.who_scores_tricks === 'goal') {
+                                text += `<p>Each trick adds ${game.trick_multiplier} to score only on correct guess</p>`;
+                            } else if (game.who_scores_tricks === 'both') {
+                                text += `<p>Each trick adds ${game.trick_multiplier} to score regardless of goal</p>`;
+                            } else if (game.who_scores_tricks === 'fail') {
+                                text += `<p>Each trick adds ${game.trick_multiplier} to score when you do not achieve your goal</p>`;
+                            }
+                        }
+                        if (game.bonus !== 'off') {
+                            let goalText = 'regardless of goal';
+                            if (game.bonus_goal_only === 'on') goalText = 'on goal only';
+                            if (game.bonus === 'round') {
+                                text += `<p>You will get the round# in points ${goalText}</p>`
+                            } else if (game.bonus === 'user') {
+                                text += `<p>You will get ${game.user_bonus} points ${goalText}</p>`
+                            }
+                        }
+                        if (game.bid_dif_multiplier !== 0) {
+                            if (game.who_gets_bid_dif === 'goal') {
+                                text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score on goal</p>`
+                            } else if (game.who_gets_bid_dif === 'both') {
+                                text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score regardless of goal</p>`
+                            } else if (game.who_gets_bid_dif === 'fail') {
+                                text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score when you do not achieve your goal</p>`
+                            }
+                        }
+                        if (game.progression === 'constant'){
+                            text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
+                        } else if (game.progression === 'random') {
+                            text += `<p>Game progression: random, starting at round ${game.start}.</p><p>Game will end after ${game.finish} rounds.</p>`;
+                        } else {
+                            text += `<p>Game progression: ${game.progression}, loop ${game.loop}.</p>`;
+                            text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
+                        }
+
+
+
+
+
                         invite_popup_content.innerHTML = `
-                            <b>${pair[2]}</b> would like to play.
+                            <div class="invite_divs"><b>${pair[2]}</b> would like to play.</div>
+                            <br>
                             <div class="invite_divs">
-                                Aces: ${pair[0][1]}
-                            </div>
-                            <div class="invite_divs">
-                                Pick opponents goal: ${pair[0][14]}
-                            </div>
-                            <div class="invite_divs">
-                                Goal Agreement: ${pair[0][4]}
-                            </div>
-                            <div class="invite_divs">
-                                Following suit required: ${pair[0][5]}
-                            </div>
-                            <div class="invite_divs">
-                                Score tricks only on goal: ${pair[0][13]}
+                                ${text}
                             </div>
 
-
-                            <div class="invite_divs">
-                                Dealer picks trump: ${pair[0][15]}
-                            </div>
-
-
-                            <div class="invite_divs">
-                                Jokers: ${pair[0][2]} &nbsp; &nbsp; &nbsp;
-                                Joker value: ${pair[0][3]}
-                            </div>
-                            <div class="invite_divs">
-                                Failing loses points: ${pair[0][6]}<br>
-                                How many points: ${pair[0][7]}<br>
-                                Only for point leader: ${pair[0][8]}
-                            </div>
-                            <div class="invite_divs">
-                            Game progression: ${pair[0][10]} ${loop}<br>
-                                Start value: ${pair[0][11]}<br>
-                                end value: ${pair[0][12]}
-                            </div>
                         `;
                     }
                     invite_popup_content.innerHTML += `

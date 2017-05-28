@@ -1319,7 +1319,7 @@ const logGameRules = gameId => {
     text += `<p>Jokers are ${game.jokers}.</p>`;
     if (game.jokers === 'on' && game.joker_value !== 0){
         if (game.jokers_goal_only === 'off/Inverted') {
-            text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, on goal and ${game.joker_value * -1} per joker when you fail.</p>`;
+            text += `<p>You will get ${game.joker_value} bonus points for jokers you have won on goal and ${game.joker_value * -1} per joker when you fail.</p>`;
         } else if (game.jokers_goal_only === 'off') {
             text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, always.</p>`;
         } else if (game.jokers_goal_only === 'on') {
