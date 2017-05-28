@@ -1270,12 +1270,16 @@ const randomize = gameId => {
     joker_value = zeroToTen(0);
     user_bonus = zeroToTen(1);
     trick_multiplier = zeroToTen(0) -5;
-    bid_dif_multiplier = zeroToTen(0) -5;
+    bid_dif_multiplier = .5 * zeroToTen(0) -2;
     
     let bidRandom = Math.random();
     if (bidRandom <= .5) who_gets_bid_dif = 'goal';
     else if (bidRandom <= .8) who_gets_bid_dif = 'both';
     else who_gets_bid_dif = 'fail';
+    
+    //turns over/under bid scoring on or off 60% of the time
+    //will also be off already a small% of the time from zeroToTen()
+    if (onOrOff(40) === 'off') bid_dif_multiplier = 0;
     
     let bonusRandom = Math.random();
     if (bonusRandom <= .5) bonus = 'round';
