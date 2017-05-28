@@ -875,21 +875,6 @@ const endRound = gameId => {
     let firstId = game.player1Id;
     let secondId = game.player2Id;
     
-    
-    /*
-    //if rules say players lose points for failer, start with all players losing points
-    let player1leader = true;
-    let player2leader = true;
-    //if rules say only leader loses points on failer so that only the real leader will lose points
-    if (game.leader_only === 'on'){
-        if (game[firstId].score <= game[secondId].score) player1leader = false;
-        if (game[firstId].score >= game[secondId].score) player2leader = false;
-    }
-    */
-    
-    
-    
-    
     //tricks
     let trickMultiplier = game.trick_multiplier;
     if (game.who_scores_tricks === 'goal') {
@@ -979,7 +964,7 @@ const endRound = gameId => {
     if (game.jokers === 'on' && game.joker_value !== 0){
         let joker_value = game.joker_value;
         if (game.jokers_goal_only === 'on'){
-            if (game[firstId].tricks === game[firstId].goal && jokerCount(game[firstId].tricksWon !== 0)) {
+            if (game[firstId].tricks === game[firstId].goal && jokerCount(game[firstId].tricksWon) !== 0) {
                 game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
                 sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value)} joker bonus points and now has ${game[firstId].score} points.`);
             }
@@ -987,12 +972,27 @@ const endRound = gameId => {
                 game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
                 sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value)} joker bonus points and now has ${game[secondId].score} points.`);
             }
+        } else  if (game.jokers_goal_only === 'off/Inverted') {
+            if (game[firstId].tricks === game[firstId].goal && jokerCount(game[firstId].tricksWon) !== 0) {
+                game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
+                sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value)} joker bonus points and now has ${game[firstId].score} points.`);
+            } else if (jokerCount(game[firstId].tricksWon) !== 0) {
+                game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
+                sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value * -1)} joker bonus points and now has ${game[firstId].score} points.`);
+            }
+            if (game[secondId].tricks === game[secondId].goal && jokerCount(game[secondId].tricksWon) !== 0) {
+                game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
+                sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value)} joker bonus points and now has ${game[secondId].score} points.`);
+            } else if (jokerCount(game[secondId].tricksWon) !== 0) {
+                game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
+                sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value * -1)} joker bonus points and now has ${game[secondId].score} points.`);
+            }
         } else {
-            if (jokerCount(game[firstId].tricksWon !== 0)) {
+            if (jokerCount(game[firstId].tricksWon) !== 0) {
                 game[firstId].score += jokerCount(game[firstId].tricksWon * joker_value);
                 sendLog(gameId, `${game[firstId].name} gained ${jokerCount(game[firstId].tricksWon * joker_value)} joker bonus points and now has ${game[firstId].score} points.`);
             }
-            if (jokerCount(game[secondId].tricksWon !== 0)) {
+            if (jokerCount(game[secondId].tricksWon) !== 0) {
                 game[secondId].score += jokerCount(game[secondId].tricksWon * joker_value);
                 sendLog(gameId, `${game[secondId].name} gained ${jokerCount(game[secondId].tricksWon * joker_value)} joker bonus points and now has ${game[secondId].score} points.`);
             }
@@ -1023,41 +1023,6 @@ const endRound = gameId => {
             }
         }
     }
-    
-    /*
-    
-    
-    //if first player gets goal
-    if (game[firstId].tricks === game[firstId].goal) {
-        game[firstId].score += game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value;
-        sendLog(gameId, `${game[firstId].name} scored ${game.round + game[firstId].tricks + jokerCount(game[firstId].tricksWon)*joker_value} and now has ${game[firstId].score} points.`);
-    } else if (game.lose_points === 'on' && player1leader) {
-        //otherwise, if rules say tricks are lost, player loses tricks
-        game[firstId].score -= game.lose_number;
-        sendLog(gameId, `${game[firstId].name} lost ${game.lose_number} points and now has ${game[firstId].score} points.`);
-    }
-    //if second player gets goal, invers of --^
-    if (game[secondId].tricks === game[secondId].goal) {
-        game[secondId].score += game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value;
-        sendLog(gameId, `${game[secondId].name} scored ${game.round + game[secondId].tricks + jokerCount(game[secondId].tricksWon)*joker_value} and now has ${game[secondId].score} points.`);
-    } else if (game.lose_points === 'on' && player2leader) {
-        game[secondId].score -= game.lose_number;
-        sendLog(gameId, `${game[secondId].name} lost ${game.lose_number} points and now has ${game[secondId].score} points.`);
-    }
-    
-    //if rules say tricks are scored regardless of goal, this will add tricks to goal
-    if (game.who_scores_tricks === 'off') {
-        if (game[firstId].tricks !== game[firstId].goal) {
-            game[firstId].score += game[firstId].tricks;
-            sendLog(gameId, `${game[firstId].name} gained ${game[firstId].tricks} points (from tricks) and now has ${game[firstId].score} points.`);
-        }
-        if (game[secondId].tricks !== game[secondId].goal) {
-            game[secondId].score += game[secondId].tricks;
-            sendLog(gameId, `${game[secondId].name} gained ${game[secondId].tricks} points (from tricks) and now has ${game[secondId].score} points.`);
-        }
-    }
-    
-    */
     
     //increment/decrement round according to game.plusMinus
     game.round += game.plusMinus;
@@ -1352,8 +1317,14 @@ const logGameRules = gameId => {
     }
     text += `<p>Aces are ${aceText}.</p>`;
     text += `<p>Jokers are ${game.jokers}.</p>`;
-    if (game.jokers === 'on'){
-        text += `<p>Jokers are worth ${game.joker_value} when scoring.</p>`;
+    if (game.jokers === 'on' && game.joker_value !== 0){
+        if (game.jokers_goal_only === 'off/Inverted') {
+            text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, on goal and ${game.joker_value * -1} per joker when you fail.</p>`;
+        } else if (game.jokers_goal_only === 'off') {
+            text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, always.</p>`;
+        } else if (game.jokers_goal_only === 'on') {
+            text += `<p>You will get ${game.joker_value} bonus points for jokers you have won, on goal.</p>`;
+        }
     }
     if (game.pick_opponents_goal === 'on'){
         text += `<p>You will pick your opponent's goals.</p>`;
