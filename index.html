@@ -435,12 +435,7 @@
                         game.who_gets_bid_dif      =         pair[INVITE_FORM] [21]  ;
                         game.bid_dif_multiplier    =  Number(pair[INVITE_FORM] [22]) ;
 
-
-
-
                         let text = '';
-
-
                         let aceText;
                         if (game.aces === 'both'){
                             aceText = 'high and low';
@@ -509,13 +504,8 @@
                             text += `<p>Starting at round ${game.start} and ending at round ${game.finish}.</p>`;
                         }
 
-
-
-
-
                         invite_popup_content.innerHTML = `
                             <div class="invite_divs"><b>${pair[2]}</b> would like to play.</div>
-                            <br>
                             <div class="invite_divs">
                                 ${text}
                             </div>
@@ -523,8 +513,8 @@
                         `;
                     }
                     invite_popup_content.innerHTML += `
-                        <button class="invite_buttons" id="accept_button"><h1> accept </h1></button>
-                        <button class="invite_buttons" id="decline_button"><h1> decline </h1></button>
+                        <button class="invite_buttons" id="accept_button"><h1> &nbsp;&nbsp;accept&nbsp;&nbsp; </h1></button>
+                        <button class="invite_buttons" id="decline_button"><h1> &nbsp;&nbsp;decline&nbsp;&nbsp; </h1></button>
                     `;
                     let accept_button = document.getElementById('accept_button');
                     let decline_button = document.getElementById('decline_button');
