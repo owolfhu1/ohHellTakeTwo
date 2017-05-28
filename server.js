@@ -1241,8 +1241,8 @@ const zeroToTen = floor => {
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
-        loop, progression, start, finish, who_scores_tricks, pick_opponents_goal, dealer_picks_trump;
-    
+        loop, progression, start, finish, who_scores_tricks, pick_opponents_goal, dealer_picks_trump,
+        trick_multiplier, user_bonus, bonus, bonus_goal_only, who_gets_bid_dif, bid_dif_multiplier;
     
     leader_only = onOrOff(75);
     lose_points = onOrOff(50);
@@ -1252,35 +1252,39 @@ const randomize = gameId => {
     loop = onOrOff(50);
     pick_opponents_goal = onOrOff(10);
     dealer_picks_trump = onOrOff(40);
-    
+    bonus_goal_only = onOrOff(80);
     
     lose_number = zeroToTen(1);
     joker_value = zeroToTen(0);
+    user_bonus = zeroToTen(1);
+    trick_multiplier = zeroToTen(0) -5;
+    bid_dif_multiplier = - zeroToTen(0) -5;
     
-    //who_scores_tricks = onOrOff(60);
+    let bidRandom = Math.random();
+    if (bidRandom <= .5) who_gets_bid_dif = 'goal';
+    else if (bidRandom <= .8) who_gets_bid_dif = 'both';
+    else who_gets_bid_dif = 'fail';
+    
+    let bonusRandom = Math.random();
+    if (bonusRandom <= .5) bonus = 'round';
+    else if (bonusRandom <= .8) bonus = 'user';
+    else bonus = 'off';
     
     let whoScoresRandom = Math.random();
-    if (whoScoresRandom <= .5){
-        who_scores_tricks = 'goal';
-    } else if (whoScoresRandom <= .85) {
-        who_scores_tricks = 'both';
-    } else {
-        who_scores_tricks = 'fail';
-    }
-    
+    if (whoScoresRandom <= .5) who_scores_tricks = 'goal';
+    else if (whoScoresRandom <= .85) who_scores_tricks = 'both';
+    else who_scores_tricks = 'fail';
     
     let aceRandom = Math.random();
     if (aceRandom <= .2) aces = 'high';
     else if (aceRandom <=.4) aces = 'low';
     else aces = 'both';
     
-    
     let progressionRandom = Math.random();
     if (progressionRandom <= 0.25) progression = 'low to high';
     else if (progressionRandom <=.5) progression = 'high to low';
     else if (progressionRandom <=.75) progression = 'constant';
     else progression = 'random';
-    
     
     if (progression === 'low to high'){
         start = 1;
@@ -1310,6 +1314,12 @@ const randomize = gameId => {
     game.who_scores_tricks = who_scores_tricks;
     game.pick_opponents_goal = pick_opponents_goal;
     game.dealer_picks_trump = dealer_picks_trump;
+    game.trick_multiplier = trick_multiplier;
+    game.user_bonus = user_bonus;
+    game.bonus = bonus;
+    game.bonus_goal_only = bonus_goal_only;
+    game.bid_dif_multiplier = bid_dif_multiplier;
+    game.who_gets_bid_dif = who_gets_bid_dif;
 };
 
 //sends a log of the game rules to players at the beginning fo the game
@@ -1344,7 +1354,33 @@ const logGameRules = gameId => {
         }
         text += `you will lose ${game.lose_number} points for incorrect guesses</p>`;
     }
-    text += `<p>Tricks add to score only on correct guess: ${game.who_scores_tricks}</p>`;
+    if (game.trick_multiplier !== 0) {
+        if (game.who_scores_tricks === 'goal') {
+            text += `<p>Each trick adds ${game.trick_multiplier} to score only on correct guess</p>`;
+        } else if (game.who_scores_tricks === 'both') {
+            text += `<p>Each trick adds ${game.trick_multiplier} to score regardless of goal</p>`;
+        } else if (game.who_scores_tricks === 'fail') {
+            text += `<p>Each trick adds ${game.trick_multiplier} to score when you do not achieve your goal</p>`;
+        }
+    }
+    if (game.bonus !== 'off') {
+        let goalText = 'regardless of goal';
+        if (game.bonus_goal_only === 'on') goalText = 'on goal only';
+        if (game.bonus === 'round') {
+            text += `<p>You will get the round# in points ${goalText}</p>`
+        } else if (game.bonus === 'user') {
+            text += `<p>You will get ${game.user_bonus} points ${goalText}</p>`
+        }
+    }
+    if (game.bid_dif_multiplier !== 0) {
+        if (game.who_gets_bid_dif === 'goal') {
+            text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score on goal</p>`
+        } else if (game.who_gets_bid_dif === 'both') {
+            text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score regardless of goal</p>`
+        } else if (game.who_gets_bid_dif === 'fail') {
+            text += `<p>You will get ${game.bid_dif_multiplier} x how much the round is over/under bid; score when you do not achieve your goal</p>`
+        }
+    }
     if (game.progression === 'constant'){
         text += `<p>Game progression: constant rounds of ${game.start} cards.</p><p>Game will end after ${game.finish} rounds.</p>`;
     } else if (game.progression === 'random') {

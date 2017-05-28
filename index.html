@@ -103,11 +103,8 @@
             <div id="invite_popup_content" class="invite_popup_content">
             </div>
         </div>
-
         <div id="last_turn">
-
         </div>
-
         <script>
 
             //connects to server
@@ -155,12 +152,6 @@
                         <input title="jokers_goal_only" type="radio" name="jokers_goal_only" value="on" checked> on
                         <input type="radio" name="jokers_goal_only" value="off"> off
                     </div>
-
-
-
-
-
-
                     <div class="invite_divs">
                         <input type="radio" title="who_gets_bid_dif" name="who_gets_bid_dif" value="goal" checked> on goal
                         <input type="radio" name="who_gets_bid_dif" value="fail"> on fail
@@ -168,12 +159,6 @@
                         <input title="bid_dif_multiplier" type="number" class="invite_input" name="bid_dif_multiplier" min="-10" max="10" value="0">
                         x bid difference
                     </div>
-
-
-
-
-
-
                     <div class="invite_divs">
                         Failing loses points:
                         <input title="lose_points" type="radio" name="lose_points" value="on"> on
@@ -197,10 +182,6 @@
                         End value: (1 to 10):
                         <input title="finish" type="number" class="invite_input" name="finish" min="1" max="10" value="1">
                     </div>
-
-
-
-
                     <div class="invite_divs">
                         Bonus points on goal only:
                         <input title="bonus_goal_only" type="radio" name="bonus_goal_only" value="on" checked> on
@@ -211,10 +192,6 @@
                         <input type="radio" name="bonus" value="user"> (1 to 10)
                         <input title="user_bonus" type="number" class="invite_input" name="user_bonus" min="1" max="10" value="5">
                     </div>
-
-
-
-
                     <div class="invite_divs">
                         Score tricks when:
                         <input title="who_scores_tricks" type="radio" name="who_scores_tricks" value="goal" checked> goal
@@ -223,10 +200,6 @@
                         Trick multiplier (-5 to 5):
                         <input title="trick_multiplier" type="number" class="invite_input" name="trick_multiplier" min="-5" max="5" value="1">
                     </div>
-
-
-
-
                 </form>
                 &nbsp;&nbsp;&nbsp;
                 <button class="invite_buttons" id="invite_button">send invite to ${name}</button>
@@ -815,9 +788,7 @@
                 if (onOff === 'off') pick_opponents_goal = false;
             });
 
-            socket.on('clear_log', () => {
-                document.getElementById('log').innerHTML = '';
-            });
+            socket.on('clear_log', () => { document.getElementById('log').innerHTML = ''; });
 
         </script>
     </body>
