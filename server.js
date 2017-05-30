@@ -1167,6 +1167,7 @@ const sortHand = unSortedHand => {
 };
 
 //calculates if neither player can score.
+<<<<<<< HEAD
 const endRoundNow = game => {
     if (game[game.player1Id].hand.length === 0 && game[game.player2Id].hand.length === 0) return true;
     else if (
@@ -1175,19 +1176,39 @@ const endRoundNow = game => {
         (game.bonus_goal_only === 'off' && !(game.bonus === 'user' && game.user_bonus === 0) )
     ) return false;
     
+=======
+const endRoundNow = game => 
+>>>>>>> 54053376500cd97aa7d2d48b92c7325c44207c24
     let player1 = game[game.player1Id];
     let player2 = game[game.player2Id];
+    let tricksLeft;
     let player1CantWin = false;
     let player2CantWin = false;
+<<<<<<< HEAD
     let tricksLeft = player1.hand.length;
     if (player2.hand.length > tricksLeft) tricksLeft = player2.hand.length;
+=======
+    //if no cards are left for ether player to play, end round.
+    if (palyer1.hand.length === 0 && player2.hand.length === 0) return true;
+    
+    //if goal_only is off, return false
+    if (game.goal_only === 'off') return false;
+    //otherwise we check to see if anyone can still win, and flip the booleans to true if not.
+    
+    //check how many tricks are left to be won, assign to tricksLeft.
+    if (player1.hand.length > player2.hand.length) tricksLeft = player1.hand.length;
+    else tricksLeft = player2.hand.length;
+
+    //check if each player has ether already exceeded their goal, or cant reach their goal with the tricksLeft.
+>>>>>>> 54053376500cd97aa7d2d48b92c7325c44207c24
     if (player1.tricks > player1.goal || player1.tricks + tricksLeft < player1.goal) player1CantWin = true;
     if (player2.tricks > player2.goal || player2.tricks + tricksLeft < player2.goal) player2CantWin = true;
+    
+    //if neither player can win, send log and return true.
     if (player1CantWin && player2CantWin) {
         sendLog(userMap[game.player1Id].gameId, `No one could win so the round has ended.`);
         return true;
-    }
-    return false;
+    } else return false;//otherwise return false and carry on with game
 };
 
 //takes value integer and returns value string ie: 3 -> 'Three'
@@ -1228,9 +1249,14 @@ const zeroToTen = floor => {
 const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
+<<<<<<< HEAD
         loop, progression, start, finish, who_scores_tricks, pick_opponents_goal, dealer_picks_trump,
         trick_multiplier, user_bonus, bonus, bonus_goal_only, who_gets_bid_dif, bid_dif_multiplier;
     
+=======
+        loop, progression, start, finish, goal_only, pick_opponents_goal, dealer_picks_trump;
+
+>>>>>>> 54053376500cd97aa7d2d48b92c7325c44207c24
     leader_only = onOrOff(75);
     lose_points = onOrOff(50);
     follow_suit = onOrOff(80);
@@ -1239,8 +1265,12 @@ const randomize = gameId => {
     loop = onOrOff(50);
     pick_opponents_goal = onOrOff(10);
     dealer_picks_trump = onOrOff(40);
+<<<<<<< HEAD
     bonus_goal_only = onOrOff(80);
     
+=======
+  
+>>>>>>> 54053376500cd97aa7d2d48b92c7325c44207c24
     lose_number = zeroToTen(1);
     joker_value = zeroToTen(0);
     user_bonus = zeroToTen(1);
@@ -1256,6 +1286,7 @@ const randomize = gameId => {
     //will also be off already a small% of the time from zeroToTen()
     if (onOrOff(40) === 'off') bid_dif_multiplier = 0;
     
+<<<<<<< HEAD
     let bonusRandom = Math.random();
     if (bonusRandom <= .5) bonus = 'round';
     else if (bonusRandom <= .8) bonus = 'user';
@@ -1266,6 +1297,8 @@ const randomize = gameId => {
     else if (whoScoresRandom <= .85) who_scores_tricks = 'both';
     else who_scores_tricks = 'fail';
     
+=======
+>>>>>>> 54053376500cd97aa7d2d48b92c7325c44207c24
     let aceRandom = Math.random();
     if (aceRandom <= .2) aces = 'high';
     else if (aceRandom <=.4) aces = 'low';
