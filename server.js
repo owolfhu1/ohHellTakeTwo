@@ -270,28 +270,29 @@ io.on('connection', socket => {
             //else get the game rules from the invite form
             let INVITE_FORM = 0;
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            game.        aces                        =                userIds      [ INVITE_FORM ][ 1        ]/* */;
-            game.       jokers                       =                userIds     [ INVITE_FORM ] [  2      ]/* */;
-            game.   joker_value                     =          Number(userIds    [ INVITE_FORM ]  [   3 ]  )/* */;
-            game.     agreement                    =                  userIds   [ INVITE_FORM ]   [  4    ]/* */;
-            game.   follow_suit                   =                   userIds  [ INVITE_FORM ]    [ 5     ]/* */;
-            game.  lose_points                   =                    userIds [ INVITE_FORM ]     [6       ]/* */;
-            game. lose_number                    =             Number(userIds[ INVITE_FORM ]      [ 7   ]   )/* */;
-            game.  leader_only                    =                   userIds [ INVITE_FORM ]     [  8      ]/* */;
-            game.   loop                           =                  userIds  [ INVITE_FORM ]    [   9    ]/* */;
-            game.   progression                     =                 userIds   [ INVITE_FORM ]   [  10   ]/* */;
-            game.         start                      =         Number(userIds    [ INVITE_FORM ]  [ 11  ] )/* */;
-            game.        finish                       =        Number(userIds     [ INVITE_FORM ] [12   ]  )/* */;
-            game.      who_scores_tricks              =               userIds      [ INVITE_FORM ][ 13      ]/* */;
-            game.     pick_opponents_goal            =                userIds     [ INVITE_FORM ] [  14     ]/* */;
-            game.    dealer_picks_trump             =                 userIds    [ INVITE_FORM ]  [ 15     ]/* */;
-            game.     trick_multiplier             =           Number(userIds   [ INVITE_FORM ]   [16   ] )/* */;
-            game.       bonus_goal_only           =                   userIds  [ INVITE_FORM ]    [ 17    ]/* */;
-            game.           bonus                =                    userIds [ INVITE_FORM ]     [  18    ]/* */;
-            game.        user_bonus              =             Number(userIds[ INVITE_FORM ]      [ 19  ]   )/* */;
-            game.     jokers_goal_only            =                   userIds [ INVITE_FORM ]     [20       ]/* */;
-            game.    who_gets_bid_dif              =                  userIds  [ INVITE_FORM ]    [ 21     ]/* */;
-            game.   bid_dif_multiplier              =          Number(userIds   [ INVITE_FORM ]   [  22 ] )/* */;
+            game.        aces                        =                userIds      [ INVITE_FORM ][ 1         ]/* */;
+            game.       jokers                       =                userIds     [ INVITE_FORM ] [  2       ]/* */;
+            game.   joker_value                     =          Number(userIds    [ INVITE_FORM ]  [   3 ]   )/* */;
+            game.     agreement                    =                  userIds   [ INVITE_FORM ]   [  4     ]/* */;
+            game.   follow_suit                   =                   userIds  [ INVITE_FORM ]    [ 5      ]/* */;
+            game.  lose_points                   =                    userIds [ INVITE_FORM ]     [6        ]/* */;
+            game. lose_number                    =             Number(userIds[ INVITE_FORM ]      [ 7   ]    )/* */;
+            game.  leader_only                    =                   userIds [ INVITE_FORM ]     [  8       ]/* */;
+            game.   loop                           =                  userIds  [ INVITE_FORM ]    [   9     ]/* */;
+            game.   progression                     =                 userIds   [ INVITE_FORM ]   [  10    ]/* */;
+            game.         start                      =         Number(userIds    [ INVITE_FORM ]  [ 11  ]  )/* */;
+            game.        finish                       =        Number(userIds     [ INVITE_FORM ] [12   ]   )/* */;
+            game.      who_scores_tricks              =               userIds      [ INVITE_FORM ][ 13       ]/* */;
+            game.     pick_opponents_goal            =                userIds     [ INVITE_FORM ] [  14      ]/* */;
+            game.    dealer_picks_trump             =                 userIds    [ INVITE_FORM ]  [ 15      ]/* */;
+            game.     trick_multiplier             =           Number(userIds   [ INVITE_FORM ]   [16   ]  )/* */;
+            game.       bonus_goal_only           =                   userIds  [ INVITE_FORM ]    [ 17     ]/* */;
+            game.           bonus                =                    userIds [ INVITE_FORM ]     [  18     ]/* */;
+            game.        user_bonus              =             Number(userIds[ INVITE_FORM ]      [ 19  ]    )/* */;
+            game.     jokers_goal_only            =                   userIds [ INVITE_FORM ]     [20        ]/* */;
+            game.    who_gets_bid_dif              =                  userIds  [ INVITE_FORM ]    [ 21      ]/* */;
+            game.   bid_dif_multiplier              =          Number(userIds   [ INVITE_FORM ]   [  22 ]  )/* */;
+            game.     size                           =         Number(userIds   [ INVITE_FORM ]   [   23] )/* */;
             /////////////////////////////////////////////////////////////////////////////////////////////////////
         }
         
@@ -660,19 +661,39 @@ const removeFromLobby = id => {
 
 //builds a deck of cards and shuffles it
 const card = (value, suit) =>  [value, suit];
-const deck = (jokers) => {
+const deck = (jokers, size) => {
     let deckReturn = [];
     
-    //iterate through this array to build a deck of cards
-    const vAnds =[
+    
+    
+    
+    //iterate through one of these arrays to build a deck of cards
+    const fullDeck = [
         [1,2,3,4,5,6,7,8,9,10,13,14,15],
         ["clubs", "spades", "hearts", "diamonds"]
     ];
-    for (let v = 0; v < vAnds[0].length; v++){
-        for (let s = 0; s < vAnds[1].length; s++){
-            deckReturn.push(card(vAnds[0][v],vAnds[1][s]));
+    const smallDeck = [
+        [1,8,9,10,13,14,15],
+        ["clubs", "spades", "hearts", "diamonds"]
+    ];
+    
+    
+    
+    
+    if (size === 'full') {
+        for (let v = 0; v < fullDeck[0].length; v++) {
+            for (let s = 0; s < fullDeck[1].length; s++) {
+                deckReturn.push(card(fullDeck[0][v], fullDeck[1][s]));
+            }
+        }
+    } else {
+        for (let v = 0; v < smallDeck[0].length; v++) {
+            for (let s = 0; s < smallDeck[1].length; s++) {
+                deckReturn.push(card(smallDeck[0][v], smallDeck[1][s]));
+            }
         }
     }
+    
     
     //add jokers if jokers are turned on
     if (jokers === 'on') {
@@ -726,7 +747,7 @@ const deal = gameId => {
         }
         
         //resets all relevant game variables
-        game.gameDeck = deck(game.jokers);
+        game.gameDeck = deck(game.jokers, game.size);
         game[game.player1Id].picked = false;
         game[game.player2Id].picked = false;
         game[game.player1Id].tricksWon = [];
@@ -1229,7 +1250,7 @@ const randomize = gameId => {
     let game = gameMap[gameId];
     let aces, jokers, joker_value, agreement, follow_suit, lose_points, lose_number, leader_only,
         loop, progression, start, finish, who_scores_tricks, pick_opponents_goal, dealer_picks_trump,
-        trick_multiplier, user_bonus, bonus, bonus_goal_only, who_gets_bid_dif, bid_dif_multiplier;
+        trick_multiplier, user_bonus, bonus, bonus_goal_only, who_gets_bid_dif, bid_dif_multiplier, size;
     
     leader_only = onOrOff(75);
     lose_points = onOrOff(50);
@@ -1240,6 +1261,8 @@ const randomize = gameId => {
     pick_opponents_goal = onOrOff(10);
     dealer_picks_trump = onOrOff(40);
     bonus_goal_only = onOrOff(80);
+    if (onOrOff(70) === 'on') size = 'full';
+    else size = 'small';
     
     lose_number = zeroToTen(1);
     joker_value = zeroToTen(0);
@@ -1311,6 +1334,7 @@ const randomize = gameId => {
     game.bonus_goal_only = bonus_goal_only;
     game.bid_dif_multiplier = bid_dif_multiplier;
     game.who_gets_bid_dif = who_gets_bid_dif;
+    game.size = size;
 };
 
 //sends a log of the game rules to players at the beginning fo the game
@@ -1319,6 +1343,13 @@ const logGameRules = gameId => {
     let player1Name = game[game.player1Id].name;
     let player2Name = game[game.player2Id].name;
     let text = `<p> Welcome to game ${gameId}</p><p>${player1Name} vs ${player2Name}</p>`;
+    
+    if (game.size === 'full') {
+        text += '<p>The game will use a full deck of cards.</p>';
+    } else {
+        text += '<p>The game will use a small deck of cards(8-K with aces).</p>'
+    }
+    
     let aceText;
     if (game.aces === 'both'){
         aceText = 'high and low';

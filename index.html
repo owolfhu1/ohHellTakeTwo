@@ -121,6 +121,11 @@
                 invite_popup_content.innerHTML = `
                 <form id="invite_form">
                     <div class="invite_divs">
+                        Which deck would you like?:
+                        <input title="size" type="radio" name="size" value="full"> full deck
+                        <input type="radio" name="size" value="small"> small deck (8-K with aces)
+                    </div>
+                    <div class="invite_divs">
                         Aces:
                         <input title="aces" type="radio" name="aces" value="high"> high
                         <input type="radio" name="aces" value="low"> low
@@ -265,12 +270,13 @@
                             invite_form.pick_opponents_goal.value,//14
                             invite_form.dealer_picks_trump.value, //15
                             invite_form.trick_multiplier.value,   //16
-                            invite_form.bonus_goal_only.value,    //17..
-                            invite_form.bonus.value,              //18..
-                            invite_form.user_bonus.value,         //19..
+                            invite_form.bonus_goal_only.value,    //17
+                            invite_form.bonus.value,              //18
+                            invite_form.user_bonus.value,         //19
                             invite_form.jokers_goal_only.value,   //20
                             invite_form.who_gets_bid_dif.value,   //21
-                            invite_form.bid_dif_multiplier.value             //22
+                            invite_form.bid_dif_multiplier.value, //22
+                            invite_form.size.value                //23
                         ]);
                         invite_popup.style.display = "none";
                     }
@@ -431,8 +437,14 @@
                         game.jokers_goal_only      =         pair[INVITE_FORM] [20]  ;
                         game.who_gets_bid_dif      =         pair[INVITE_FORM] [21]  ;
                         game.bid_dif_multiplier    =  Number(pair[INVITE_FORM] [22]) ;
+                        game.size                  =         pair[INVITE_FORM] [23]  ;
 
                         let text = '';
+                        if (game.size === 'full') {
+                            text += '<p>The game will use a full deck of cards.</p>';
+                        } else {
+                            text += '<p>The game will use a small deck of cards(8-K with aces).</p>'
+                        }
                         let aceText;
                         if (game.aces === 'both'){
                             aceText = 'high and low';
