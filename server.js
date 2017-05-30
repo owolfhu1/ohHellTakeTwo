@@ -269,28 +269,30 @@ io.on('connection', socket => {
         } else {
             //else get the game rules from the invite form
             let INVITE_FORM = 0;
-            game.aces                  =         userIds[INVITE_FORM] [1]   ;
-            game.jokers                =         userIds[INVITE_FORM] [2]   ;
-            game.joker_value           =  Number(userIds[INVITE_FORM] [3])  ;
-            game.agreement             =         userIds[INVITE_FORM] [4]   ;
-            game.follow_suit           =         userIds[INVITE_FORM] [5]   ;
-            game.lose_points           =         userIds[INVITE_FORM] [6]   ;
-            game.lose_number           =  Number(userIds[INVITE_FORM] [7])  ;
-            game.leader_only           =         userIds[INVITE_FORM] [8]   ;
-            game.loop                  =         userIds[INVITE_FORM] [9]   ;
-            game.progression           =         userIds[INVITE_FORM] [10]  ;
-            game.start                 =  Number(userIds[INVITE_FORM] [11]) ;
-            game.finish                =  Number(userIds[INVITE_FORM] [12]) ;
-            game.who_scores_tricks     =         userIds[INVITE_FORM] [13]  ;
-            game.pick_opponents_goal   =         userIds[INVITE_FORM] [14]  ;
-            game.dealer_picks_trump    =         userIds[INVITE_FORM] [15]  ;
-            game.trick_multiplier      =  Number(userIds[INVITE_FORM] [16]) ;
-            game.bonus_goal_only       =         userIds[INVITE_FORM] [17]  ;
-            game.bonus                 =         userIds[INVITE_FORM] [18]  ;
-            game.user_bonus            =  Number(userIds[INVITE_FORM] [19]) ;
-            game.jokers_goal_only      =         userIds[INVITE_FORM] [20]  ;
-            game.who_gets_bid_dif      =         userIds[INVITE_FORM] [21]  ;
-            game.bid_dif_multiplier    =  Number(userIds[INVITE_FORM] [22]) ;
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            game.        aces                        =                userIds      [ INVITE_FORM ][ 1        ]/* */;
+            game.       jokers                       =                userIds     [ INVITE_FORM ] [  2      ]/* */;
+            game.   joker_value                     =          Number(userIds    [ INVITE_FORM ]  [   3 ]  )/* */;
+            game.     agreement                    =                  userIds   [ INVITE_FORM ]   [  4    ]/* */;
+            game.   follow_suit                   =                   userIds  [ INVITE_FORM ]    [ 5     ]/* */;
+            game.  lose_points                   =                    userIds [ INVITE_FORM ]     [6       ]/* */;
+            game. lose_number                    =             Number(userIds[ INVITE_FORM ]      [ 7   ]   )/* */;
+            game.  leader_only                    =                   userIds [ INVITE_FORM ]     [  8      ]/* */;
+            game.   loop                           =                  userIds  [ INVITE_FORM ]    [   9    ]/* */;
+            game.   progression                     =                 userIds   [ INVITE_FORM ]   [  10   ]/* */;
+            game.         start                      =         Number(userIds    [ INVITE_FORM ]  [ 11  ] )/* */;
+            game.        finish                       =        Number(userIds     [ INVITE_FORM ] [12   ]  )/* */;
+            game.      who_scores_tricks              =               userIds      [ INVITE_FORM ][ 13      ]/* */;
+            game.     pick_opponents_goal            =                userIds     [ INVITE_FORM ] [  14     ]/* */;
+            game.    dealer_picks_trump             =                 userIds    [ INVITE_FORM ]  [ 15     ]/* */;
+            game.     trick_multiplier             =           Number(userIds   [ INVITE_FORM ]   [16   ] )/* */;
+            game.       bonus_goal_only           =                   userIds  [ INVITE_FORM ]    [ 17    ]/* */;
+            game.           bonus                =                    userIds [ INVITE_FORM ]     [  18    ]/* */;
+            game.        user_bonus              =             Number(userIds[ INVITE_FORM ]      [ 19  ]   )/* */;
+            game.     jokers_goal_only            =                   userIds [ INVITE_FORM ]     [20       ]/* */;
+            game.    who_gets_bid_dif              =                  userIds  [ INVITE_FORM ]    [ 21     ]/* */;
+            game.   bid_dif_multiplier              =          Number(userIds   [ INVITE_FORM ]   [  22 ] )/* */;
+            /////////////////////////////////////////////////////////////////////////////////////////////////////
         }
         
         //start the game at the new game rules start point
@@ -691,6 +693,10 @@ const shuffle = a => {
 //resets game variables, deals (game.round) number of cards, exposes trump and prints to player's logs. if round is 0 (or other end game conditions are met), ends game.
 const deal = gameId => {
     let game = gameMap[gameId];
+    
+    //turn off last turn card popup
+    io.to(game.player1Id).emit('last_turn_cards_off');
+    io.to(game.player2Id).emit('last_turn_cards_off');
     
     //if a game ending contition is met, end game
     if (game.round === 0) endGame(gameId);
