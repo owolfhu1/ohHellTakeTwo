@@ -1172,7 +1172,7 @@ const endRoundNow = game => {
     else if (
         (game.who_scores_tricks !== 'goal' && game.trick_multiplier !== 0) ||
         (game.joker_value !== 0  && game.jokers === 'on' && game.jokers_goal_only !== 'on') ||
-        (game.bonus_goal_only === 'off' && !(game.bonus === 'user' && game.user_bonus === 0) )
+        (game.bonus_goal_only === 'off' && !(game.bonus === 'user' && game.user_bonus === 0))
     ) return false;
     
     let player1 = game[game.player1Id];
