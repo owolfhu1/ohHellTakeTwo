@@ -194,7 +194,7 @@
                         Bonus:
                         <input title="bonus" type="radio" name="bonus" value="off"> off
                         <input type="radio" name="bonus" value="round" checked> round#
-                        <input type="radio" name="bonus   alue="user"> (1 to 10)
+                        <input type="radio" name="bonus" value="user"> (1 to 10)
                         <input title="user_bonus" type="number" class="invite_input" name="user_bonus" min="1" max="10" value="5">
                     </div>
                     <div class="invite_divs">
@@ -220,7 +220,7 @@
                     invite_popup.style.display = "none";
                 });
                 invite_button.addEventListener('click', () => {
-                    //TODO add validation for user_bonus && trick_multiplier && bid_dif_multiplier here and in if(){emit('p_r',[])}
+                    //TODO add validation for user_bonus(1-10) && trick_multiplier(-5-5) && bid_dif_multiplier(-10-10) here and in if(){emit('p_r',[])}
                     if (invite_form.joker_value.value === '') {
                         invite_form.joker_value.value = 5;
                     }
