@@ -1,4 +1,2 @@
 # ohHellTakeTwo
-
-game live at:
-oh-hell-no.herokuapp.com
+[oh hell game](oh-hell-no.herokuapp.com)
